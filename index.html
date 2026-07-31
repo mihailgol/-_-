@@ -1,0 +1,1595 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ExamHub — Твоя эффективная подготовка к ЕГЭ и ОГЭ</title>
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Lucide Icons (local copy — works offline) -->
+    <script src="js/lucide.min.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="brand-section">
+            <div class="brand-logo-wrapper">
+              <i data-lucide="graduation-cap"></i>
+            </div>
+            <div class="brand-info">
+              <span class="brand-name">ExamHub</span>
+              <span class="brand-tagline">Твоя подготовка к ЕГЭ</span>
+            </div>
+          </div>
+
+          <nav class="sidebar-nav">
+            <button class="nav-item active" data-view="subjects">
+              <i data-lucide="book-open"></i>
+              <span>Предметы</span>
+            </button>
+            <button class="nav-item" data-view="notes">
+              <i data-lucide="file-text"></i>
+              <span>Конспекты</span>
+            </button>
+            <button class="nav-item" data-view="videos">
+              <i data-lucide="video"></i>
+              <span>Видеоуроки</span>
+            </button>
+            <button class="nav-item" data-view="tests">
+              <i data-lucide="clipboard-list"></i>
+              <span>Тесты</span>
+            </button>
+            <button class="nav-item" data-view="plan">
+              <i data-lucide="calendar"></i>
+              <span>Мой план</span>
+            </button>
+            <button class="nav-item" data-view="analytics">
+              <i data-lucide="trending-up"></i>
+              <span>Аналитика</span>
+            </button>
+            <button class="nav-item" data-view="cart">
+              <i data-lucide="shopping-cart"></i>
+              <span>Корзина</span>
+            </button>
+            <button class="nav-item" data-view="support">
+              <i data-lucide="life-buoy"></i>
+              <span>Поддержка</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="admin"
+              style="border-top: 1px dashed var(--color-border); border-radius: 0; padding-top: 16px; margin-top: 8px"
+            >
+              <i data-lucide="settings" style="stroke: var(--color-purple)"></i>
+              <span style="color: var(--color-purple); font-weight: 600">Админка</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Premium Promo Card -->
+        <div class="premium-promo-card" id="sidebarPremiumCard">
+          <div class="premium-promo-icon">👑</div>
+          <div class="premium-promo-title">Стань Premium</div>
+          <div class="premium-promo-text">
+            Открой полный доступ ко всем материалам и возможностям ИИ без ограничений.
+          </div>
+          <button class="premium-promo-btn" id="sidebarPremiumBtn">Подробнее</button>
+        </div>
+
+        <!-- User Profile at bottom -->
+        <div class="sidebar-user" id="sidebarUserBlock">
+          <div class="user-avatar-wrapper">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
+              alt="Avatar"
+              class="user-avatar"
+              id="sidebarAvatar"
+            />
+            <span class="user-status-dot"></span>
+          </div>
+          <div class="user-info">
+            <span class="user-name" id="sidebarName">Артём Иванов</span>
+            <span class="user-role" id="sidebarRole">Ученик</span>
+          </div>
+          <div class="user-chevron">
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px"></i>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN AREA -->
+      <main class="main-area">
+        <!-- TOP BAR -->
+        <header class="top-bar">
+          <div class="search-box" style="position: relative">
+            <i data-lucide="search"></i>
+            <input
+              type="text"
+              class="search-input"
+              id="globalSearch"
+              placeholder="Поиск по темам, тестам и материалам..."
+              autocomplete="off"
+            />
+
+            <!-- Search Dropdown -->
+            <div class="search-dropdown" id="searchDropdown">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <div class="top-bar-actions">
+            <div class="notification-wrapper" style="position: relative">
+              <button class="action-btn-circle" id="notificationBtn">
+                <i data-lucide="bell"></i>
+                <span class="action-badge" id="notificationBadge">3</span>
+              </button>
+
+              <!-- Notifications Dropdown -->
+              <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notif-header">
+                  <h4>Уведомления</h4>
+                  <button id="markReadBtn">Прочитать всё</button>
+                </div>
+                <div class="notif-list" id="notificationList">
+                  <div class="notif-item unread" data-id="1">
+                    <div class="notif-icon"><i data-lucide="sparkles" style="stroke: var(--color-purple)"></i></div>
+                    <div class="notif-content">
+                      <p><strong>Новый AI Тест готов!</strong> ИИ сгенерировал тест по вашей недавней теме.</p>
+                      <span class="notif-time">5 минут назад</span>
+                    </div>
+                  </div>
+                  <div class="notif-item unread" data-id="2">
+                    <div class="notif-icon"><i data-lucide="award" style="stroke: var(--color-orange)"></i></div>
+                    <div class="notif-content">
+                      <p><strong>Достижение получено!</strong> Вы занимаетесь 23 дня подряд 🔥</p>
+                      <span class="notif-time">1 час назад</span>
+                    </div>
+                  </div>
+                  <div class="notif-item unread" data-id="3">
+                    <div class="notif-icon"><i data-lucide="bell" style="stroke: var(--color-green)"></i></div>
+                    <div class="notif-content">
+                      <p><strong>До экзамена 28 дней.</strong> Рекомендуем повторить строение клетки.</p>
+                      <span class="notif-time">Вчера</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="authHeaderArea">
+              <button class="auth-btn" id="loginBtn">Войти</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- VIEW WINDOW CONTAINER -->
+        <div class="view-container">
+          <!-- 1. SUBJECTS / DASHBOARD VIEW -->
+          <section class="view-section active" id="view-subjects">
+            <!-- Hero Banner -->
+            <div class="hero-banner">
+              <div class="hero-text">
+                <h1 class="hero-title">Готовься к ЕГЭ <span>эффективно</span></h1>
+                <p class="hero-subtitle">
+                  Теория, тесты, видео и персональные рекомендации от ИИ для достижения твоего максимального результата
+                  на экзамене.
+                </p>
+                <div class="hero-btns">
+                  <button class="btn-primary" id="heroStartBtn">Начать подготовку</button>
+                  <button class="btn-secondary" id="heroHowBtn">Как это работает?</button>
+                </div>
+              </div>
+              <div class="hero-graphic">
+                <!-- Inline mini svg dashboard theme -->
+                <svg class="hero-svg-bg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="20" y="20" width="160" height="120" rx="16" fill="white" stroke="#E8EBE8" stroke-width="2" />
+                  <circle cx="60" cy="50" r="14" fill="#E6F7ED" />
+                  <path
+                    d="M56 50L59 53L65 47"
+                    stroke="#00A859"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <rect x="90" y="42" width="60" height="6" rx="3" fill="#E8EBE8" />
+                  <rect x="90" y="54" width="40" height="4" rx="2" fill="#F3F5F3" />
+
+                  <rect
+                    x="40"
+                    y="80"
+                    width="120"
+                    height="40"
+                    rx="10"
+                    fill="#E6F4FF"
+                    stroke="#D0E6FF"
+                    stroke-width="1"
+                  />
+                  <rect x="56" y="92" width="50" height="6" rx="3" fill="#4096FF" />
+                  <circle cx="134" cy="100" r="8" fill="#4096FF" />
+                  <path d="M131 100L133 102L137 98" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Active & Planned Subjects -->
+            <div class="section-title">
+              <span>Выберите предмет</span>
+              <a href="#" class="section-link" id="viewAllSubjectsLink"
+                >Все предметы <i data-lucide="arrow-right" style="width: 14px; height: 14px; display: inline"></i
+              ></a>
+            </div>
+            <div class="subject-grid" id="subjectGrid">
+              <!-- Subjects will be rendered here dynamically -->
+            </div>
+
+            <!-- Feature Quick Navigation -->
+            <div class="features-row">
+              <div class="feature-card f-tests" data-target="tests">
+                <div class="feature-top">
+                  <div class="feature-icon-wrapper">
+                    <i data-lucide="check-square"></i>
+                  </div>
+                  <h3 class="feature-headline">Тесты</h3>
+                  <p class="feature-descr">Практикуйся на реальных заданиях ЕГЭ/ОГЭ и отслеживай свой прогресс.</p>
+                </div>
+                <div class="feature-link">
+                  Перейти к тестам <i data-lucide="chevron-right" style="width: 14px; height: 14px"></i>
+                </div>
+              </div>
+
+              <div class="feature-card f-notes" data-target="notes">
+                <div class="feature-top">
+                  <div class="feature-icon-wrapper">
+                    <i data-lucide="file-text"></i>
+                  </div>
+                  <h3 class="feature-headline">Конспекты</h3>
+                  <p class="feature-descr">Структурированная теория по всем темам экзамена в удобном формате.</p>
+                </div>
+                <div class="feature-link">
+                  Смотреть конспекты <i data-lucide="chevron-right" style="width: 14px; height: 14px"></i>
+                </div>
+              </div>
+
+              <div class="feature-card f-videos" data-target="videos">
+                <div class="feature-top">
+                  <div class="feature-icon-wrapper">
+                    <i data-lucide="play-circle"></i>
+                  </div>
+                  <h3 class="feature-headline">Видеоуроки</h3>
+                  <p class="feature-descr">Подробные объяснения сложных тем от экспертов и репетиторов.</p>
+                </div>
+                <div class="feature-link">
+                  Смотреть видео <i data-lucide="chevron-right" style="width: 14px; height: 14px"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Dashboard Banner at Bottom -->
+            <div class="stats-bar">
+              <div class="stat-item st-solved">
+                <div class="stat-icon-box">
+                  <i data-lucide="shield-check"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-value" id="statTestsSolved">1 248</span>
+                  <span class="stat-label">Тестов решено</span>
+                </div>
+              </div>
+
+              <div class="stat-item st-result">
+                <div class="stat-icon-box">
+                  <i data-lucide="target"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-value" id="statAvgPercent">87%</span>
+                  <span class="stat-label">Средний результат</span>
+                </div>
+              </div>
+
+              <div class="stat-item st-streak">
+                <div class="stat-icon-box">
+                  <i data-lucide="calendar"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-value" id="statStreak">23</span>
+                  <span class="stat-label">Дней подряд</span>
+                </div>
+              </div>
+
+              <div class="stat-item st-achievements">
+                <div class="stat-icon-box">
+                  <i data-lucide="star"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-value" id="statAchievements">15</span>
+                  <span class="stat-label">Достижений</span>
+                </div>
+              </div>
+
+              <div class="stat-item st-today">
+                <div class="stat-icon-box">
+                  <i data-lucide="flame"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-value" id="statQuestionsToday">125</span>
+                  <span class="stat-label">Вопросов за сегодня</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. SUBJECT DETAILS VIEW (Dynamic) -->
+          <section class="view-section" id="view-subject-detail">
+            <!-- Back navigation -->
+            <button class="note-back-btn" id="subjectBackBtn">
+              <i data-lucide="arrow-left" style="width: 16px; height: 16px"></i> Назад к предметам
+            </button>
+
+            <div class="subject-header-banner" id="subjectBanner">
+              <div class="subject-header-left">
+                <div class="subject-header-icon" id="subjectDetailIcon">🧬</div>
+                <div class="subject-header-text">
+                  <h2 id="subjectDetailTitle">Биология</h2>
+                  <p id="subjectDetailSubtitle">
+                    Курс подготовки к ЕГЭ/ОГЭ с теорией, лекциями и интерактивными тестами
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subtabs navigation -->
+            <div class="subject-tabs">
+              <button class="sub-tab-btn active" data-tab="tab-notes">Конспекты</button>
+              <button class="sub-tab-btn" data-tab="tab-videos">Видеоуроки</button>
+              <button class="sub-tab-btn" data-tab="tab-quizzes">Тесты</button>
+            </div>
+
+            <!-- Tab 1: Notes Catalog -->
+            <div class="subject-tab-panel active" id="tab-notes">
+              <div class="notes-list" id="subjectDetailNotesGrid">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Tab 2: Videos Catalog -->
+            <div class="subject-tab-panel" id="tab-videos">
+              <div class="video-grid" id="subjectDetailVideosGrid">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Tab 3: Quizzes Catalog -->
+            <div class="subject-tab-panel" id="tab-quizzes">
+              <!-- AI Generator trigger card -->
+              <div
+                class="ai-header-card"
+                style="padding: 20px 24px; margin-bottom: 24px; cursor: pointer"
+                id="triggerAIBtn"
+              >
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <div>
+                    <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 4px">
+                      🪄 Сгенерировать тест с AI
+                    </h3>
+                    <p style="font-size: 11px; opacity: 0.9">
+                      Создай персонализированную проверку знаний по любой теме с помощью искусственного интеллекта.
+                    </p>
+                  </div>
+                  <div
+                    style="
+                      font-size: 12px;
+                      font-weight: 700;
+                      background: rgba(255, 255, 255, 0.2);
+                      padding: 6px 12px;
+                      border-radius: 6px;
+                    "
+                  >
+                    Создать →
+                  </div>
+                </div>
+              </div>
+
+              <div class="quiz-list" id="subjectDetailQuizzesGrid">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. STUDY NOTES LIST VIEW (General Directory) -->
+          <section class="view-section" id="view-notes">
+            <div class="section-title">Каталог конспектов</div>
+            <div class="notes-list" id="generalNotesGrid">
+              <!-- Renders all notes from active subjects -->
+            </div>
+          </section>
+
+          <!-- 4. VIDEOS LIST VIEW (General Directory) -->
+          <section class="view-section" id="view-videos">
+            <div class="section-title">Каталог видеолекций</div>
+            <div class="video-grid" id="generalVideosGrid">
+              <!-- Renders all videos from active subjects -->
+            </div>
+          </section>
+
+          <!-- 5. TESTS VIEW (General Directory & AI Generator Menu) -->
+          <section class="view-section" id="view-tests">
+            <div class="ai-view-container">
+              <div class="ai-header-card">
+                <span class="premium-modal-badge" style="margin-bottom: 12px; display: inline-block"
+                  >AI ГЕНЕРАТОР ТЕСТОВ</span
+                >
+                <h2 class="ai-header-title">Создай индивидуальный тест с ИИ</h2>
+                <p class="ai-header-descr">
+                  Укажи любую тему по биологии или химии, и нейросеть мгновенно сформирует подборку вопросов уровня ЕГЭ
+                  или ОГЭ с подробным разбором ответов.
+                </p>
+              </div>
+
+              <div class="ai-input-card" id="aiInputBlock">
+                <label class="ai-label" for="aiPromptInput">Какую тему хотите протестировать?</label>
+                <textarea
+                  class="ai-textarea"
+                  id="aiPromptInput"
+                  placeholder="Например: Фотосинтез, световая фаза, хлоропласты, EГЭ уровень..."
+                ></textarea>
+
+                <span class="ai-suggestions-title">Популярные запросы:</span>
+                <div class="ai-chips-list">
+                  <button class="ai-chip" data-prompt="Химические свойства алкенов, гидратация и окисление">
+                    🧪 Свойства алкенов
+                  </button>
+                  <button class="ai-chip" data-prompt="Строение ядра клетки, ядрышко, хроматин, ДНК">
+                    🧬 Строение ядра
+                  </button>
+                  <button
+                    class="ai-chip"
+                    data-prompt="Периодические свойства химических элементов, электроотрицательность"
+                  >
+                    🧪 Периодический закон
+                  </button>
+                  <button class="ai-chip" data-prompt="Мейоз: фазы деления клетки, кроссинговер и расхождение хромосом">
+                    🧬 Фазы мейоза
+                  </button>
+                </div>
+
+                <button class="ai-generate-btn" id="generateAITestBtn">
+                  <i data-lucide="sparkles" style="width: 18px; height: 18px"></i>
+                  <span>Сгенерировать тест с ИИ</span>
+                </button>
+              </div>
+
+              <!-- AI Generating Loading State -->
+              <div class="ai-loading-card" id="aiLoadingBlock">
+                <div class="ai-shimmer-ring"></div>
+                <h3 class="ai-loading-title">ИИ генерирует ваш тест</h3>
+
+                <div class="ai-loading-checklist">
+                  <div class="ai-checklist-item active" id="ai-step-1">
+                    <span class="ai-check-icon" id="ai-check-1"
+                      ><i data-lucide="loader" style="width: 14px; height: 14px; animation: spin 1s linear infinite"></i
+                    ></span>
+                    <span>Анализ программы ЕГЭ/ОГЭ</span>
+                  </div>
+                  <div class="ai-checklist-item pending" id="ai-step-2">
+                    <span class="ai-check-icon" id="ai-check-2"
+                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                    ></span>
+                    <span>Разработка вопросов и дистракторов</span>
+                  </div>
+                  <div class="ai-checklist-item pending" id="ai-step-3">
+                    <span class="ai-check-icon" id="ai-check-3"
+                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                    ></span>
+                    <span>Формирование пояснений ответов</span>
+                  </div>
+                  <div class="ai-checklist-item pending" id="ai-step-4">
+                    <span class="ai-check-icon" id="ai-check-4"
+                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                    ></span>
+                    <span>Финальная сборка модуля теста</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. SHOPPING CART VIEW -->
+          <section class="view-section" id="view-cart">
+            <div class="section-title">Корзина покупок</div>
+            <div
+              style="
+                background: white;
+                border: 1px solid var(--color-border);
+                border-radius: var(--border-radius-xl);
+                padding: 48px;
+                text-align: center;
+                max-width: 480px;
+                margin: 40px auto;
+              "
+            >
+              <div style="font-size: 40px; margin-bottom: 16px">🛒</div>
+              <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: 8px">
+                Ваша корзина пуста
+              </h3>
+              <p style="color: var(--color-text-secondary); font-size: 13px; margin-bottom: 24px; line-height: 1.5">
+                В корзину можно добавлять платные сборники тестов, печатные материалы и методички. Начните с Premium
+                тарифа для полного доступа.
+              </p>
+              <button class="btn-primary" id="cartOpenPremiumBtn">Перейти к Premium</button>
+            </div>
+          </section>
+
+          <!-- 7. SUPPORT / CUSTOM HELP VIEW -->
+          <section class="view-section" id="view-support">
+            <div class="section-title">Служба поддержки</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 16px">
+              <div
+                style="
+                  background: white;
+                  border: 1px solid var(--color-border);
+                  border-radius: var(--border-radius-xl);
+                  padding: 32px;
+                "
+              >
+                <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-bottom: 16px">
+                  Напишите нам
+                </h3>
+                <div style="margin-bottom: 16px">
+                  <label
+                    style="
+                      font-size: 11px;
+                      font-weight: 600;
+                      color: var(--color-text-secondary);
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Тема обращения</label
+                  >
+                  <input
+                    type="text"
+                    style="
+                      width: 100%;
+                      padding: 10px 14px;
+                      border: 1.5px solid var(--color-border);
+                      border-radius: var(--border-radius-sm);
+                      font-size: 13px;
+                    "
+                    placeholder="Вопрос по теории, баг на сайте, Premium..."
+                  />
+                </div>
+                <div style="margin-bottom: 20px">
+                  <label
+                    style="
+                      font-size: 11px;
+                      font-weight: 600;
+                      color: var(--color-text-secondary);
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Сообщение</label
+                  >
+                  <textarea
+                    style="
+                      width: 100%;
+                      height: 120px;
+                      padding: 10px 14px;
+                      border: 1.5px solid var(--color-border);
+                      border-radius: var(--border-radius-sm);
+                      font-size: 13px;
+                      resize: none;
+                    "
+                    placeholder="Опишите вашу проблему во всех деталях..."
+                  ></textarea>
+                </div>
+                <button class="btn-primary" id="supportSendBtn" style="width: 100%">Отправить обращение</button>
+              </div>
+
+              <div
+                style="
+                  background: white;
+                  border: 1px solid var(--color-border);
+                  border-radius: var(--border-radius-xl);
+                  padding: 32px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 20px;
+                "
+              >
+                <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px">
+                  Часто задаваемые вопросы (FAQ)
+                </h3>
+
+                <div style="border-bottom: 1px solid var(--color-border); padding-bottom: 12px">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                    Входит ли подготовка к ОГЭ в Premium подписку?
+                  </h4>
+                  <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
+                    Да, подписка открывает доступ ко всем материалам как по программе ОГЭ (9 класс), так и к ЕГЭ (10-11
+                    классы) по всем активным предметам.
+                  </p>
+                </div>
+
+                <div style="border-bottom: 1px solid var(--color-border); padding-bottom: 12px">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                    Как работает генерация тестов с ИИ?
+                  </h4>
+                  <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
+                    Нейросеть генерирует уникальные вопросы на базе реальных спецификаций ФИПИ. Для пользователей без
+                    Premium лимит составляет 3 генерации в сутки.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                    Можно ли заниматься с нескольких устройств?
+                  </h4>
+                  <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
+                    Конечно. Ваш прогресс синхронизируется через облако в VK или Яндекс аккаунте. Вы можете начать тест
+                    на планшете и продолжить на ПК.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5B. PERSONAL STUDY PLAN VIEW -->
+          <section class="view-section" id="view-plan">
+            <div class="section-title">Персональный план подготовки</div>
+
+            <div style="position: relative; min-height: 400px">
+              <!-- Premium Lock Box Cover -->
+              <div class="premium-blur-overlay" id="planPremiumOverlay">
+                <div class="premium-lock-box">
+                  <div class="premium-lock-icon">🔒</div>
+                  <h3 class="premium-lock-title">Персональный план доступен в Premium</h3>
+                  <p class="premium-lock-text">
+                    Умный алгоритм составит индивидуальный пошаговый трек подготовки на основе вашего текущего уровня
+                    знаний и желаемого балла на экзамене.
+                  </p>
+                  <button
+                    class="btn-primary"
+                    id="planUpgradeBtn"
+                    style="
+                      background: linear-gradient(135deg, #ffd56b 0%, #ff9f1a 100%);
+                      color: #4a3300;
+                      width: 100%;
+                      border: none;
+                    "
+                  >
+                    Разблокировать персональный план
+                  </button>
+                </div>
+              </div>
+
+              <!-- Plan Dashboard Grid -->
+              <div class="plan-dashboard-grid" id="planDashboardContent">
+                <!-- Sidebar Week Roadmap -->
+                <div class="plan-roadmap-sidebar">
+                  <div style="font-size: 13px; font-weight: 700; color: #111; margin-bottom: 16px; text-align: center">
+                    Прогресс недели
+                  </div>
+                  <div class="plan-week-progress-circle">
+                    <span
+                      id="planWeekPercentText"
+                      style="
+                        font-family: var(--font-display);
+                        font-size: 24px;
+                        font-weight: 800;
+                        color: var(--color-green);
+                      "
+                      >33%</span
+                    >
+                    <span style="font-size: 10px; color: var(--color-text-secondary); margin-top: 4px"
+                      >задач выполнено</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      font-size: 11px;
+                      color: var(--color-text-secondary);
+                      line-height: 1.5;
+                      text-align: center;
+                      margin-top: 16px;
+                    "
+                  >
+                    Выполняйте ежедневные задачи, чтобы сохранять ударный темп!
+                  </div>
+                </div>
+
+                <!-- Main Calendar Checklist -->
+                <div class="plan-tasks-calendar">
+                  <!-- Day Card 1 -->
+                  <div class="plan-day-card">
+                    <div class="plan-day-header">
+                      <span class="plan-day-name">Понедельник</span>
+                      <span class="plan-day-status done">Выполнено</span>
+                    </div>
+                    <div class="plan-day-tasks-list">
+                      <label class="plan-task-item done">
+                        <input type="checkbox" checked disabled />
+                        <span>🧬 Биология: Изучить конспект "Цитология: Строение клетки"</span>
+                      </label>
+                      <label class="plan-task-item done">
+                        <input type="checkbox" checked disabled />
+                        <span>📋 Биология: Решить тест по теме "Строение клетки"</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Day Card 2 -->
+                  <div class="plan-day-card">
+                    <div class="plan-day-header">
+                      <span class="plan-day-name">Среда</span>
+                      <span class="plan-day-status" id="day2Status">В процессе</span>
+                    </div>
+                    <div class="plan-day-tasks-list">
+                      <label class="plan-task-item">
+                        <input type="checkbox" class="plan-check-input" data-task-id="t1" id="planTask1" />
+                        <span>🧪 Химия: Прочитать конспект "Строение атома"</span>
+                      </label>
+                      <label class="plan-task-item">
+                        <input type="checkbox" class="plan-check-input" data-task-id="t2" id="planTask2" />
+                        <span>📋 Химия: Решить тест "Строение атома и Периодический закон"</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Day Card 3 -->
+                  <div class="plan-day-card">
+                    <div class="plan-day-header">
+                      <span class="plan-day-name">Пятница</span>
+                      <span class="plan-day-status pending">Предстоит</span>
+                    </div>
+                    <div class="plan-day-tasks-list">
+                      <label class="plan-task-item">
+                        <input type="checkbox" class="plan-check-input" data-task-id="t3" id="planTask3" />
+                        <span>🧬 Биология: Изучить конспект "Синтетическая теория эволюции"</span>
+                      </label>
+                      <label class="plan-task-item">
+                        <input type="checkbox" class="plan-check-input" data-task-id="t4" id="planTask4" />
+                        <span>🎥 Биология: Прослушать видеолекцию по СТЭ</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Day Card 4 -->
+                  <div class="plan-day-card">
+                    <div class="plan-day-header">
+                      <span class="plan-day-name">Воскресенье</span>
+                      <span class="plan-day-status pending">Предстоит</span>
+                    </div>
+                    <div class="plan-day-tasks-list">
+                      <label class="plan-task-item">
+                        <input type="checkbox" class="plan-check-input" data-task-id="t5" id="planTask5" />
+                        <span>📋 ИИ-Тренажер: Сгенерировать и решить тест по слабой теме</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5C. ANALYTICS VIEW -->
+          <section class="view-section" id="view-analytics">
+            <div class="section-title">Аналитика успеваемости</div>
+
+            <div class="analytics-grid">
+              <!-- Progress stats card -->
+              <div class="analytics-card progress-overview">
+                <h3 class="analytics-card-title">Изучение школьной программы</h3>
+                <div style="margin-bottom: 20px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      font-weight: 600;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    <span>🧬 Биология</span>
+                    <span id="analyticsBioPercent">66%</span>
+                  </div>
+                  <div style="height: 8px; background-color: var(--color-border); border-radius: 4px; overflow: hidden">
+                    <div
+                      style="height: 100%; background-color: var(--color-green); width: 66%; border-radius: 4px"
+                      id="analyticsBioBar"
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      font-weight: 600;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    <span>🧪 Химия</span>
+                    <span id="analyticsChemPercent">66%</span>
+                  </div>
+                  <div style="height: 8px; background-color: var(--color-border); border-radius: 4px; overflow: hidden">
+                    <div
+                      style="height: 100%; background-color: var(--color-blue); width: 66%; border-radius: 4px"
+                      id="analyticsChemBar"
+                    ></div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 24px;
+                    border-top: 1px solid var(--color-border);
+                    padding-top: 16px;
+                    font-size: 12px;
+                    color: var(--color-text-secondary);
+                    line-height: 1.5;
+                  "
+                >
+                  Вы закончили базовые разделы. Переходите к премиум-темам по Генетике и Органической Химии, чтобы
+                  повысить балл!
+                </div>
+              </div>
+
+              <!-- Time spent graph card (SVG) -->
+              <div class="analytics-card time-spent">
+                <h3 class="analytics-card-title">Время подготовки (минут за неделю)</h3>
+                <div class="chart-container">
+                  <!-- SVG column chart -->
+                  <svg viewBox="0 0 320 180" class="svg-chart">
+                    <!-- Grid lines -->
+                    <line x1="30" y1="20" x2="300" y2="20" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="60" x2="300" y2="60" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="100" x2="300" y2="100" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="140" x2="300" y2="140" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="150" x2="300" y2="150" stroke="#CCCCCC" stroke-width="1.5" />
+
+                    <!-- Bars (Monday to Sunday) -->
+                    <rect x="45" y="75" width="20" height="75" rx="3" fill="var(--color-green)" />
+                    <text x="55" y="165" font-size="9" text-anchor="middle" fill="#888">Пн</text>
+                    <rect x="80" y="125" width="20" height="25" rx="3" fill="#E8EBE8" />
+                    <text x="90" y="165" font-size="9" text-anchor="middle" fill="#888">Вт</text>
+                    <rect x="115" y="50" width="20" height="100" rx="3" fill="var(--color-green)" />
+                    <text x="125" y="165" font-size="9" text-anchor="middle" fill="#888">Ср</text>
+                    <rect x="150" y="100" width="20" height="50" rx="3" fill="var(--color-green)" />
+                    <text x="160" y="165" font-size="9" text-anchor="middle" fill="#888">Чт</text>
+                    <rect x="185" y="148" width="20" height="2" rx="1" fill="#E8EBE8" />
+                    <text x="195" y="165" font-size="9" text-anchor="middle" fill="#888">Пт</text>
+                    <rect x="220" y="20" width="20" height="130" rx="3" fill="var(--color-green)" />
+                    <text x="230" y="165" font-size="9" text-anchor="middle" fill="#888">Сб</text>
+                    <rect x="255" y="75" width="20" height="75" rx="3" fill="var(--color-green)" />
+                    <text x="265" y="165" font-size="9" text-anchor="middle" fill="#888">Вс</text>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Score progression card (SVG) -->
+              <div class="analytics-card score-progression">
+                <h3 class="analytics-card-title">Динамика среднего балла тестов</h3>
+                <div class="chart-container">
+                  <!-- SVG line graph -->
+                  <svg viewBox="0 0 320 180" class="svg-chart">
+                    <!-- Grid -->
+                    <line x1="30" y1="20" x2="300" y2="20" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="60" x2="300" y2="60" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="100" x2="300" y2="100" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="140" x2="300" y2="140" stroke="#F3F5F3" stroke-width="1" />
+                    <line x1="30" y1="150" x2="300" y2="150" stroke="#CCCCCC" stroke-width="1.5" />
+
+                    <!-- Graph Line points (Mock EGE scores) -->
+                    <path
+                      d="M 40 120 L 90 110 L 140 102 L 190 88 L 240 75 L 290 50"
+                      fill="none"
+                      stroke="var(--color-blue)"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    />
+
+                    <!-- Dots -->
+                    <circle cx="40" cy="120" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
+                    <circle cx="90" cy="110" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
+                    <circle cx="140" cy="102" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
+                    <circle cx="190" cy="88" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
+                    <circle cx="240" cy="75" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
+                    <circle cx="290" cy="50" r="5" fill="var(--color-blue)" />
+
+                    <text x="40" y="165" font-size="9" text-anchor="middle" fill="#888">Май</text>
+                    <text x="140" y="165" font-size="9" text-anchor="middle" fill="#888">Июнь</text>
+                    <text x="290" y="165" font-size="9" text-anchor="middle" fill="#888">Июль</text>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Streaks / Achievements -->
+              <div class="analytics-card active-streaks">
+                <h3 class="analytics-card-title">Игровые достижения</h3>
+                <div class="plan-day-tasks-list" style="margin-top: 10px">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 8px 0;
+                      border-bottom: 1px solid var(--color-border);
+                    "
+                  >
+                    <span style="font-size: 20px">🔥</span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #111">Марафонец (23 дня подряд)</div>
+                      <div style="font-size: 11px; color: var(--color-text-secondary)">
+                        Каждый день вы решаете хотя бы один тест!
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 8px 0;
+                      border-bottom: 1px solid var(--color-border);
+                    "
+                  >
+                    <span style="font-size: 20px">🧠</span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #111">Теоретик Биологии</div>
+                      <div style="font-size: 11px; color: var(--color-text-secondary)">
+                        Изучены все базовые темы по анатомии и цитологии!
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0">
+                    <span style="font-size: 20px">⚡</span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #111">Быстрый ум (AI Мастер)</div>
+                      <div style="font-size: 11px; color: var(--color-text-secondary)">
+                        Вы успешно сдали 5 тестов, сгенерированных ИИ!
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5D. ADMIN / COURSE BUILDER VIEW -->
+          <section class="view-section" id="view-admin">
+            <div class="section-title">Создание учебного материала</div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 24px">
+              <!-- Form Block -->
+              <div
+                style="
+                  background: white;
+                  border: 1px solid var(--color-border);
+                  border-radius: var(--border-radius-xl);
+                  padding: 32px;
+                "
+              >
+                <h3
+                  style="
+                    font-family: var(--font-display);
+                    font-weight: 700;
+                    font-size: 16px;
+                    margin-bottom: 24px;
+                    color: #111;
+                  "
+                >
+                  Форма публикации темы
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px">
+                  <div>
+                    <label class="auth-input-label" for="adminSubjectSelect">Выберите предмет</label>
+                    <select
+                      id="adminSubjectSelect"
+                      style="
+                        width: 100%;
+                        padding: 10px 14px;
+                        border: 1.5px solid var(--color-border);
+                        border-radius: var(--border-radius-sm);
+                        font-size: 13px;
+                        outline: none;
+                        background: white;
+                      "
+                    >
+                      <option value="biology">🧬 Биология</option>
+                      <option value="chemistry">🧪 Химия</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminTopicDuration">Время изучения (мин)</label>
+                    <input
+                      type="text"
+                      id="adminTopicDuration"
+                      class="auth-form-input"
+                      placeholder="Например: 45 мин"
+                      value="45 мин"
+                    />
+                  </div>
+                </div>
+
+                <div class="auth-form-group" style="margin-bottom: 16px">
+                  <label class="auth-input-label" for="adminTopicTitle">Название темы</label>
+                  <input
+                    type="text"
+                    id="adminTopicTitle"
+                    class="auth-form-input"
+                    placeholder="Например: Генетика человека: Гемофилия"
+                    value="Генетика человека: Гемофилия"
+                  />
+                </div>
+
+                <div class="auth-form-group" style="margin-bottom: 20px">
+                  <label class="auth-input-label" for="adminTheoryContent"
+                    >Текст конспекта (Теория в HTML формате)</label
+                  >
+                  <textarea
+                    id="adminTheoryContent"
+                    style="
+                      width: 100%;
+                      height: 180px;
+                      padding: 10px 14px;
+                      border: 1.5px solid var(--color-border);
+                      border-radius: var(--border-radius-sm);
+                      font-size: 13px;
+                      resize: none;
+                      font-family: monospace;
+                    "
+                    placeholder="<h3>1. Гемофилия</h3><p>Гемофилия — наследственное заболевание...</p>"
+                  >
+<h3>1. Гемофилия человека</h3>
+<p>Гемофилия — наследственное заболевание, характеризующееся нарушением свертываемости крови. Обусловлено дефектом факторов свертывания крови VIII или IX.</p>
+
+<div class="note-info-box">
+  <strong>Генетические законы:</strong>
+  <p>Заболевание наследуется как рецессивный признак, сцепленный с половой X-хромосомой (X<sup>h</sup>). Женщины чаще являются бессимптомными носителями (X<sup>H</sup>X<sup>h</sup>), а мужчины страдают заболеванием (X<sup>h</sup>Y).</p>
+</div>
+
+<h3>2. Схема скрещивания</h3>
+<p>Если здоровая мать-носительница выходит замуж за здорового отца:</p>
+<ul>
+  <li>P: X<sup>H</sup>X<sup>h</sup> x X<sup>H</sup>Y</li>
+  <li>Гаметы: X<sup>H</sup>, X<sup>h</sup> и X<sup>H</sup>, Y</li>
+  <li>Дети F1: X<sup>H</sup>X<sup>H</sup> (здоровая девочка), X<sup>H</sup>X<sup>h</sup> (девочка-носитель), X<sup>H</sup>Y (здоровый мальчик), X<sup>h</sup>Y (мальчик с гемофилией)</li>
+</ul></textarea>
+                </div>
+
+                <h4
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #111;
+                    margin-bottom: 16px;
+                    border-top: 1px solid var(--color-border);
+                    padding-top: 16px;
+                  "
+                >
+                  Привязать видеолекцию
+                </h4>
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 16px">
+                  <div>
+                    <label class="auth-input-label" for="adminVideoTitle">Название видеолекции</label>
+                    <input
+                      type="text"
+                      id="adminVideoTitle"
+                      class="auth-form-input"
+                      placeholder="Например: Сцепленное с полом наследование"
+                      value="Сцепленное с полом наследование и гемофилия"
+                    />
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminVideoDuration">Длительность</label>
+                    <input
+                      type="text"
+                      id="adminVideoDuration"
+                      class="auth-form-input"
+                      placeholder="25:10"
+                      value="25:10"
+                    />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px">
+                  <div>
+                    <label class="auth-input-label" for="adminVideoLecturer">Преподаватель</label>
+                    <input
+                      type="text"
+                      id="adminVideoLecturer"
+                      class="auth-form-input"
+                      placeholder="Екатерина Соболева"
+                      value="Екатерина Соболева"
+                    />
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminVideoCover">URL обложки видео (Unsplash)</label>
+                    <input
+                      type="text"
+                      id="adminVideoCover"
+                      class="auth-form-input"
+                      placeholder="https://images.unsplash.com/photo..."
+                      value="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&q=80&w=400"
+                    />
+                  </div>
+                </div>
+
+                <h4
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #111;
+                    margin-bottom: 16px;
+                    border-top: 1px solid var(--color-border);
+                    padding-top: 16px;
+                  "
+                >
+                  Интерактивный тест (Пример вопроса)
+                </h4>
+                <div class="auth-form-group" style="margin-bottom: 12px">
+                  <label class="auth-input-label" for="adminQuestionText">Текст вопроса</label>
+                  <input
+                    type="text"
+                    id="adminQuestionText"
+                    class="auth-form-input"
+                    placeholder="Какова вероятность рождения больного гемофилией мальчика у матери-носительницы?"
+                    value="Какова вероятность рождения больного гемофилией мальчика от брака здорового мужчины и здоровой женщины-носительницы гемофилии?"
+                  />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px">
+                  <div>
+                    <label class="auth-input-label" for="adminOptA">Вариант А</label>
+                    <input type="text" id="adminOptA" class="auth-form-input" placeholder="0%" value="0%" />
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminOptB">Вариант Б</label>
+                    <input type="text" id="adminOptB" class="auth-form-input" placeholder="25%" value="25%" />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px">
+                  <div>
+                    <label class="auth-input-label" for="adminOptC">Вариант В</label>
+                    <input type="text" id="adminOptC" class="auth-form-input" placeholder="50%" value="50%" />
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminOptD">Вариант Г</label>
+                    <input type="text" id="adminOptD" class="auth-form-input" placeholder="75%" value="75%" />
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; margin-bottom: 20px">
+                  <div>
+                    <label class="auth-input-label" for="adminCorrectSelect">Правильный вариант</label>
+                    <select
+                      id="adminCorrectSelect"
+                      style="
+                        width: 100%;
+                        padding: 10px 14px;
+                        border: 1.5px solid var(--color-border);
+                        border-radius: var(--border-radius-sm);
+                        font-size: 13px;
+                        outline: none;
+                        background: white;
+                      "
+                    >
+                      <option value="0">Вариант А</option>
+                      <option value="1" selected>Вариант Б (25%)</option>
+                      <option value="2">Вариант В</option>
+                      <option value="3">Вариант Г</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="auth-input-label" for="adminExplanation">Пояснение ответа</label>
+                    <input
+                      type="text"
+                      id="adminExplanation"
+                      class="auth-form-input"
+                      placeholder="Объяснение..."
+                      value="В браке XHXh x XHY вероятность рождения больного мальчика (XhY) среди всех детей составляет 25% (или 50% среди мальчиков)."
+                    />
+                  </div>
+                </div>
+
+                <button class="btn-primary" id="adminPublishBtn" style="width: 100%">
+                  🚀 Опубликовать тему на платформе
+                </button>
+              </div>
+
+              <div
+                style="
+                  background: white;
+                  border: 1px solid var(--color-border);
+                  border-radius: var(--border-radius-xl);
+                  padding: 32px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 20px;
+                "
+              >
+                <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px; color: #111">
+                  Как это работает?
+                </h3>
+                <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.6">
+                  Эта панель предназначена для **демонстрации масштабируемости MVP** потенциальному покупателю.
+                </p>
+                <div
+                  style="
+                    font-size: 12px;
+                    color: var(--color-text-secondary);
+                    line-height: 1.6;
+                    background-color: var(--color-green-light);
+                    border-left: 3px solid var(--color-green);
+                    padding: 12px;
+                    border-radius: 4px;
+                  "
+                >
+                  <strong>Локальное добавление:</strong> При нажатии кнопки «Опубликовать», Javascript динамически
+                  добавляет новый блок в базу данных в оперативной памяти браузера. Вы сразу сможете увидеть и
+                  протестировать созданную тему без перезагрузки бэкенда!
+                </div>
+                <h4 style="font-size: 13px; font-weight: 700; color: #111; margin-top: 16px">
+                  Преимущества архитектуры
+                </h4>
+                <ul style="font-size: 12px; color: var(--color-text-secondary); padding-left: 20px; line-height: 1.6">
+                  <li>
+                    <strong>Полная реактивность</strong>: данные мгновенно отображаются во вкладках теории, видеоуроков
+                    и тестов предмета.
+                  </li>
+                  <li>
+                    <strong>Соответствие форматам ЕГЭ</strong>: добавленные вопросы интегрируются в интерактивный тест с
+                    выводом разборов.
+                  </li>
+                  <li>
+                    <strong>Масштабируемость</strong>: структура полностью готова к переносу на Node.js/PostgreSQL базу
+                    данных при запуске продакшн версии.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- 8. NOTE READER VIEW (Interactive layout) -->
+          <section class="view-section" id="view-note-reader">
+            <div class="note-view-layout">
+              <!-- Sidebar with list of topics -->
+              <div class="note-sidebar">
+                <div class="note-sidebar-title">Темы раздела</div>
+                <div class="note-sidebar-nav" id="noteSidebarNav">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Main Content Reader -->
+              <div class="note-main-content">
+                <button class="note-back-btn" id="noteReaderBackBtn">
+                  <i data-lucide="arrow-left" style="width: 16px; height: 16px"></i> Вернуться к предмету
+                </button>
+
+                <h1 class="note-content-title" id="noteContentTitle">Цитология: Строение клетки</h1>
+
+                <!-- Content Wrapper -->
+                <div class="note-body" id="noteBody">
+                  <!-- Set dynamically -->
+                </div>
+
+                <!-- Premium Lock Box Cover -->
+                <div class="premium-blur-overlay" id="notePremiumOverlay" style="display: none">
+                  <div class="premium-lock-box">
+                    <div class="premium-lock-icon">🔒</div>
+                    <h3 class="premium-lock-title">Этот раздел только для Premium</h3>
+                    <p class="premium-lock-text">
+                      Вам доступна базовая теория. Разблокируйте Premium тариф, чтобы открыть продвинутые темы, сложные
+                      законы и разборы олимпиадных заданий.
+                    </p>
+                    <button
+                      class="btn-primary"
+                      id="noteUpgradeBtn"
+                      style="
+                        background: linear-gradient(135deg, #ffd56b 0%, #ff9f1a 100%);
+                        color: #4a3300;
+                        width: 100%;
+                        border: none;
+                      "
+                    >
+                      Открыть Premium доступ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 9. INTERACTIVE QUIZ PLAYER VIEW -->
+          <section class="view-section" id="view-quiz-player">
+            <div class="quiz-layout">
+              <div class="quiz-header">
+                <span class="quiz-title" id="quizPlayerTitle">Тестирование: Строение клетки</span>
+                <div class="quiz-progress-wrapper">
+                  <div class="quiz-progress-bar" id="quizProgressBar"></div>
+                </div>
+                <span class="quiz-progress-text" id="quizProgressText">Вопрос 1 из 5</span>
+              </div>
+
+              <!-- Quiz Play Card -->
+              <div class="quiz-card" id="quizCard">
+                <div class="quiz-question-text" id="quizQuestionText">
+                  Какой органоид клетки отвечает за синтез АТФ в процессе клеточного дыхания?
+                </div>
+
+                <div class="quiz-options-list" id="quizOptionsGrid">
+                  <!-- Options populated dynamically -->
+                </div>
+
+                <!-- Explanation (hidden until answered) -->
+                <div class="quiz-explanation-box" id="quizExplanationBox" style="display: none">
+                  <strong>Разбор вопроса:</strong>
+                  <span id="quizExplanationText"
+                    >Митохондрии являются энергетическими станциями клетки. На их внутренних мембранах (кристах)
+                    происходит окислительное фосфорилирование и синтезируется АТФ.</span
+                  >
+                </div>
+              </div>
+
+              <!-- Quiz Actions -->
+              <div class="quiz-actions">
+                <button class="btn-secondary" id="quizQuitBtn">Выйти</button>
+                <button class="btn-primary" id="quizNextBtn" disabled>Проверить ответ</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 10. QUIZ RESULTS SUMMARY VIEW -->
+          <section class="view-section" id="view-quiz-results">
+            <div class="quiz-layout">
+              <div class="quiz-results-card">
+                <div class="results-radial-wrapper">
+                  <svg class="results-radial-svg" viewBox="0 0 160 160">
+                    <circle class="results-radial-bg" cx="80" cy="80" r="70" />
+                    <circle class="results-radial-bar" id="resultsRadialBar" cx="80" cy="80" r="70" />
+                  </svg>
+                  <div class="results-percentage" id="resultsPercentText">0%</div>
+                </div>
+
+                <h2 class="results-title" id="resultsTitleText">Отличный результат!</h2>
+                <p class="results-score-details" id="resultsScoreDetails">
+                  Вы правильно ответили на 4 из 5 вопросов по теме.
+                </p>
+
+                <div class="results-score-badge" id="resultsEgeEstimation">Примерный балл ЕГЭ: ~82 балла</div>
+
+                <div class="results-btns">
+                  <button class="btn-primary" id="resultsRetryBtn">Повторить тест</button>
+                  <button class="btn-secondary" id="resultsHomeBtn">В личный кабинет</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- MOBILE BOTTOM NAVIGATION -->
+      <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-item active" data-view="subjects">
+          <i data-lucide="book-open"></i>
+          <span>Предметы</span>
+        </button>
+        <button class="mobile-nav-item" data-view="notes">
+          <i data-lucide="file-text"></i>
+          <span>Конспекты</span>
+        </button>
+        <button class="mobile-nav-item" data-view="videos">
+          <i data-lucide="video"></i>
+          <span>Видео</span>
+        </button>
+        <button class="mobile-nav-item" data-view="tests">
+          <i data-lucide="clipboard-list"></i>
+          <span>Тесты</span>
+        </button>
+        <button class="mobile-nav-item" data-view="plan">
+          <i data-lucide="calendar"></i>
+          <span>Мой план</span>
+        </button>
+        <button class="mobile-nav-item" data-view="analytics">
+          <i data-lucide="trending-up"></i>
+          <span>Аналитика</span>
+        </button>
+        <button class="mobile-nav-item" data-view="cart">
+          <i data-lucide="shopping-cart"></i>
+          <span>Корзина</span>
+        </button>
+        <button class="mobile-nav-item" data-view="support">
+          <i data-lucide="life-buoy"></i>
+          <span>Поддержка</span>
+        </button>
+        <button class="mobile-nav-item" data-view="admin">
+          <i data-lucide="settings"></i>
+          <span>Админка</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- --- MODALS FRAMEWORK --- -->
+
+    <!-- A. AUTHENTICATION MODAL -->
+    <div class="modal-overlay" id="authModal">
+      <div class="modal-card">
+        <button class="modal-close-btn" data-close-modal="authModal">&times;</button>
+
+        <div class="auth-modal-header">
+          <span class="auth-modal-logo">🎓</span>
+          <h3 class="auth-modal-title" id="authModalTitle">Вход в личный кабинет</h3>
+        </div>
+
+        <div class="auth-modal-body">
+          <button class="auth-option-btn vk-btn" id="authVkBtn">
+            <span>Войти через ВКонтакте</span>
+          </button>
+          <button class="auth-option-btn yandex-btn" id="authYandexBtn">
+            <span>Войти через Яндекс Почту</span>
+          </button>
+
+          <div class="auth-divider">или введите логин вручную</div>
+
+          <div class="auth-form-group">
+            <label class="auth-input-label" for="manualEmail">Email или Телефон</label>
+            <input type="email" class="auth-form-input" id="manualEmail" placeholder="example@yandex.ru" />
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-input-label" for="manualPass">Пароль</label>
+            <input type="password" class="auth-form-input" id="manualPass" placeholder="••••••••" />
+          </div>
+
+          <button class="auth-submit-btn" id="authSubmitManual">Войти в систему</button>
+          <div class="auth-switch">
+            <a href="#" id="authToggleLink">Нет аккаунта? Зарегистрироваться</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. PREMIUM PURCHASE MODAL -->
+    <div class="modal-overlay" id="premiumModal">
+      <div class="modal-card premium-modal-card">
+        <button class="modal-close-btn" data-close-modal="premiumModal">&times;</button>
+
+        <div class="premium-modal-header">
+          <span class="premium-modal-badge">Premium Тариф</span>
+          <h3 class="premium-modal-title">Открой все секреты <span>эффективной подготовки</span></h3>
+        </div>
+
+        <div class="premium-modal-body">
+          <div class="premium-benefits-list">
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Полный банк заданий ФИПИ</strong> с регулярными обновлениями</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Генератор тестов с ИИ</strong> без каких-либо лимитов</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Реальные пробники ЕГЭ и ОГЭ</strong> с проверкой экспертов</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Персональный учебный план</strong>, подстраиваемый под твой темп</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Детальная аналитика прогресса</strong> и прогноз итогового балла</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-check">✓</span>
+              <span><strong>Дополнительные материалы</strong>: шпоры, формулы, гайды</span>
+            </div>
+          </div>
+
+          <div class="premium-plans-grid">
+            <div class="premium-plan-card" data-plan="1month">
+              <span class="premium-plan-duration">1 Месяц</span>
+              <div class="premium-plan-price">990 ₽</div>
+              <div class="premium-plan-per-month">990 ₽ / мес</div>
+            </div>
+
+            <div class="premium-plan-card active" data-plan="3months">
+              <span class="premium-plan-tag">Выгодно</span>
+              <span class="premium-plan-duration">3 Месяца</span>
+              <div class="premium-plan-price">2 490 ₽</div>
+              <div class="premium-plan-per-month">830 ₽ / мес</div>
+            </div>
+
+            <div class="premium-plan-card" data-plan="1year">
+              <span class="premium-plan-tag">Хит</span>
+              <span class="premium-plan-duration">Учебный год</span>
+              <div class="premium-plan-price">5 990 ₽</div>
+              <div class="premium-plan-per-month">665 ₽ / мес</div>
+            </div>
+          </div>
+
+          <button class="premium-subscribe-btn" id="premiumSubscribeBtn">Оформить Premium доступ</button>
+
+          <div class="premium-modal-footer">
+            Оплата списывается один раз. Никаких автопродлений без вашего ведома. Отмена в любой момент в личном
+            кабинете.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. VIDEO PLAYER MODAL -->
+    <div class="modal-overlay" id="videoModal">
+      <div class="modal-card video-player-card">
+        <button class="modal-close-btn" data-close-modal="videoModal">&times;</button>
+
+        <div class="video-player-header">
+          <h3 class="video-player-title" id="videoPlayerTitle">Строение клетки за 20 минут. Все органоиды для ЕГЭ</h3>
+        </div>
+
+        <div class="video-player-body">
+          <div class="mock-video-canvas" id="mockVideoCanvas">
+            <i data-lucide="play-circle" id="videoCanvasPlayIcon"></i>
+
+            <span style="font-size: 13px; margin-top: 12px; opacity: 0.8" id="videoCanvasStatusText"
+              >Нажмите для воспроизведения</span
+            >
+
+            <div class="video-mock-controls">
+              <div class="video-timeline-wrapper" id="videoTimelineWrapper">
+                <div class="video-timeline-progress" id="videoTimelineProgress"></div>
+                <div class="video-timeline-handle" id="videoTimelineHandle"></div>
+              </div>
+
+              <div class="video-controls-row">
+                <div class="controls-left">
+                  <button style="color: white" id="videoPlayToggleBtn">
+                    <i data-lucide="play" style="width: 14px; height: 14px; stroke: currentColor"></i>
+                  </button>
+                  <span id="videoTimeText">08:15 / 21:40</span>
+                </div>
+                <div class="controls-right">
+                  <button style="color: white">
+                    <i data-lucide="volume-2" style="width: 14px; height: 14px; stroke: currentColor"></i>
+                  </button>
+                  <button style="color: white">
+                    <i data-lucide="maximize" style="width: 14px; height: 14px; stroke: currentColor"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. ALL SUBJECTS MODAL -->
+    <div class="modal-overlay" id="allSubjectsModal">
+      <div class="modal-card all-subjects-card">
+        <button class="modal-close-btn" data-close-modal="allSubjectsModal">&times;</button>
+
+        <div class="premium-modal-header">
+          <h3 class="premium-modal-title" style="color: #111">Все предметы</h3>
+        </div>
+
+        <div class="all-subjects-grid" id="allSubjectsGrid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- E. TOAST NOTIFICATION MESSAGE -->
+    <div class="toast-message" id="toastMessage">
+      <span class="toast-icon" id="toastIcon">✨</span>
+      <span id="toastText">Привет! Успешный вход выполнен.</span>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="js/app.js"></script>
+  </body>
+</html>

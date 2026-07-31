@@ -1,0 +1,8 @@
+node_modules/
+test-results/
+playwright-report/
+coverage/
+.playwright-mcp/
+js/lucide.min.js
+.serena/
+.agent/
