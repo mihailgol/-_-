@@ -4,7 +4,7 @@
 
 ## Проект
 
-ExamHub — SPA для подготовки к ЕГЭ/ОГЭ. Чистые HTML/CSS/JS без сборщиков на фронте + Node.js/Express/SQLite бэкенд (`server/`). Контент приходит через API (`/api/catalog/subjects`), `js/data.js` — только источник сидов для сервера.
+ExamHub — SPA для подготовки к ЕГЭ/ОГЭ. Чистые HTML/CSS/JS без сборщиков на фронте + Node.js/Express/SQLite бэкенд (`server/`). Фронт разбит на нативные ES-модули (`js/modules/*`, подключение через `<script type="module" src="js/app.js">`). Контент приходит через API (`/api/catalog/subjects`), `js/data.js` — только источник сидов для сервера.
 
 ## Старт
 

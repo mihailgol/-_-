@@ -32,7 +32,7 @@ ExamHub — это современная интерактивная образ�
 - **Backend**: Node.js 18+, Express, SQLite (`node:sqlite`), bcryptjs, cookie-сессии.
 - **Frontend**: Чистый HTML5 (семантическая верстка, SVG-графика).
 - **Стилизация**: Ванильный CSS (CSS Variables, CSS Grid, плавные переходы, анимации keyframes).
-- **Логика**: Чистый JavaScript ES6+ (SPA, клиентский роутинг, интеграция с REST API).
+- **Логика**: Чистый JavaScript ES6+ (SPA, нативные ES-модули, клиентский роутинг с History API, интеграция с REST API).
 - **Ресурсы**: Иконки Lucide, стоковая графика и обложки лекций с Unsplash API.
 - **Тесты**: Vitest (unit), Playwright (E2E), ESLint + Prettier.
 
@@ -52,9 +52,11 @@ ExamHub — это современная интерактивная образ�
 ├── css/
 │   └── style.css       # Таблицы стилей, адаптивная сетка, темы и анимации
 ├── js/
+│   ├── app.js          # Точка входа фронтенда (ES-модуль): загрузка данных, инициализация модулей
+│   ├── modules/        # Нативные ES-модули: navigation, catalog, quiz, auth, ai, video и др.
 │   ├── data.js         # База знаний и EGE-тесты (seed для сервера)
-│   └── app.js          # Логика роутинга, контроллер состояния и обработчики событий
-├── tests/              # Unit (Vitest) и E2E (Playwright) тесты
+│   └── lucide.min.js   # Иконки (vendored)
+├── tests/              # Unit (Vitest, jsdom) и E2E (Playwright) тесты
 └── README.md           # Документация проекта
 ```
 
@@ -72,6 +74,7 @@ npm run dev
 Сайт будет доступен по адресу: **[http://localhost:8000](http://localhost:8000)**. Конфигурация через `.env` (шаблон — `.env.example`).
 
 ### Основные команды
+
 ```bash
 npm run check        # Полная проверка: ESLint → валидатор → unit → E2E
 npm run test         # Unit-тесты (Vitest)

@@ -84,8 +84,9 @@ test.describe("ExamHub — smoke tests", () => {
   });
 
   test("авторизация: регистрация, вход, выход", async ({ page }) => {
-    const email = "ivan@example.ru";
+    const email = `ivan${Date.now()}@example.ru`;
     const pass = "secret123";
+    const expectedName = email.split("@")[0];
 
     // Регистрация нового пользователя
     await page.locator("#loginBtn").click();
@@ -97,7 +98,7 @@ test.describe("ExamHub — smoke tests", () => {
 
     await expect(page.locator("#authModal")).not.toHaveClass(/active/);
     await expect(page.locator("#logoutBtn")).toBeVisible();
-    await expect(page.locator("#sidebarName")).toHaveText("ivan");
+    await expect(page.locator("#sidebarName")).toHaveText(expectedName);
 
     // Выход
     await page.locator("#logoutBtn").click();
@@ -141,5 +142,30 @@ test.describe("ExamHub — smoke tests", () => {
     await page.locator("#quizNextBtn").click();
     await expect(page.locator("#view-quiz-results")).toBeVisible();
     await expect(page.locator("#resultsPercentText")).toBeVisible();
+  });
+
+  test("работает навигация кнопками браузера «Назад»/«Вперёд»", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (err) => errors.push(String(err)));
+
+    await page.locator("#heroStartBtn").click();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
+
+    await page.goBack();
+    await expect(page.locator("#view-subjects")).toBeVisible();
+
+    await page.goForward();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
+
+    await page.locator('.sidebar-nav .nav-item[data-view="notes"]').click();
+    await expect(page.locator("#view-notes")).toBeVisible();
+
+    await page.goBack();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
+
+    await page.goBack();
+    await expect(page.locator("#view-subjects")).toBeVisible();
+
+    expect(errors).toEqual([]);
   });
 });

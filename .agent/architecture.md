@@ -11,7 +11,8 @@
 |---|---|
 | `index.html` | Единственная страница (SPA). Все экраны-`<section id="view-*">`, модалки, сайдбар, мобильная навигация. `js/data.js` в HTML **не подключается** — данные приходят с API. |
 | `css/style.css` | Все стили. Переменные в `:root`. Брейкпоинт мобильной навигации: 600px. |
-| `js/app.js` | Логика приложения: рендер, навигация, auth-вызовы API, тесты, аналитика. Монолит ~1900 строк. |
+| `js/app.js` | Точка входа фронтенда (ES-модуль): `loadAppData()` (API), инициализация всех модулей на `DOMContentLoaded`, восстановление вью из hash, fallback картинок, `lucide.createIcons()`. |
+| `js/modules/*.js` | Нативные ES-модули фронтенда (см. «Логика по модулям» ниже). |
 | `js/data.js` | Источник сидов контента (загружается только сервером через `vm`). |
 | `js/lucide.min.js` | Библиотека иконок (vendored, не трогать). |
 | `server/index.js` | Точка входа сервера: Express, роуты API, статика из корня, обработчик ошибок. |
@@ -45,20 +46,37 @@
 
 Порядок навигации в сайдбаре (`data-view`): subjects, notes, videos, tests, plan, analytics, cart, support.
 
-## Логика по модулям (js/app.js)
-- **Состояние:** `appState` + сохранение в `localStorage("examhub_state")`. `GUEST_USER` — гость по умолчанию.
-- **Данные:** на `DOMContentLoaded` вызывается `loadAppData()` → `GET /api/catalog/subjects`, `GET /api/auth/me`, при авторизации — `/api/progress/stats`. Обёртка `api()` для fetch с `credentials: "same-origin"` и разбором ошибок.
-- **Авторизация:** `renderAuthHeader()` перерисовывает блок в сайдбаре (бейдж с именем + «Выйти» или кнопка «Войти»). `handleManualLogin` ходит на `/api/auth/register` или `/api/auth/login`, `handleLogout` — на `/api/auth/logout`. Соцсети — заглушка «Скоро».
-- **Premium:** проверка `appState.user.isPremium`; подписка `POST /api/premium/subscribe`; блокировка теории на сервере.
-- **Поиск:** глобальный поиск `#globalSearch`, результаты в `#searchDropdown`; переход на тему.
-- **Конспекты:** `renderSubjectNotes()` — карточки `note-item-card`; клик → `view-note-reader`.
-- **Видео:** встроенный плеер (уроки в `data.js`, на сервере — из сида).
-- **Тесты:** из `questions` тем; плеер `#view-quiz-player`, объяснения `#quizExplanationBox`, итог `#view-quiz-results`; результат сохраняется через `/api/progress/attempt` (если пользователь авторизован). «AI-генерация» — заглушка.
-- **Корзина:** `#view-cart`, добавление товаров/услуг, расчёт суммы.
-- **Поддержка:** форма → тост `#toastMessage`.
-- **План обучения:** `#view-plan` (персональный план).
-- **Аналитика:** `#view-analytics` (прогресс, диаграммы).
-- **Админка:** `#view-admin` — локальная панель редактирования контента.
+## Навигация и история (back/forward)
+- Обычные вью (в `HASH_VIEWS`): `switchView` пишет запись истории `history.pushState({view}, "", "#<view>")`; при `{replace: true}` — `replaceState(null, ...)`.
+- Sub-view (subject-detail, note-reader, quiz-player, quiz-results) не входят в `HASH_VIEWS` — они пушатся через `pushSubView(state, hash)` с **уникальным hash-URL**: `#subject-detail:<id>`, `#note-reader:<subjectId>:<noteId>`, `#quiz-player`, `#quiz-results`.
+  - Уникальный URL обязателен: Chromium схлопывает соседние same-document записи истории с одинаковым URL (см. `.agent/bugs.md` #7).
+- `popstate` → `restoreView(state)`: по `e.state` восстанавливает sub-view (`loadSubjectDetail`/`loadNoteReader` с `{replace:true}`) или обычную вью; fallback — восстановление по `location.hash`.
+- `hashchange` обрабатывается только когда `currentView` в `HASH_VIEWS` (guard), чтобы не перебивать уже восстановленный sub-view.
+- Семантика истории стандартная: новый `history.pushState()` обрезает forward-записи (E2E-тест навигации учитывает это).
+
+## Логика по модулям (js/modules/*)
+- **state.js** — `appState`, `GUEST_USER`, `HASH_VIEWS`, `loadStateFromStorage()` / `saveStateToStorage()` (localStorage `examhub_state`).
+- **utils.js** — `api()` (fetch + разбор ошибок), `formatNumber()`, `parseDuration()`.
+- **ui.js** — `showToast`, `openModal`, `closeModal`, `initGlobalUIEvents()` (хуки `window.closeModal/openModal/showToast`).
+- **navigation.js** — `pushSubView()`, `switchView(view, {replace})`, `restoreView(state)`, `initRouter()` (сайдбар, mobile-nav, hero, feature-card, поддержка, уведомления, глобальный поиск, `popstate`, `hashchange`).
+- **catalog.js** — `renderSubjects`, `renderAllSubjectsModal`, `loadSubjectDetail(subjectId, {replace})`, `renderSubjectNotes/Videos/Quizzes`, `loadNoteReader(subjectId, noteId, {replace})`, `renderGeneralNotes`, `renderGeneralVideos`. Табы предмета — через делегирование (один listener на `.subject-tabs`).
+- **quiz.js** — `startQuiz`, `renderQuizQuestion`, `checkQuizAnswer`, `goToNextQuestion`, `finishQuiz`, `returnFromQuiz`.
+- **ai.js** — `initAIEvents`, `handleAIGeneration`, `buildAIQuestions`, `simulateStepCompletion`, `resetChecklistElements` (ИИ-генерация — симуляция).
+- **video.js** — `initVideoPlayerEvents`, `openVideoPlayer`, `toggleMockVideoPlay`, `updateVideoProgressUI`.
+- **auth.js** — `renderAuthHeader()` (guard `lastAuthSignature`), `initAuthEvents`, `toggleAuthMode`, `handleSocialLogin`, `handleManualLogin`, `handleLogout`.
+- **premium.js** — `initPremiumEvents` (mock-подписка, снятие блюра, ре-рендер).
+- **plan.js** — `initPlanEvents`, `calculatePlanProgress`, `updatePlanUI`.
+- **analytics.js** — `updateAnalyticsUI`.
+- **admin.js** — `initAdminEvents` (создание темы, `customTopics` в localStorage).
+- **render.js** — `updateUIFromState` (бейджи корзины, статистика, Premium-состояние).
+
+### Данные и авторизация
+- На `DOMContentLoaded` `js/app.js` вызывает `loadAppData()` → `GET /api/catalog/subjects`, `GET /api/auth/me`, при авторизации — `/api/progress/stats`.
+- `renderAuthHeader()` перерисовывает блок в сайдбаре (бейдж с именем + «Выйти» или кнопка «Войти»). `handleManualLogin` ходит на `/api/auth/register` или `/api/auth/login`, `handleLogout` — на `/api/auth/logout`. Соцсети — заглушка «Скоро».
+- Premium: проверка `appState.user.isPremium`; подписка `POST /api/premium/subscribe`; блокировка теории на сервере.
+- Поиск: `#globalSearch` → результаты в `#searchDropdown`; переход на тему/лекцию.
+- Корзина: `#view-cart`, добавление товаров/услуг, расчёт суммы.
+- Поддержка: форма → тост `#toastMessage`.
 
 ## БД (SQLite)
 Таблицы: `users`, `sessions`, `subjects`, `topics`, `videos`, `questions`, `attempts`, `payments`.
@@ -68,5 +86,6 @@
 
 ## Известные ограничения
 - Платежи — заглушка (без реального провайдера).
-- `js/app.js` — монолит: логика рендера, состояния и обработчиков в одном файле.
+- Фронтенд — нативные ES-модули без сборщика/bundler; `js/app.js` и `index.html` исключены из Prettier (`.prettierignore`).
+- Sub-view не восстанавливаются при перезагрузке страницы (deep-link на `#subject-detail:<id>` открывает subjects) — данные и состояние не сохраняются в URL.
 - Содержимое конспектов/вопросов — учебный контент, требует проверки и наполнения.

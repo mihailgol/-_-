@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -19,10 +19,13 @@ for (const ref of refs) {
 console.log(`[build] index.html: ${refs.length} local asset(s) checked`);
 
 // 2. Syntax check of runtime JS files
-const jsFiles = ["js/data.js", "js/app.js"];
+const jsRoot = resolve(root, "js");
+const jsFiles = readdirSync(jsRoot, { recursive: true })
+  .filter((f) => f.endsWith(".js") && !f.endsWith("lucide.min.js"))
+  .map((f) => resolve(jsRoot, f));
 for (const f of jsFiles) {
   try {
-    execFileSync(process.execPath, ["--check", resolve(root, f)], { stdio: "pipe" });
+    execFileSync(process.execPath, ["--check", f], { stdio: "pipe" });
     console.log(`[build] syntax OK: ${f}`);
   } catch (e) {
     errors.push(`Syntax error in ${f}: ${e.stdout?.toString() || e.message}`);
