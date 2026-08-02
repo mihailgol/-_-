@@ -41,7 +41,7 @@ export function renderSubjects() {
     card.style.setProperty("--theme-color", sub.color);
     card.style.background = sub.bgGradient;
     card.innerHTML = `
-      <div class="subject-icon-box" style="background-color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: ${sub.color}; font-size: 20px;">
+      <div class="subject-icon-box" style="background-color: var(--color-surface); box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: ${sub.color}; font-size: 20px;">
         ${sub.icon}
       </div>
       <div class="subject-details">
@@ -131,7 +131,7 @@ export function loadSubjectDetail(subjectId, { replace = false } = {}) {
 
   const banner = document.getElementById("subjectBanner");
   banner.style.background =
-    subject.bgGradient || `linear-gradient(135deg, ${subject.colorHex || "#4096FF"}15 0%, #FFFFFF 100%)`;
+    subject.bgGradient || `linear-gradient(135deg, ${subject.colorHex || "#4096FF"}15 0%, var(--color-surface) 100%)`;
   banner.style.borderColor = `${subject.colorHex || "#4096FF"}25`;
 
   const tabContainer = document.querySelector(".subject-tabs");

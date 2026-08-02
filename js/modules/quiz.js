@@ -69,7 +69,7 @@ export function renderQuizQuestion() {
 
       document.querySelectorAll(".quiz-option-btn").forEach((b) => {
         b.style.borderColor = "var(--color-border)";
-        b.style.background = "#FFFFFF";
+        b.style.background = "var(--color-surface)";
       });
       btn.style.borderColor = "var(--color-green)";
       btn.style.background = "var(--color-green-light)";

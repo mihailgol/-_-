@@ -1,5 +1,3 @@
-// ExamHub SPA Application Entry (ES module)
-
 import { appState, GUEST_USER, HASH_VIEWS, loadStateFromStorage } from "./modules/state.js";
 import { api } from "./modules/utils.js";
 import { showToast, initGlobalUIEvents } from "./modules/ui.js";
@@ -12,6 +10,10 @@ import { initVideoPlayerEvents } from "./modules/video.js";
 import { initAIEvents } from "./modules/ai.js";
 import { initPlanEvents } from "./modules/plan.js";
 import { initAdminEvents } from "./modules/admin.js";
+import { initTheme } from "./modules/theme.js";
+import { initExamTypeToggle } from "./modules/exam-type.js";
+import { renderMockExamCatalog, initMockExamEvents } from "./modules/mock-exam.js";
+import { renderTeacherCabinet, renderStudentAssignments, initTeacherEvents } from "./modules/teacher.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -45,13 +47,15 @@ async function loadAppData() {
       const stats = await api("/api/progress/stats");
       appState.stats.testsSolved = stats.testsSolved;
       appState.stats.avgPercent = stats.avgPercent;
-    } catch {
-      // keep local stats
+    } catch (err) {
+      void err;
     }
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+  initExamTypeToggle();
   loadStateFromStorage();
   initGlobalUIEvents();
   initRouter();
@@ -61,12 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
   initAIEvents();
   initPlanEvents();
   initAdminEvents();
+  initTeacherEvents();
+  initMockExamEvents();
+
+  window.addEventListener("examTypeChanged", () => {
+    renderSubjects();
+    renderGeneralNotes();
+    renderGeneralVideos();
+    renderMockExamCatalog();
+  });
 
   loadAppData()
     .then(() => {
       renderSubjects();
       renderGeneralNotes();
       renderGeneralVideos();
+      renderTeacherCabinet();
+      renderStudentAssignments();
       updateUIFromState();
 
       const initialView = (location.hash || "#subjects").replace("#", "");
@@ -79,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("⚠️ Ошибка сети", "Не удалось загрузить данные. Проверьте соединение с сервером.");
     });
 
-  // Graceful fallback for external images when offline
   document.addEventListener(
     "error",
     (e) => {

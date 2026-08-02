@@ -8,18 +8,19 @@ export function serializeUser(row) {
     email: row.email,
     name: row.name,
     role: row.role,
-    avatar: row.avatar,
+    avatar: row.avatar_url || row.avatar || "",
     isPremium: !!row.is_premium,
     premiumUntil: row.premium_until || null,
+    vkId: row.vk_id || null,
+    yandexId: row.yandex_id || null,
+    avatarUrl: row.avatar_url || row.avatar || "",
   };
 }
 
 export function getUserByToken(token) {
   if (!token) return null;
   const row = db
-    .prepare(
-      `SELECT s.expires_at, u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?`
-    )
+    .prepare(`SELECT s.expires_at, u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?`)
     .get(token);
   if (!row) return null;
   if (new Date(row.expires_at).getTime() < Date.now()) {

@@ -168,4 +168,37 @@ test.describe("ExamHub — smoke tests", () => {
 
     expect(errors).toEqual([]);
   });
+
+  test("работает переключение темы оформления", async ({ page }) => {
+    await page.locator('[data-theme-val="dark"]').click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    await page.locator('[data-theme-val="light"]').click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    await page.locator('[data-theme-val="auto"]').click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme-setting", "auto");
+  });
+
+  test("генерация и прохождение AI теста", async ({ page }) => {
+    const email = `aiuser${Date.now()}@example.ru`;
+    const pass = "secret123";
+
+    await page.locator("#loginBtn").click();
+    await page.locator("#authToggleLink").click();
+    await page.locator("#manualEmail").fill(email);
+    await page.locator("#manualPass").fill(pass);
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+    await expect(page.locator("#aiLimitBadge")).toBeVisible();
+
+    await page.locator("#aiPromptInput").fill("Строение митохондрий");
+    await page.locator("#generateAITestBtn").click();
+
+    await expect(page.locator("#view-quiz-player")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#quizPlayerTitle")).toContainText("AI Тест:");
+  });
 });

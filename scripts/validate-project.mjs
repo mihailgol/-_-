@@ -9,7 +9,7 @@ const errors = [];
 
 // 1. Local asset references in index.html exist
 const html = readFileSync(resolve(root, "index.html"), "utf8");
-const refs = [...html.matchAll(/(?:src|href)="((?!https?:\/\/|#|mailto:|tel:)[^"]+)"/g)].map((m) => m[1]);
+const refs = [...html.matchAll(/(?:src|href)="((?!https?:\/\/|#|mailto:|tel:|data:)[^"]+)"/g)].map((m) => m[1]);
 for (const ref of refs) {
   const clean = ref.split("?")[0];
   if (!existsSync(resolve(root, clean))) {

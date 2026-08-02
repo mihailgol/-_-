@@ -3,6 +3,7 @@ import { api } from "./utils.js";
 import { showToast, openModal, closeModal } from "./ui.js";
 import { updateUIFromState } from "./render.js";
 import { renderSubjects, renderGeneralNotes, renderGeneralVideos, loadSubjectDetail } from "./catalog.js";
+import { renderTeacherCabinet, renderStudentAssignments } from "./teacher.js";
 
 let authMode = "login";
 let lastAuthSignature = "";
@@ -63,6 +64,15 @@ export function initAuthEvents() {
       toggleAuthMode();
     });
   }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("auth") === "success") {
+    showToast("🔑 Вход выполнен", "Вы успешно вошли через социальную сеть!");
+    urlParams.delete("auth");
+    const newSearch = urlParams.toString();
+    const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
+    window.history.replaceState({}, "", newUrl);
+  }
 }
 
 export function toggleAuthMode() {
@@ -78,7 +88,12 @@ export function toggleAuthMode() {
 }
 
 export function handleSocialLogin(provider) {
-  showToast("🔜 Скоро", `Вход через ${provider} будет доступен позже. Пока используйте вход по email.`);
+  const p = String(provider).toLowerCase();
+  if (p === "vk") {
+    window.location.href = "/api/auth/vk";
+  } else if (p === "yandex") {
+    window.location.href = "/api/auth/yandex";
+  }
 }
 
 export async function handleManualLogin() {
@@ -112,6 +127,8 @@ export async function handleManualLogin() {
 
     saveStateToStorage();
     updateUIFromState();
+    renderTeacherCabinet();
+    renderStudentAssignments();
     closeModal("authModal");
     showToast(
       isRegister ? "✅ Регистрация" : "🔑 Вход выполнен",
@@ -148,6 +165,8 @@ export async function handleLogout() {
 
   saveStateToStorage();
   updateUIFromState();
+  renderTeacherCabinet();
+  renderStudentAssignments();
 
   renderSubjects();
   renderGeneralNotes();

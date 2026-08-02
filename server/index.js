@@ -1,11 +1,15 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import { networkInterfaces } from "node:os";
 import { config } from "./config.js";
 import { initDb, resetDb } from "./db.js";
 import authRoutes from "./routes/auth.js";
 import catalogRoutes from "./routes/catalog.js";
 import progressRoutes from "./routes/progress.js";
 import premiumRoutes from "./routes/premium.js";
+import aiRoutes from "./routes/ai.js";
+import mockExamRoutes from "./routes/mock-exam.js";
+import teacherRoutes from "./routes/teacher.js";
 
 const app = express();
 
@@ -18,6 +22,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/catalog", catalogRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/premium", premiumRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/mock-exams", mockExamRoutes);
+app.use("/api/teacher", teacherRoutes);
 
 app.use(express.static(config.root));
 
@@ -31,6 +38,29 @@ if (config.isTest) {
 }
 initDb();
 
-app.listen(config.port, config.host, () => {
-  console.log(`ExamHub server: http://localhost:${config.port} (${config.isProd ? "production" : "development"})`);
-});
+const isMain = Boolean(
+  process.argv[1] && (process.argv[1].endsWith("index.js") || process.argv[1].endsWith("index.mjs"))
+);
+
+if (isMain) {
+  app.listen(config.port, config.host, () => {
+    console.log(`\n🚀 ExamHub server running:`);
+    console.log(`   - Local:   http://localhost:${config.port}`);
+
+    try {
+      const nets = networkInterfaces();
+      for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+          if (net.family === "IPv4" && !net.internal) {
+            console.log(`   - Network: http://${net.address}:${config.port} (открыть с телефона/планшета в Wi-Fi)`);
+          }
+        }
+      }
+    } catch {
+      void 0;
+    }
+    console.log("");
+  });
+}
+
+export { app };

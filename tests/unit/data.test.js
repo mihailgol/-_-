@@ -10,7 +10,18 @@ describe("EXAM_DATA", () => {
   });
 
   it("contains the expected subjects", () => {
-    expect(Object.keys(data.subjects).sort()).toEqual(["biology", "chemistry"]);
+    expect(Object.keys(data.subjects).sort()).toEqual([
+      "biology",
+      "chemistry",
+      "english",
+      "history",
+      "informatics",
+      "literature",
+      "math",
+      "physics",
+      "russian",
+      "social",
+    ]);
   });
 
   it("validates subject structure", () => {

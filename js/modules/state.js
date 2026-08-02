@@ -1,4 +1,4 @@
-export const HASH_VIEWS = ["subjects", "notes", "videos", "tests", "plan", "analytics", "admin", "cart", "support"];
+export const HASH_VIEWS = ["subjects", "notes", "videos", "tests", "mock-exam", "teacher", "plan", "analytics", "admin", "cart", "support"];
 
 export const GUEST_USER = {
   isLoggedIn: false,
@@ -10,6 +10,7 @@ export const GUEST_USER = {
 
 export let appState = {
   currentView: "subjects",
+  selectedExamType: "all",
   user: {
     isLoggedIn: false,
     name: "Артём Иванов",

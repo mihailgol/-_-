@@ -3,6 +3,7 @@ import { formatNumber } from "./utils.js";
 import { renderAuthHeader } from "./auth.js";
 import { updatePlanUI } from "./plan.js";
 import { updateAnalyticsUI } from "./analytics.js";
+import { updateAILimitBadge } from "./ai.js";
 
 export function updateUIFromState() {
   const nameEl = document.getElementById("sidebarName");
@@ -17,7 +18,7 @@ export function updateUIFromState() {
   if (premiumCard) {
     if (appState.user.isPremium) {
       premiumCard.className = "premium-promo-card";
-      premiumCard.style.background = "linear-gradient(145deg, #FFF9E6 0%, #FFFFFF 100%)";
+      premiumCard.style.background = "linear-gradient(145deg, var(--color-orange-light) 0%, var(--color-bg-card) 100%)";
       premiumCard.style.borderColor = "rgba(250, 140, 22, 0.4)";
       premiumCard.querySelector(".premium-promo-icon").textContent = "👑";
       premiumCard.querySelector(".premium-promo-title").innerHTML =
@@ -51,4 +52,5 @@ export function updateUIFromState() {
 
   updatePlanUI();
   updateAnalyticsUI();
+  updateAILimitBadge();
 }

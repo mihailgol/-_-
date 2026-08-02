@@ -4,14 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ExamHub — Твоя эффективная подготовка к ЕГЭ и ОГЭ</title>
-    <!-- Main Stylesheet -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
     <link rel="stylesheet" href="css/style.css" />
-    <!-- Lucide Icons (local copy — works offline) -->
     <script src="js/lucide.min.js"></script>
   </head>
   <body>
     <div class="app-container">
-      <!-- LEFT SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-top">
           <div class="brand-section">
@@ -41,6 +39,14 @@
               <i data-lucide="clipboard-list"></i>
               <span>Тесты</span>
             </button>
+            <button class="nav-item" data-view="mock-exam">
+              <i data-lucide="file-check"></i>
+              <span>Пробники</span>
+            </button>
+            <button class="nav-item" data-view="teacher">
+              <i data-lucide="users"></i>
+              <span>Кабинет учителя</span>
+            </button>
             <button class="nav-item" data-view="plan">
               <i data-lucide="calendar"></i>
               <span>Мой план</span>
@@ -68,7 +74,6 @@
           </nav>
         </div>
 
-        <!-- Premium Promo Card -->
         <div class="premium-promo-card" id="sidebarPremiumCard">
           <div class="premium-promo-icon">👑</div>
           <div class="premium-promo-title">Стань Premium</div>
@@ -78,7 +83,6 @@
           <button class="premium-promo-btn" id="sidebarPremiumBtn">Подробнее</button>
         </div>
 
-        <!-- User Profile at bottom -->
         <div class="sidebar-user" id="sidebarUserBlock">
           <div class="user-avatar-wrapper">
             <img
@@ -99,9 +103,7 @@
         </div>
       </aside>
 
-      <!-- MAIN AREA -->
       <main class="main-area">
-        <!-- TOP BAR -->
         <header class="top-bar">
           <div class="search-box" style="position: relative">
             <i data-lucide="search"></i>
@@ -113,20 +115,35 @@
               autocomplete="off"
             />
 
-            <!-- Search Dropdown -->
             <div class="search-dropdown" id="searchDropdown">
-              <!-- Populated dynamically via JS -->
             </div>
           </div>
 
           <div class="top-bar-actions">
+            <div class="exam-type-toggle" id="examTypeToggle" role="group" aria-label="Выбор экзамена">
+              <button class="exam-type-btn active" data-exam-type="all" title="Все экзамены">Все</button>
+              <button class="exam-type-btn" data-exam-type="EGE" title="ЕГЭ">ЕГЭ</button>
+              <button class="exam-type-btn" data-exam-type="OGE" title="ОГЭ">ОГЭ</button>
+            </div>
+
+            <div class="theme-toggle" id="themeToggle" role="group" aria-label="Выбор темы">
+              <button class="theme-toggle-btn" data-theme-val="light" title="Светлая тема" aria-label="Светлая тема">
+                <i data-lucide="sun"></i>
+              </button>
+              <button class="theme-toggle-btn" data-theme-val="dark" title="Тёмная тема" aria-label="Тёмная тема">
+                <i data-lucide="moon"></i>
+              </button>
+              <button class="theme-toggle-btn" data-theme-val="auto" title="Системная тема" aria-label="Системная тема">
+                <i data-lucide="monitor"></i>
+              </button>
+            </div>
+
             <div class="notification-wrapper" style="position: relative">
               <button class="action-btn-circle" id="notificationBtn">
                 <i data-lucide="bell"></i>
                 <span class="action-badge" id="notificationBadge">3</span>
               </button>
 
-              <!-- Notifications Dropdown -->
               <div class="notification-dropdown" id="notificationDropdown">
                 <div class="notif-header">
                   <h4>Уведомления</h4>
@@ -164,11 +181,8 @@
           </div>
         </header>
 
-        <!-- VIEW WINDOW CONTAINER -->
         <div class="view-container">
-          <!-- 1. SUBJECTS / DASHBOARD VIEW -->
           <section class="view-section active" id="view-subjects">
-            <!-- Hero Banner -->
             <div class="hero-banner">
               <div class="hero-text">
                 <h1 class="hero-title">Готовься к ЕГЭ <span>эффективно</span></h1>
@@ -182,7 +196,6 @@
                 </div>
               </div>
               <div class="hero-graphic">
-                <!-- Inline mini svg dashboard theme -->
                 <svg class="hero-svg-bg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="20" y="20" width="160" height="120" rx="16" fill="white" stroke="#E8EBE8" stroke-width="2" />
                   <circle cx="60" cy="50" r="14" fill="#E6F7ED" />
@@ -213,7 +226,6 @@
               </div>
             </div>
 
-            <!-- Active & Planned Subjects -->
             <div class="section-title">
               <span>Выберите предмет</span>
               <a href="#" class="section-link" id="viewAllSubjectsLink"
@@ -221,10 +233,8 @@
               ></a>
             </div>
             <div class="subject-grid" id="subjectGrid">
-              <!-- Subjects will be rendered here dynamically -->
             </div>
 
-            <!-- Feature Quick Navigation -->
             <div class="features-row">
               <div class="feature-card f-tests" data-target="tests">
                 <div class="feature-top">
@@ -266,7 +276,6 @@
               </div>
             </div>
 
-            <!-- Stats Dashboard Banner at Bottom -->
             <div class="stats-bar">
               <div class="stat-item st-solved">
                 <div class="stat-icon-box">
@@ -320,9 +329,7 @@
             </div>
           </section>
 
-          <!-- 2. SUBJECT DETAILS VIEW (Dynamic) -->
           <section class="view-section" id="view-subject-detail">
-            <!-- Back navigation -->
             <button class="note-back-btn" id="subjectBackBtn">
               <i data-lucide="arrow-left" style="width: 16px; height: 16px"></i> Назад к предметам
             </button>
@@ -339,30 +346,23 @@
               </div>
             </div>
 
-            <!-- Subtabs navigation -->
             <div class="subject-tabs">
               <button class="sub-tab-btn active" data-tab="tab-notes">Конспекты</button>
               <button class="sub-tab-btn" data-tab="tab-videos">Видеоуроки</button>
               <button class="sub-tab-btn" data-tab="tab-quizzes">Тесты</button>
             </div>
 
-            <!-- Tab 1: Notes Catalog -->
             <div class="subject-tab-panel active" id="tab-notes">
               <div class="notes-list" id="subjectDetailNotesGrid">
-                <!-- Populated dynamically -->
               </div>
             </div>
 
-            <!-- Tab 2: Videos Catalog -->
             <div class="subject-tab-panel" id="tab-videos">
               <div class="video-grid" id="subjectDetailVideosGrid">
-                <!-- Populated dynamically -->
               </div>
             </div>
 
-            <!-- Tab 3: Quizzes Catalog -->
             <div class="subject-tab-panel" id="tab-quizzes">
-              <!-- AI Generator trigger card -->
               <div
                 class="ai-header-card"
                 style="padding: 20px 24px; margin-bottom: 24px; cursor: pointer"
@@ -392,28 +392,22 @@
               </div>
 
               <div class="quiz-list" id="subjectDetailQuizzesGrid">
-                <!-- Populated dynamically -->
               </div>
             </div>
           </section>
 
-          <!-- 3. STUDY NOTES LIST VIEW (General Directory) -->
           <section class="view-section" id="view-notes">
             <div class="section-title">Каталог конспектов</div>
             <div class="notes-list" id="generalNotesGrid">
-              <!-- Renders all notes from active subjects -->
             </div>
           </section>
 
-          <!-- 4. VIDEOS LIST VIEW (General Directory) -->
           <section class="view-section" id="view-videos">
             <div class="section-title">Каталог видеолекций</div>
             <div class="video-grid" id="generalVideosGrid">
-              <!-- Renders all videos from active subjects -->
             </div>
           </section>
 
-          <!-- 5. TESTS VIEW (General Directory & AI Generator Menu) -->
           <section class="view-section" id="view-tests">
             <div class="ai-view-container">
               <div class="ai-header-card">
@@ -428,7 +422,22 @@
               </div>
 
               <div class="ai-input-card" id="aiInputBlock">
-                <label class="ai-label" for="aiPromptInput">Какую тему хотите протестировать?</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
+                  <label class="ai-label" for="aiPromptInput" style="margin-bottom: 0">Какую тему хотите протестировать?</label>
+                  <span class="ai-limit-badge" id="aiLimitBadge" style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.1); color: var(--color-purple); font-weight: 600">Осталось 3 генерации сегодня</span>
+                </div>
+
+                <div style="margin-bottom: 12px">
+                  <label class="ai-label" for="aiSubjectSelect" style="font-size: 13px; margin-bottom: 6px; display: block">Предмет:</label>
+                  <select id="aiSubjectSelect" class="ai-select" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 14px; background: var(--color-surface); color: var(--color-text-primary); font-family: inherit">
+                    <option value="biology">🧬 Биология</option>
+                    <option value="chemistry">🧪 Химия</option>
+                    <option value="physics">⚡ Физика</option>
+                    <option value="math">📐 Математика</option>
+                    <option value="rus">📚 Русский язык</option>
+                  </select>
+                </div>
+
                 <textarea
                   class="ai-textarea"
                   id="aiPromptInput"
@@ -437,19 +446,20 @@
 
                 <span class="ai-suggestions-title">Популярные запросы:</span>
                 <div class="ai-chips-list">
-                  <button class="ai-chip" data-prompt="Химические свойства алкенов, гидратация и окисление">
+                  <button class="ai-chip" data-subject="chemistry" data-prompt="Химические свойства алкенов, гидратация и окисление">
                     🧪 Свойства алкенов
                   </button>
-                  <button class="ai-chip" data-prompt="Строение ядра клетки, ядрышко, хроматин, ДНК">
+                  <button class="ai-chip" data-subject="biology" data-prompt="Строение ядра клетки, ядрышко, хроматин, ДНК">
                     🧬 Строение ядра
                   </button>
                   <button
                     class="ai-chip"
+                    data-subject="chemistry"
                     data-prompt="Периодические свойства химических элементов, электроотрицательность"
                   >
                     🧪 Периодический закон
                   </button>
-                  <button class="ai-chip" data-prompt="Мейоз: фазы деления клетки, кроссинговер и расхождение хромосом">
+                  <button class="ai-chip" data-subject="biology" data-prompt="Мейоз: фазы деления клетки, кроссинговер и расхождение хромосом">
                     🧬 Фазы мейоза
                   </button>
                 </div>
@@ -460,7 +470,6 @@
                 </button>
               </div>
 
-              <!-- AI Generating Loading State -->
               <div class="ai-loading-card" id="aiLoadingBlock">
                 <div class="ai-shimmer-ring"></div>
                 <h3 class="ai-loading-title">ИИ генерирует ваш тест</h3>
@@ -495,7 +504,6 @@
             </div>
           </section>
 
-          <!-- 6. SHOPPING CART VIEW -->
           <section class="view-section" id="view-cart">
             <div class="section-title">Корзина покупок</div>
             <div
@@ -521,7 +529,6 @@
             </div>
           </section>
 
-          <!-- 7. SUPPORT / CUSTOM HELP VIEW -->
           <section class="view-section" id="view-support">
             <div class="section-title">Служба поддержки</div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 16px">
@@ -602,7 +609,7 @@
                 </h3>
 
                 <div style="border-bottom: 1px solid var(--color-border); padding-bottom: 12px">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                  <h4 style="font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px">
                     Входит ли подготовка к ОГЭ в Premium подписку?
                   </h4>
                   <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
@@ -612,7 +619,7 @@
                 </div>
 
                 <div style="border-bottom: 1px solid var(--color-border); padding-bottom: 12px">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                  <h4 style="font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px">
                     Как работает генерация тестов с ИИ?
                   </h4>
                   <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
@@ -622,7 +629,7 @@
                 </div>
 
                 <div>
-                  <h4 style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 6px">
+                  <h4 style="font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px">
                     Можно ли заниматься с нескольких устройств?
                   </h4>
                   <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5">
@@ -634,12 +641,10 @@
             </div>
           </section>
 
-          <!-- 5B. PERSONAL STUDY PLAN VIEW -->
           <section class="view-section" id="view-plan">
             <div class="section-title">Персональный план подготовки</div>
 
             <div style="position: relative; min-height: 400px">
-              <!-- Premium Lock Box Cover -->
               <div class="premium-blur-overlay" id="planPremiumOverlay">
                 <div class="premium-lock-box">
                   <div class="premium-lock-icon">🔒</div>
@@ -663,11 +668,9 @@
                 </div>
               </div>
 
-              <!-- Plan Dashboard Grid -->
               <div class="plan-dashboard-grid" id="planDashboardContent">
-                <!-- Sidebar Week Roadmap -->
                 <div class="plan-roadmap-sidebar">
-                  <div style="font-size: 13px; font-weight: 700; color: #111; margin-bottom: 16px; text-align: center">
+                  <div style="font-size: 13px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 16px; text-align: center">
                     Прогресс недели
                   </div>
                   <div class="plan-week-progress-circle">
@@ -698,9 +701,7 @@
                   </div>
                 </div>
 
-                <!-- Main Calendar Checklist -->
                 <div class="plan-tasks-calendar">
-                  <!-- Day Card 1 -->
                   <div class="plan-day-card">
                     <div class="plan-day-header">
                       <span class="plan-day-name">Понедельник</span>
@@ -718,7 +719,6 @@
                     </div>
                   </div>
 
-                  <!-- Day Card 2 -->
                   <div class="plan-day-card">
                     <div class="plan-day-header">
                       <span class="plan-day-name">Среда</span>
@@ -736,7 +736,6 @@
                     </div>
                   </div>
 
-                  <!-- Day Card 3 -->
                   <div class="plan-day-card">
                     <div class="plan-day-header">
                       <span class="plan-day-name">Пятница</span>
@@ -754,7 +753,6 @@
                     </div>
                   </div>
 
-                  <!-- Day Card 4 -->
                   <div class="plan-day-card">
                     <div class="plan-day-header">
                       <span class="plan-day-name">Воскресенье</span>
@@ -772,12 +770,10 @@
             </div>
           </section>
 
-          <!-- 5C. ANALYTICS VIEW -->
           <section class="view-section" id="view-analytics">
             <div class="section-title">Аналитика успеваемости</div>
 
             <div class="analytics-grid">
-              <!-- Progress stats card -->
               <div class="analytics-card progress-overview">
                 <h3 class="analytics-card-title">Изучение школьной программы</h3>
                 <div style="margin-bottom: 20px">
@@ -837,20 +833,16 @@
                 </div>
               </div>
 
-              <!-- Time spent graph card (SVG) -->
               <div class="analytics-card time-spent">
                 <h3 class="analytics-card-title">Время подготовки (минут за неделю)</h3>
                 <div class="chart-container">
-                  <!-- SVG column chart -->
                   <svg viewBox="0 0 320 180" class="svg-chart">
-                    <!-- Grid lines -->
                     <line x1="30" y1="20" x2="300" y2="20" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="60" x2="300" y2="60" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="100" x2="300" y2="100" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="140" x2="300" y2="140" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="150" x2="300" y2="150" stroke="#CCCCCC" stroke-width="1.5" />
 
-                    <!-- Bars (Monday to Sunday) -->
                     <rect x="45" y="75" width="20" height="75" rx="3" fill="var(--color-green)" />
                     <text x="55" y="165" font-size="9" text-anchor="middle" fill="#888">Пн</text>
                     <rect x="80" y="125" width="20" height="25" rx="3" fill="#E8EBE8" />
@@ -869,20 +861,16 @@
                 </div>
               </div>
 
-              <!-- Score progression card (SVG) -->
               <div class="analytics-card score-progression">
                 <h3 class="analytics-card-title">Динамика среднего балла тестов</h3>
                 <div class="chart-container">
-                  <!-- SVG line graph -->
                   <svg viewBox="0 0 320 180" class="svg-chart">
-                    <!-- Grid -->
                     <line x1="30" y1="20" x2="300" y2="20" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="60" x2="300" y2="60" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="100" x2="300" y2="100" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="140" x2="300" y2="140" stroke="#F3F5F3" stroke-width="1" />
                     <line x1="30" y1="150" x2="300" y2="150" stroke="#CCCCCC" stroke-width="1.5" />
 
-                    <!-- Graph Line points (Mock EGE scores) -->
                     <path
                       d="M 40 120 L 90 110 L 140 102 L 190 88 L 240 75 L 290 50"
                       fill="none"
@@ -891,7 +879,6 @@
                       stroke-linecap="round"
                     />
 
-                    <!-- Dots -->
                     <circle cx="40" cy="120" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
                     <circle cx="90" cy="110" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
                     <circle cx="140" cy="102" r="5" fill="#FFFFFF" stroke="var(--color-blue)" stroke-width="2" />
@@ -906,7 +893,6 @@
                 </div>
               </div>
 
-              <!-- Streaks / Achievements -->
               <div class="analytics-card active-streaks">
                 <h3 class="analytics-card-title">Игровые достижения</h3>
                 <div class="plan-day-tasks-list" style="margin-top: 10px">
@@ -921,7 +907,7 @@
                   >
                     <span style="font-size: 20px">🔥</span>
                     <div>
-                      <div style="font-size: 13px; font-weight: 700; color: #111">Марафонец (23 дня подряд)</div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--color-text-primary)">Марафонец (23 дня подряд)</div>
                       <div style="font-size: 11px; color: var(--color-text-secondary)">
                         Каждый день вы решаете хотя бы один тест!
                       </div>
@@ -938,7 +924,7 @@
                   >
                     <span style="font-size: 20px">🧠</span>
                     <div>
-                      <div style="font-size: 13px; font-weight: 700; color: #111">Теоретик Биологии</div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--color-text-primary)">Теоретик Биологии</div>
                       <div style="font-size: 11px; color: var(--color-text-secondary)">
                         Изучены все базовые темы по анатомии и цитологии!
                       </div>
@@ -947,7 +933,7 @@
                   <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0">
                     <span style="font-size: 20px">⚡</span>
                     <div>
-                      <div style="font-size: 13px; font-weight: 700; color: #111">Быстрый ум (AI Мастер)</div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--color-text-primary)">Быстрый ум (AI Мастер)</div>
                       <div style="font-size: 11px; color: var(--color-text-secondary)">
                         Вы успешно сдали 5 тестов, сгенерированных ИИ!
                       </div>
@@ -958,12 +944,10 @@
             </div>
           </section>
 
-          <!-- 5D. ADMIN / COURSE BUILDER VIEW -->
           <section class="view-section" id="view-admin">
             <div class="section-title">Создание учебного материала</div>
 
             <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 24px">
-              <!-- Form Block -->
               <div
                 style="
                   background: white;
@@ -1211,7 +1195,7 @@
                   gap: 20px;
                 "
               >
-                <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px; color: #111">
+                <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--color-text-primary)">
                   Как это работает?
                 </h3>
                 <p style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.6">
@@ -1232,7 +1216,7 @@
                   добавляет новый блок в базу данных в оперативной памяти браузера. Вы сразу сможете увидеть и
                   протестировать созданную тему без перезагрузки бэкенда!
                 </div>
-                <h4 style="font-size: 13px; font-weight: 700; color: #111; margin-top: 16px">
+                <h4 style="font-size: 13px; font-weight: 700; color: var(--color-text-primary); margin-top: 16px">
                   Преимущества архитектуры
                 </h4>
                 <ul style="font-size: 12px; color: var(--color-text-secondary); padding-left: 20px; line-height: 1.6">
@@ -1253,18 +1237,14 @@
             </div>
           </section>
 
-          <!-- 8. NOTE READER VIEW (Interactive layout) -->
           <section class="view-section" id="view-note-reader">
             <div class="note-view-layout">
-              <!-- Sidebar with list of topics -->
               <div class="note-sidebar">
                 <div class="note-sidebar-title">Темы раздела</div>
                 <div class="note-sidebar-nav" id="noteSidebarNav">
-                  <!-- Populated dynamically -->
                 </div>
               </div>
 
-              <!-- Main Content Reader -->
               <div class="note-main-content">
                 <button class="note-back-btn" id="noteReaderBackBtn">
                   <i data-lucide="arrow-left" style="width: 16px; height: 16px"></i> Вернуться к предмету
@@ -1272,12 +1252,9 @@
 
                 <h1 class="note-content-title" id="noteContentTitle">Цитология: Строение клетки</h1>
 
-                <!-- Content Wrapper -->
                 <div class="note-body" id="noteBody">
-                  <!-- Set dynamically -->
                 </div>
 
-                <!-- Premium Lock Box Cover -->
                 <div class="premium-blur-overlay" id="notePremiumOverlay" style="display: none">
                   <div class="premium-lock-box">
                     <div class="premium-lock-icon">🔒</div>
@@ -1304,7 +1281,6 @@
             </div>
           </section>
 
-          <!-- 9. INTERACTIVE QUIZ PLAYER VIEW -->
           <section class="view-section" id="view-quiz-player">
             <div class="quiz-layout">
               <div class="quiz-header">
@@ -1315,17 +1291,14 @@
                 <span class="quiz-progress-text" id="quizProgressText">Вопрос 1 из 5</span>
               </div>
 
-              <!-- Quiz Play Card -->
               <div class="quiz-card" id="quizCard">
                 <div class="quiz-question-text" id="quizQuestionText">
                   Какой органоид клетки отвечает за синтез АТФ в процессе клеточного дыхания?
                 </div>
 
                 <div class="quiz-options-list" id="quizOptionsGrid">
-                  <!-- Options populated dynamically -->
                 </div>
 
-                <!-- Explanation (hidden until answered) -->
                 <div class="quiz-explanation-box" id="quizExplanationBox" style="display: none">
                   <strong>Разбор вопроса:</strong>
                   <span id="quizExplanationText"
@@ -1335,7 +1308,6 @@
                 </div>
               </div>
 
-              <!-- Quiz Actions -->
               <div class="quiz-actions">
                 <button class="btn-secondary" id="quizQuitBtn">Выйти</button>
                 <button class="btn-primary" id="quizNextBtn" disabled>Проверить ответ</button>
@@ -1343,7 +1315,6 @@
             </div>
           </section>
 
-          <!-- 10. QUIZ RESULTS SUMMARY VIEW -->
           <section class="view-section" id="view-quiz-results">
             <div class="quiz-layout">
               <div class="quiz-results-card">
@@ -1369,10 +1340,95 @@
               </div>
             </div>
           </section>
+
+          <section class="view-section" id="view-mock-exam">
+            <div id="mockCatalogScreen">
+              <div class="section-title">
+                <span>Пробные экзамены (Пробники)</span>
+              </div>
+              <p class="view-subtitle" style="margin-bottom: 20px; color: var(--color-text-secondary);">
+                Полноформатные варианты ОГЭ и ЕГЭ с таймером и автоматическим переводом баллов.
+              </p>
+              <div class="mock-exam-grid" id="mockExamList"></div>
+            </div>
+
+            <div id="mockPlayerScreen" style="display: none;">
+              <div class="mock-exam-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 16px 24px; background: var(--color-card-bg); border-radius: 16px; border: 1px solid var(--color-border);">
+                <div>
+                  <h3 id="mockExamTitle" style="margin: 0; font-size: 1.25rem;"></h3>
+                  <span id="mockExamSubtitle" style="font-size: 0.875rem; color: var(--color-text-secondary);"></span>
+                </div>
+                <div class="mock-timer-box" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.25rem; padding: 8px 16px; background: var(--color-bg-secondary); border-radius: 12px; border: 1px solid var(--color-border);">
+                  <i data-lucide="clock" style="stroke: var(--color-purple)"></i>
+                  <span id="mockTimerDisplay">00:00:00</span>
+                </div>
+              </div>
+
+              <div class="mock-exam-layout" style="display: grid; grid-template-columns: 1fr 300px; gap: 24px;">
+                <div class="mock-question-card" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border);">
+                  <div id="mockQuestionArea"></div>
+                  <div class="mock-question-actions" style="display: flex; justify-content: space-between; margin-top: 24px;">
+                    <button class="btn-secondary" id="mockPrevBtn">Предыдущий</button>
+                    <button class="btn-primary" id="mockNextBtn">Следующий</button>
+                  </div>
+                </div>
+
+                <div class="mock-sidebar-card" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border);">
+                  <h4 style="margin-top: 0; margin-bottom: 16px;">Вопросы</h4>
+                  <div class="mock-nav-grid" id="mockNavGrid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;"></div>
+                  <button class="btn-primary" id="mockSubmitBtn" style="margin-top: 24px; width: 100%;">Завершить экзамен</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="mockResultsScreen" style="display: none;">
+              <div class="mock-results-card" style="background: var(--color-card-bg); border-radius: 20px; padding: 32px; border: 1px solid var(--color-border); max-width: 700px; margin: 0 auto; text-align: center;">
+                <h2 style="margin-top: 0; margin-bottom: 8px;">Результаты пробника</h2>
+                <p id="mockResultsExamTitle" style="color: var(--color-text-secondary); margin-bottom: 24px;"></p>
+
+                <div class="mock-scores-container" style="display: flex; justify-content: center; gap: 24px; margin-bottom: 32px;">
+                  <div class="score-card" style="flex: 1; padding: 20px; background: var(--color-bg-secondary); border-radius: 16px; border: 1px solid var(--color-border);">
+                    <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 8px;">Первичный балл</div>
+                    <div class="score-value" id="mockPrimaryScore" style="font-size: 2.25rem; font-weight: 800; color: var(--color-purple);">0</div>
+                  </div>
+                  <div class="score-card" style="flex: 1; padding: 20px; background: var(--color-bg-secondary); border-radius: 16px; border: 1px solid var(--color-border);">
+                    <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 8px;">Тестовый балл / Оценка</div>
+                    <div class="score-value" id="mockSecondaryScore" style="font-size: 2.25rem; font-weight: 800; color: var(--color-green);">0</div>
+                  </div>
+                </div>
+
+                <div id="mockBreakdownArea" style="text-align: left; margin-bottom: 24px;"></div>
+
+                <button class="btn-primary" id="mockBackToCatalogBtn" style="padding: 12px 32px;">К списку пробников</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="view-section" id="view-teacher">
+            <div class="teacher-banner" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%); border: 1px solid var(--color-border); border-radius: 20px; padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div>
+                <h2 style="margin: 0 0 8px 0; font-size: 1.5rem;">Кабинет Учителя и Репетитора 👩‍🏫</h2>
+                <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.95rem;">Управляйте группами учеников, выдавайте домашние задания и следите за их успеваемостью.</p>
+              </div>
+              <div style="display: flex; gap: 12px;">
+                <button class="btn btn-outline" id="joinGroupBtn">🔗 Вступить по коду</button>
+                <button class="btn btn-primary" id="createGroupBtn">➕ Создать группу</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 32px;">
+              <h3 style="margin-bottom: 16px;">Мои группы</h3>
+              <div class="groups-grid" id="teacherGroupsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+            </div>
+
+            <div>
+              <h3 style="margin-bottom: 16px;">Мои задания (для учеников)</h3>
+              <div id="studentAssignmentsList"></div>
+            </div>
+          </section>
         </div>
       </main>
 
-      <!-- MOBILE BOTTOM NAVIGATION -->
       <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-view="subjects">
           <i data-lucide="book-open"></i>
@@ -1389,6 +1445,10 @@
         <button class="mobile-nav-item" data-view="tests">
           <i data-lucide="clipboard-list"></i>
           <span>Тесты</span>
+        </button>
+        <button class="mobile-nav-item" data-view="mock-exam">
+          <i data-lucide="file-check"></i>
+          <span>Пробники</span>
         </button>
         <button class="mobile-nav-item" data-view="plan">
           <i data-lucide="calendar"></i>
@@ -1413,9 +1473,14 @@
       </nav>
     </div>
 
-    <!-- --- MODALS FRAMEWORK --- -->
 
-    <!-- A. AUTHENTICATION MODAL -->
+    <div class="modal-overlay" id="teacherModal">
+      <div class="modal-card" style="max-width: 540px;">
+        <button class="modal-close-btn" data-close-modal="teacherModal">&times;</button>
+        <div id="teacherModalBody"></div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="authModal">
       <div class="modal-card">
         <button class="modal-close-btn" data-close-modal="authModal">&times;</button>
@@ -1453,7 +1518,6 @@
       </div>
     </div>
 
-    <!-- B. PREMIUM PURCHASE MODAL -->
     <div class="modal-overlay" id="premiumModal">
       <div class="modal-card premium-modal-card">
         <button class="modal-close-btn" data-close-modal="premiumModal">&times;</button>
@@ -1523,7 +1587,6 @@
       </div>
     </div>
 
-    <!-- C. VIDEO PLAYER MODAL -->
     <div class="modal-overlay" id="videoModal">
       <div class="modal-card video-player-card">
         <button class="modal-close-btn" data-close-modal="videoModal">&times;</button>
@@ -1568,28 +1631,24 @@
       </div>
     </div>
 
-    <!-- D. ALL SUBJECTS MODAL -->
     <div class="modal-overlay" id="allSubjectsModal">
       <div class="modal-card all-subjects-card">
         <button class="modal-close-btn" data-close-modal="allSubjectsModal">&times;</button>
 
         <div class="premium-modal-header">
-          <h3 class="premium-modal-title" style="color: #111">Все предметы</h3>
+          <h3 class="premium-modal-title" style="color: var(--color-text-primary)">Все предметы</h3>
         </div>
 
         <div class="all-subjects-grid" id="allSubjectsGrid">
-          <!-- Populated dynamically -->
         </div>
       </div>
     </div>
 
-    <!-- E. TOAST NOTIFICATION MESSAGE -->
     <div class="toast-message" id="toastMessage">
       <span class="toast-icon" id="toastIcon">✨</span>
       <span id="toastText">Привет! Успешный вход выполнен.</span>
     </div>
 
-    <!-- Application Logic -->
     <script type="module" src="js/app.js"></script>
   </body>
 </html>
