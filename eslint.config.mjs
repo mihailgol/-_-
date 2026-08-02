@@ -4,7 +4,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
   {
-    ignores: ["node_modules/", "test-results/", "playwright-report/", "js/lucide.min.js", "coverage/", ".serena/"],
+    ignores: ["node_modules/", "test-results/", "playwright-report/", "js/lucide.min.js", "coverage/", ".serena/", ".agents/"],
   },
 
   js.configs.recommended,

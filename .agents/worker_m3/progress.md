@@ -1,12 +1,12 @@
-# Progress Log — worker_m3
+# Progress Tracker — worker_m3
 
-Last visited: 2026-08-01T12:25:30Z
+Last visited: 2026-08-02T19:15:20Z
 
-- [x] Saved request & created BRIEFING.md
-- [x] Inspect existing backend routes, db schema, server files, frontend modules, and tests
-- [x] Implement DB schema changes in `server/db.js` (`ai_generations` table and `idx_ai_generations_user_date` index)
-- [x] Implement AI quiz route in `server/routes/ai.js` and mount in `server/index.js` under `/api/ai`
-- [x] Implement frontend integration in `js/modules/ai.js`, `index.html` (subject selector, limit badge), and `js/modules/render.js`
-- [x] Write unit tests in `tests/unit/ai_quiz.test.mjs`
-- [x] Run `npm run check` and verify 100% green status across ESLint (0 errors, 0 warnings), validate-project, Vitest (71 tests), and Playwright E2E (18 tests)
-- [x] Complete handoff.md and send final message to orchestrator
+## Steps
+- [ ] 1. Inspect `server/db.js`, `server/seed.js`, `server/routes/catalog.js`, `js/data.js`, tests, and database schema.
+- [ ] 2. Update `server/db.js` (BEGIN IMMEDIATE, columns migration, performance indexes).
+- [ ] 3. Update `server/seed.js` (UPSERT logic).
+- [ ] 4. Update `server/routes/catalog.js` (deduplicate subjects).
+- [ ] 5. Run `node server/seed.js` and test database.
+- [ ] 6. Run test suite (`npm run lint`, `npm run test`, `npm run check`).
+- [ ] 7. Update documentation and create `handoff.md`.

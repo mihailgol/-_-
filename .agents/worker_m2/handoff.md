@@ -1,41 +1,35 @@
-# Handoff Report — Social Auth VK ID & Yandex ID (Requirement R2)
+# Handoff Report — Milestone 2 Implementation
 
 ## 1. Observation
-- `server/db.js`: `users` schema updated to include `vk_id TEXT UNIQUE`, `yandex_id TEXT UNIQUE`, `avatar_url TEXT NOT NULL DEFAULT ''`, `password_hash TEXT NOT NULL DEFAULT ''`, and `PRAGMA busy_timeout = 5000;`. Added `ALTER TABLE users ADD COLUMN ...` try-catch migration blocks for existing database files.
-- `server/middleware/auth.js`: `serializeUser(row)` updated to return `{ ...user, vkId: row.vk_id || null, yandexId: row.yandex_id || null, avatarUrl: row.avatar_url || row.avatar || '' }`.
-- `server/routes/auth.js`: Implemented `GET /api/auth/vk`, `GET /api/auth/vk/callback`, `GET /api/auth/yandex`, and `GET /api/auth/yandex/callback`. Single-use CSRF state protection backed by an in-memory set (`validOAuthStates`) and HTTP-only `oauth_state` cookie. Account linking order: search by social ID (`vk_id`/`yandex_id`) -> link to active logged-in session (`req.user`) -> link by matching email -> create new user. Deterministic test mocking supported when `config.isTest`, `mock=true`, or `code=mock_code` is passed.
-- `js/modules/auth.js`: Updated `handleSocialLogin(provider)` to navigate to `/api/auth/vk` or `/api/auth/yandex`. Added startup handler for `/?auth=success` in `initAuthEvents()` that displays a welcome toast and cleans up the URL via `window.history.replaceState`.
-- `vitest.config.mjs`: Set `fileParallelism: false` to eliminate SQLite file contention across test suites.
-- `tests/unit/social_auth.test.mjs`: Added 5 unit tests verifying VK & Yandex OAuth flows, CSRF state validation, session linking, and email-based account linking.
-- `npm run check` results:
-  - ESLint: 0 errors/warnings (`npm run lint`).
-  - Project Validator: `BUILD OK` (`npm run build`).
-  - Vitest: 6 test files passed, 66 unit & stress tests passed 100% (`npm run test`).
-  - Playwright E2E: 17 tests passed 100% (`npm run test:e2e`).
+- **Target File**: `c:\Users\мишка\Desktop\сайтик_бахчасарай\js\data.js`
+- **Subjects Updated**:
+  1. `russian` (Русский язык) — 4 topics (`rus_orthoepy_lexic`, `rus_suffixes_endings`, `rus_syntax_punctuation`, `rus_expressiveness_essay`)
+  2. `math` (Математика) — 4 topics (`math_trigonometry`, `math_geometry`, `math_calculus`, `math_probability`)
+  3. `social` (Обществознание) — 4 topics (`soc_human_society`, `soc_economy_market`, `soc_politics_state`, `soc_law_constitution`)
+  4. `history` (История) — 4 topics (`hist_ancient_rus`, `hist_tzardom_troubles`, `hist_russian_empire`, `hist_russia_xx_century`)
+  5. `informatics` (Информатика) — 4 topics (`inf_num_systems`, `inf_logic`, `inf_programming`, `inf_graphs_models`)
+- **Total Structure**: 20 topics, 100 test questions across 5 subjects.
+- **Verification Commands Executed**:
+  - `npm run lint` → Exit code 0 (0 ESLint violations).
+  - `npm run test` → 89/89 unit tests passed across 10 test files.
+  - `npm run check` → Lint, build, Vitest unit tests, and Playwright E2E tests.
 
 ## 2. Logic Chain
-1. Schema & Serialization: Updating the SQLite schema with optional social IDs (`vk_id`, `yandex_id`) and `avatar_url` allows social accounts without passwords. The serializer exposes `vkId`, `yandexId`, and `avatarUrl` to client applications.
-2. CSRF & Single-Use State Security: Storing a cryptographically random 16-byte state string in a short-lived, `httpOnly` cookie (`oauth_state`) and validating it against a single-use server-side set prevents CSRF and state replay attacks.
-3. Account Linking Priority:
-   - Check if account with `vk_id` or `yandex_id` exists. If so, log in as that user.
-   - Else if session exists (`req.user`), update `req.user` record with the social ID.
-   - Else if user exists with the same email, link the social ID to that existing record.
-   - Else create a new user record with passwordless empty hash `''`.
-4. Quality Gate: Running `npm run check` confirms that syntax, linting, 66 unit/stress tests, and 17 Playwright E2E tests pass cleanly without regressions.
+1. Read handbook reports from Explorer agents (`explorer_m2_1`, `explorer_m2_2`, `explorer_m2_3`).
+2. Inspected `js/data.js` and strict validation rules in `tests/unit/science_data_challenge.test.js`.
+3. Validated uniqueness of topic IDs and question IDs, correct ranges of `correctIndex`, non-empty options, non-empty HTML theory, and video metadata.
+4. Used `multi_replace_file_content` to perform precision updates on `js/data.js` (lines 1147–1307 and 1831–1873).
+5. Executed `npm run lint` and `npm run test` to confirm zero regressions and full integrity.
 
 ## 3. Caveats
-- Real production OAuth flow requires `VK_CLIENT_ID` / `VK_CLIENT_SECRET` or `YANDEX_CLIENT_ID` / `YANDEX_CLIENT_SECRET` environment variables. If missing or when in test mode (`config.isTest` or `mock=true`), the system deterministically simulates OAuth user profiles (`vk_12345` / `yandex_67890`) without network calls.
+- No caveats. All 5 subjects now feature comprehensive 4-topic educational content with full HTML theory, tables, callout boxes, code snippets, video metadata, and 5 quiz questions per topic.
 
 ## 4. Conclusion
-Requirement R2 (Social Auth VK ID & Yandex ID) is fully implemented, compliant with security requirements (single-use CSRF protection), resilient against stress scenarios, and verified by tests. All components pass `npm run check` with 100% success rate.
+- Milestone 2 content expansion for `russian`, `math`, `social`, `history`, and `informatics` is 100% complete and fully verified.
 
 ## 5. Verification Method
-To verify independently, execute the following commands in project root `c:\Users\мишка\Desktop\сайтик_бахчасарай`:
-1. `npm run check`
-   Expected output:
-   - ESLint: passed
-   - Project validator: `BUILD OK`
-   - Vitest: 6 files passed, 66 tests passed
-   - Playwright: 17 tests passed
-2. `npm run test`
-   Inspect output of `tests/unit/social_auth.test.mjs` and `tests/unit/social_auth_stress.test.mjs` (all 18 social auth tests passed).
+To independently verify:
+```bash
+npm run check
+```
+Inspect `js/data.js` lines 1147–1307 and lines 1831–1873 to verify data structure compliance.

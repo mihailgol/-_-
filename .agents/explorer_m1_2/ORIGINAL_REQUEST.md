@@ -1,24 +1,17 @@
-## 2026-08-01T09:02:10Z
-<USER_REQUEST>
-You are Explorer 2 for ExamHub Milestone 2 (R2: Social Auth VK ID & Yandex ID).
+## 2026-08-02T16:35:19Z
+Role: Explorer for Chemistry Content Expansion (Milestone 1).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_2
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
+Project scope file: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\orchestrator\PROJECT.md
 
-Your working directory is: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_2`
-The project root is: `c:\Users\мишка\Desktop\сайтик_бахчасарай`
-
-## Task Objective:
-Investigate existing backend auth routes (`server/routes/auth.js`), DB schema (`server/db.js`), session middleware (`server/middleware/auth.js`), and frontend auth modal (`js/modules/auth.js`, `index.html`). Formulate an implementation strategy for Requirement R2:
-- Social Auth endpoints for VK ID (`GET /api/auth/vk`, `GET /api/auth/vk/callback`) and Yandex ID (`GET /api/auth/yandex`, `GET /api/auth/yandex/callback`).
-- OAuth state validation, user creation or linking to existing `users` table via `vk_id` / `yandex_id` columns, storing avatar URLs.
-- Issuing HTTP-only `examhub_session` cookies backed by SQLite `sessions` table upon successful OAuth callback.
-- UI update in `js/modules/auth.js` and `index.html` modal with working VK ID and Yandex ID login buttons.
-
-## Requirements & Constraints:
-- Read `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\orchestrator\PROJECT.md`, `AGENTS.md`, `DEVELOPMENT_RULES.md`, and `.agent/architecture.md`.
-- Backend MUST use Node.js Express + `node:sqlite` (`DatabaseSync`).
-- HTTP-only session cookies must have `SameSite=Lax`, `Path=/`, `HttpOnly`.
-- Do NOT add code comments without explicit request.
-
-## Deliverable:
-Write your detailed analysis and API/schema design proposal to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_2\analysis.md` and `handoff.md`.
-When done, use `send_message` to report your summary back to the parent orchestrator (conversation ID: `2b276051-2697-46e6-8823-70b590d0e555`).
-</USER_REQUEST>
+Task:
+Analyze current Chemistry content in `js/data.js` and design a comprehensive FIPI-aligned curriculum for Chemistry (ЕГЭ/ОГЭ).
+1. Define 4 key FIPI topics for Chemistry (e.g. Строение атома и Периодический закон, Химическая связь и кристаллическая решетка, Неорганическая химия: Оксиды, Кислоты, Основания, Соли, Органическая химия: Углеводороды и Кислородсодержащие вещества).
+2. For each topic, design detailed theory HTML content including:
+   - Structured headings (`<h3>`, `<h4>`).
+   - Rich callouts (`<div class="note-info-box">...</div>`).
+   - Data tables (`<table class="data-table">...</table>`) for reactions, oxidation states, and substance classification.
+   - Key terms in `<strong>`, chemical formulas, and lists `<ul>`/`<ol>`.
+3. For each topic, design 4-5 test questions with `options` array, `correctIndex`, and detailed `explanation`.
+4. Provide video metadata (`title`, `instructor`, `duration`, `youtubeId`, `views`, `thumbnail`).
+5. Write your report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_2\handbook_chemistry.md` and send a summary message back to parent.

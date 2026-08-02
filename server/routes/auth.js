@@ -40,6 +40,8 @@ router.post("/register", (req, res) => {
     .toLowerCase();
   const password = String(req.body?.password || "");
   let name = String(req.body?.name || "").trim();
+  const rawExamType = String(req.body?.exam_type || "EGE").toUpperCase();
+  const examType = rawExamType === "OGE" ? "OGE" : "EGE";
 
   if (!EMAIL_RE.test(email)) {
     return res.status(400).json({ error: "Некорректный email" });
@@ -55,8 +57,8 @@ router.post("/register", (req, res) => {
 
   const passwordHash = bcrypt.hashSync(password, 10);
   const info = db
-    .prepare("INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)")
-    .run(email, passwordHash, name);
+    .prepare("INSERT INTO users (email, password_hash, name, exam_type) VALUES (?, ?, ?, ?)")
+    .run(email, passwordHash, name, examType);
 
   createSession(res, Number(info.lastInsertRowid));
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(info.lastInsertRowid);

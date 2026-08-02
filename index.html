@@ -1510,6 +1510,20 @@
             <input type="password" class="auth-form-input" id="manualPass" placeholder="••••••••" />
           </div>
 
+          <div class="auth-form-group" id="authExamTypeGroup" style="display: none; margin-bottom: 16px;">
+            <label class="auth-input-label">К какому экзамену готовитесь?</label>
+            <div style="display: flex; gap: 12px; margin-top: 6px;">
+              <label style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--color-bg-secondary); border: 1.5px solid var(--color-border); border-radius: var(--border-radius-sm); cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="radio" name="authExamType" value="EGE" checked />
+                <span>🎯 ЕГЭ (10-11 класс)</span>
+              </label>
+              <label style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--color-bg-secondary); border: 1.5px solid var(--color-border); border-radius: var(--border-radius-sm); cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="radio" name="authExamType" value="OGE" />
+                <span>📘 ОГЭ (9 класс)</span>
+              </label>
+            </div>
+          </div>
+
           <button class="auth-submit-btn" id="authSubmitManual">Войти в систему</button>
           <div class="auth-switch">
             <a href="#" id="authToggleLink">Нет аккаунта? Зарегистрироваться</a>

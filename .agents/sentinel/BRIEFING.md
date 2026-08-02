@@ -1,12 +1,12 @@
-# BRIEFING — 2026-08-01T12:01:29+03:00
+# BRIEFING — 2026-08-02T22:16:10+03:00
 
 ## Mission
-Sentinel monitoring and orchestration trigger for ExamHub Multi-Agent System deployment.
+Sentinel monitoring and orchestration relay for ExamHub: FIPI Content Expansion & ExamType Registration/Filtering.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\sentinel
-- Orchestrator: 2b276051-2697-46e6-8823-70b590d0e555
+- Orchestrator: e673ff19-9024-4136-8a23-ecd878887588
 - Victory Auditor: to be spawned on victory claim
 
 ## 🔒 Key Constraints
@@ -15,12 +15,12 @@ Sentinel monitoring and orchestration trigger for ExamHub Multi-Agent System dep
 - Must run progress reporting cron and liveness check cron
 
 ## User Context
-- **Last user request**: Deployment of ExamHub Multi-Agent System (R1-R5 requirements and acceptance criteria)
+- **Last user request**: ExamType registration selection (ЕГЭ / ОГЭ) in #authModal / onboarding, saving to SQLite DB (users.exam_type) and localStorage, end-to-end filtering across all content, and full npm run check pass.
 - **Pending clarifications**: none
-- **Delivered results**: ORIGINAL_REQUEST.md initialized, launching Project Orchestrator
+- **Delivered results**: M1 & M2 completed & verified clean. M3 (DB Sync & API Integration) worker active.
 
 ## Project Status
-- **Phase**: in progress (M1 Design System CLEAN; M2 Social Auth CLEAN; M3 AI Quiz Generator implementation in progress)
+- **Phase**: in progress (M1 & M2 PASSED; M3 DB Sync worker active; M4 ExamType Filtering scheduled)
 
 ## Victory Audit Status
 - **Triggered**: no
@@ -28,4 +28,4 @@ Sentinel monitoring and orchestration trigger for ExamHub Multi-Agent System dep
 - **Retry count**: 0
 
 ## Artifact Index
-- ORIGINAL_REQUEST.md — Verbatim record of user request
+- ORIGINAL_REQUEST.md — Verbatim record of user requests

@@ -1,15 +1,29 @@
-## 2026-08-01T09:18:53Z
-You are Challenger 2 for ExamHub Milestone 2 (R2: Social Auth VK ID & Yandex ID).
+## 2026-08-02T16:46:04Z
+Role: Challenger 1 for Milestone 2 (Humanities & Tech Content: Math, Informatics, Russian, Social Studies, History).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
 
-Your working directory is: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1`
-The project root is: `c:\Users\мишка\Desktop\сайтик_бахчасарай`
+Task:
+Adversarially challenge the dataset in `js/data.js` for Math, Informatics, Russian, Social Studies, History.
+1. Run programmatic checks or tests against `js/data.js` to ensure:
+   - No duplicate topic IDs or question IDs.
+   - All `correctIndex` values are strictly within `0` to `options.length - 1`.
+   - All theory HTML strings are non-empty and well-formed.
+   - All video metadata objects contain non-empty title, duration, instructor, and youtubeId.
+2. Report any anomalies or edge cases.
+3. Write your report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1\challenge_m2.md` and send a summary message back to parent.
 
-## Challenge Objective:
-Empirically stress-test the Social Auth implementation:
-1. Test CSRF state mismatch on callback endpoints (ensure request is rejected with 403/400).
-2. Test account linking scenarios (linking social account to existing email user vs existing session vs creating new user).
-3. Test cookie attributes (`examhub_session` must have `HttpOnly`, `SameSite=Lax`, `Path=/`).
-4. Execute `npm run check` using `run_command` and verify zero failures in unit tests and E2E smoke tests.
+## 2026-08-02T22:08:08Z
+Role: Challenger 1 for Milestone 2 (Humanities & Tech Content: Math, Informatics, Russian, Social Studies, History).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
 
-Write your report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1\handoff.md`.
-When done, use `send_message` to report your summary back to the parent orchestrator (conversation ID: `2b276051-2697-46e6-8823-70b590d0e555`).
+Task:
+Adversarially challenge the dataset in `js/data.js` for Math, Informatics, Russian, Social Studies, History.
+1. Run programmatic checks or tests against `js/data.js` to ensure:
+   - No duplicate topic IDs or question IDs.
+   - All `correctIndex` values are strictly within `0` to `options.length - 1`.
+   - All theory HTML strings are non-empty and well-formed.
+   - All video metadata objects contain non-empty title, duration, instructor, and youtubeId.
+2. Report any anomalies or edge cases.
+3. Write your report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1\challenge_m2.md` and send a summary message back to parent.

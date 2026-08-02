@@ -14,6 +14,7 @@ export function serializeUser(row) {
     vkId: row.vk_id || null,
     yandexId: row.yandex_id || null,
     avatarUrl: row.avatar_url || row.avatar || "",
+    examType: row.exam_type || "EGE",
   };
 }
 

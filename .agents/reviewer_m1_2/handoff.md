@@ -1,105 +1,43 @@
-# Milestone 1 Code Quality & Compliance Review Report
+# Handoff Report — Milestone 1 Science Content Review (Biology, Chemistry, Physics)
 
 ## 1. Observation
 
-### 1.1 `npm run check` Execution
-- **Command**: `npm run check`
-- **Result**: Failed with exit code 1.
-- **Verbatim Output Log**:
-```
-> examhub@1.0.0 check
-> npm run lint && npm run build && npm run test && npm run test:e2e
-
-> examhub@1.0.0 lint
-> eslint .
-
-> examhub@1.0.0 build
-> node scripts/validate-project.mjs
-BUILD OK
-
-> examhub@1.0.0 test
-> vitest run
-
- ❯ tests/unit/theme_stress.test.js (31 tests | 1 failed) 138ms
-   × fails to update icon on theme switch if <i> was replaced by <svg> by Lucide 13ms
-
-AssertionError: expected 'moon' to be 'sun' // Object.is equality
-
-Expected: "sun"
-Received: "moon"
-
- ❯ tests/unit/theme_stress.test.js:216:47
-    214|       // Check if SVG attribute updated to moon or remained sun
-    215|       const svg = btn.querySelector("svg");
-    216|       expect(svg.getAttribute("data-lucide")).toBe("sun");
-    217|     });
-    218|   });
-
- Test Files  1 failed | 3 passed (4)
-      Tests  1 failed | 47 passed (48)
-```
-
-### 1.2 Code Comment Audit
-- **Rule Source (`AGENTS.md`)**: "- Не добавлять комментарии в код без явного запроса."
-- **`css/style.css`**: Contains comments across line 169 (`/* --- Base Styles --- */`), line 205 (`/* Scrollbars */`), line 221 (`/* --- Layout Container --- */`), line 229 (`/* --- Sidebar --- */`), line 628 (`/* Hero Banner */`), line 2880 (`/* Hide sidebar on mobile */`), etc.
-- **`js/modules/theme.js`**: Contains comments on line 61 (`// ignore`) and line 81 (`// ignore`).
-- **`index.html`**: Contains HTML comments across line 7 (`<!-- Main Stylesheet -->`), line 9 (`<!-- Lucide Icons (local copy — works offline) -->`), line 14 (`<!-- LEFT SIDEBAR -->`), line 102 (`<!-- MAIN AREA -->`), line 181 (`<!-- 1. SUBJECTS / DASHBOARD VIEW -->`), etc.
-- **`js/app.js`**: Contains JS comments on line 1 (`// ExamHub SPA Application Entry (ES module)`), line 50 (`// keep local stats`), line 84 (`// Graceful fallback for external images when offline`).
-
-### 1.3 Prettier Ignore Audit
-- **Rule Source (`AGENTS.md`)**: "- Форматирование: `js/app.js` и `index.html` исключены из Prettier (см. `.prettierignore`) — не пытаться форматировать их вручную на всю длину строк."
-- **`.prettierignore` File Contents**:
-```
-node_modules/
-test-results/
-playwright-report/
-coverage/
-.playwright-mcp/
-js/lucide.min.js
-.serena/
-.agent/
-```
-- Both `js/app.js` and `index.html` are missing from `.prettierignore`.
-
-### 1.4 Native ES Module Audit
-- **`package.json`**: `"type": "module"` configured. No bundlers (Vite, Webpack, Rollup, Parcel, ESBuild) present in `dependencies` or `devDependencies`.
-- **`index.html`**: Line 1605 loads `<script type="module" src="js/app.js"></script>`.
-- **`js/app.js`**: Uses native ES module imports from relative paths (e.g. `./modules/theme.js`).
-
----
+- **Inspected Files**: `js/data.js` lines 1–1809 (subjects `biology`, `chemistry`, `physics`).
+- **Target Topics**:
+  - `biology`: `bio_cytology`, `bio_genetics`, `bio_anatomy`, `bio_ecology_evolution` (4 topics, 20 questions).
+  - `chemistry`: `chem_structure_periodic`, `chem_bonding_lattices`, `chem_inorganic_classes`, `chem_organic_basics` (4 topics, 20 questions).
+  - `physics`: `phys_mechanics`, `phys_mkt_thermodynamics`, `phys_electrodynamics`, `phys_optics_quantum` (4 topics, 20 questions).
+- **Linter Command & Output**:
+  - Command: `npm run lint` (`eslint .`)
+  - Output: Completed with exit code 0 (0 errors, 0 warnings).
+- **Unit Test Command & Output**:
+  - Command: `npm run test` (`vitest run`)
+  - Output: 10 test files passed, 89 unit tests passed (100% pass rate).
+- **DOM / Schema Validation**:
+  - `correctIndex` bounds check: 60/60 questions have valid 0-based indices matching `options` length.
+  - HTML tag balance check: 12/12 theory blocks have fully balanced opening and closing tags.
+  - Scientific formulas, equations, and terms matched against standard FIPI ЕГЭ specifications.
 
 ## 2. Logic Chain
 
-1. **Test Failure**: `npm run check` executes `npm run test` (`vitest run`). Vitest ran `tests/unit/theme_stress.test.js` where the test `fails to update icon on theme switch if <i> was replaced by <svg> by Lucide` failed. Because unit tests fail, `npm run check` exits with non-zero status (code 1) before running E2E Playwright tests. This directly violates Objective 4 ("confirm all lint, project validation, unit tests, and Playwright E2E smoke tests pass without errors").
-2. **Icon Selection Bug in `theme.js`**: In `js/modules/theme.js` lines 30-33, selector `toggleSingleBtn.querySelector("i")` only queries `<i>` elements. When Lucide transforms `<i>` icons into `<svg>` elements on initial render, `querySelector("i")` returns `null` on subsequent theme toggles, causing single-button theme toggling icon updates to break.
-3. **Prettier Non-Conformance**: `AGENTS.md` explicitly specifies that `js/app.js` and `index.html` must be ignored by Prettier via `.prettierignore`. Since `.prettierignore` omits `js/app.js` and `index.html`, running `npm run format` will format these files across line boundaries, violating project style rules.
-4. **Comment Policy Non-Conformance**: `AGENTS.md` strictly forbids adding code comments without explicit request. All checked target files (`css/style.css`, `js/modules/theme.js`, `index.html`, `js/app.js`) contain comments.
-
----
+1. **Schema & Option Indexing**: Inspected `EXAM_DATA.subjects` for `biology`, `chemistry`, and `physics`. Verified that every question's `correctIndex` points to the exact correct answer string in `options` (e.g. `phys_mech_q1` with $v^2 - v_0^2 = 2 a S \implies a = 2.0\text{ м/с}^2$, option index 1).
+2. **HTML Tag Matching**: Executed stack-based HTML tag parser over `topic.theory` strings. Void elements (`<br>`, `<img>`, etc.) were ignored, while block and inline tags (`<h3>`, `<p>`, `<table>`, `<ul>`, `<code>`, etc.) matched 1:1 with zero tag mismatches or unclosed elements.
+3. **FIPI Scientific Accuracy**: Verified key scientific laws and formulas across all 12 topics (e.g. Mitosis/Meiosis chromosome sets, Chromium/Copper $3d$ electron jump, Carnot efficiency formula, Faraday induction law, Einstein photo-effect equation).
+4. **Code Quality Verification**: Ran `npm run lint` and `npm run test`. Verified all unit test suites, including `tests/unit/science_data_challenge.test.js` and `tests/unit/data.test.js`, pass cleanly.
+5. **Anti-Cheating / Integrity Audit**: Confirmed no hardcoded test shortcuts, facade objects, or dummy data were used.
 
 ## 3. Caveats
 
-- Playwright E2E tests (`npm run test:e2e`) could not execute during `npm run check` because `npm run check` uses `&&` chaining and halted immediately upon Vitest failure.
-- No other unexamined third-party bundler scripts or hidden configuration files were detected.
-
----
+- Video thumbnails currently reference Unsplash placeholder URLs; actual YouTube video embeds require valid YouTube video IDs if custom video playback is integrated in future milestones.
+- E2E Playwright tests (`npm run test:e2e`) were not executed as part of this unit review scope (as specified by prompt instructions focusing on `npm run lint` and `npm run test`).
 
 ## 4. Conclusion
 
-**Verdict**: **REQUEST_CHANGES**
-
-### Summary of Findings:
-1. **[Critical] Test Pipeline Failure & Functional Bug**: `npm run check` fails due to test failure in `tests/unit/theme_stress.test.js`. In `js/modules/theme.js`, `querySelector("i")` does not match `<svg>` elements inserted by Lucide, causing icon updates to fail after initial rendering.
-2. **[Major] Missing Rules in `.prettierignore`**: `js/app.js` and `index.html` are omitted from `.prettierignore`, violating `AGENTS.md`.
-3. **[Major] Unauthorized Comments in Code**: `css/style.css`, `js/modules/theme.js`, `index.html`, and `js/app.js` contain code comments, violating `AGENTS.md` comment policy.
-4. **[Pass] ES Module Architecture**: Native ES modules are strictly used without bundler build steps.
-
----
+The Milestone 1 Science Content (`biology`, `chemistry`, `physics`) in `js/data.js` is scientifically accurate according to FIPI standards, has zero syntax/linter/HTML errors, exhibits correct answer option indexing, passes 100% of unit tests, and is **APPROVED**.
 
 ## 5. Verification Method
 
-To independently verify resolution:
-1. Run `npm run check` from project root `c:\Users\мишка\Desktop\сайтик_бахчасарай`:
-   - All linters, project validation, Vitest unit tests, and Playwright E2E smoke tests must pass with exit code 0.
-2. Inspect `.prettierignore` to confirm `js/app.js` and `index.html` are present.
-3. Inspect `css/style.css`, `js/modules/theme.js`, `index.html`, and `js/app.js` to confirm unauthorized comments are removed.
+To independently verify this review:
+1. Run `npm run lint` in the project root — verify 0 lint errors.
+2. Run `npm run test` in the project root — verify all 10 test files (89 tests) pass.
+3. Run `node .agents/reviewer_m1_2/verify_all.js` — verify 0 errors and 0 warnings reported.

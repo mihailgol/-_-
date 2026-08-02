@@ -1,27 +1,18 @@
-## 2026-08-01T09:03:59Z
-You are Worker 1 for ExamHub Milestone 1 (R1: Design System & Styling Variants).
+## 2026-08-02T16:36:16Z
+Role: Implementer for Milestone 1 (Science Content Expansion: Biology, Chemistry, Physics).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m1
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
+Target file to update: js/data.js
 
-Your working directory is: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m1`
-The project root is: `c:\Users\мишка\Desktop\сайтик_бахчасарай`
+MANDATORY INTEGRITY WARNING:
+DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A Forensic Auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-## Task Instructions:
-Implement Requirement R1 (Design System & Styling Variants):
-1. **Update `css/style.css`**:
-   - Define complete color token sets under `:root, [data-theme="light"]` and `[data-theme="dark"]`.
-   - Update `--color-text-muted` to `#596159` in light mode and `#88988b` in dark mode to pass WCAG AA contrast standard (4.5:1 ratio).
-   - Replace hardcoded hex background/text colors in UI components with CSS variables (`var(--color-bg)`, `var(--color-surface)`, `var(--color-border)`, `var(--color-text)`, etc.).
-   - Add glassmorphism classes (`.glass-panel`, `.glass-card`, `.glass-modal`, backdrop blur utilities) using CSS variables `--glass-bg`, `--glass-border`, `--glass-shadow`.
-2. **Create `js/modules/theme.js`**:
-   - Pure ES module managing `light`, `dark`, and `auto` themes.
-   - Read/write `localStorage.getItem('examhub_theme')`.
-   - Listen to `window.matchMedia('(prefers-color-scheme: dark)')` for `auto` mode.
-   - Apply `data-theme` attribute to `document.documentElement`.
-   - Export `initTheme()`, `setTheme(theme)`, `getTheme()`, `toggleTheme()`.
-3. **Update `index.html` & `js/app.js`**:
-   - Add theme toggle segmented control / button in `.top-bar-actions` in `index.html`.
-   - Import `initTheme` in `js/app.js` and call it during initialization.
-   - Note: Do NOT format `js/app.js` or `index.html` via Prettier (they are in `.prettierignore`).
-4. **Project Rules**:
-   - DO NOT ADD CODE COMMENTS without explicit user request.
-   - All text/labels in UI must be in Russian. Variable names/CSS classes in English.
-   - Run `npm run check` and ensure 100% green passing results for all 4 steps (ESLint, validate-project, Vitest, Playwright).
+Task Instructions:
+1. Read the comprehensive JS data objects from the Explorer reports:
+   - Biology: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_1\handbook_biology.md
+   - Chemistry: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_2\handbook_chemistry.md
+   - Physics: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_3\handbook_physics.md
+2. Update `js/data.js` by replacing the placeholder topics for `biology`, `chemistry`, and `physics` with the full 4-topic structures (rich theory HTML, video metadata, 5 questions per topic with options, correctIndex, explanation).
+3. Do NOT edit `js/app.js` or `index.html` via Prettier (they are in .prettierignore). Do not add comments without explicit request.
+4. Execute `npm run lint` and `npm run test` to verify zero syntax errors and 100% passing unit tests for `js/data.js`.
+5. Write your handoff report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m1\handoff.md` with build/test execution results and send a summary message back to parent.

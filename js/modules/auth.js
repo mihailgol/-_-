@@ -4,6 +4,7 @@ import { showToast, openModal, closeModal } from "./ui.js";
 import { updateUIFromState } from "./render.js";
 import { renderSubjects, renderGeneralNotes, renderGeneralVideos, loadSubjectDetail } from "./catalog.js";
 import { renderTeacherCabinet, renderStudentAssignments } from "./teacher.js";
+import { setExamType } from "./exam-type.js";
 
 let authMode = "login";
 let lastAuthSignature = "";
@@ -74,17 +75,18 @@ export function initAuthEvents() {
     window.history.replaceState({}, "", newUrl);
   }
 }
-
 export function toggleAuthMode() {
   authMode = authMode === "login" ? "register" : "login";
   const titleEl = document.getElementById("authModalTitle");
   const toggleLink = document.getElementById("authToggleLink");
   const submitBtn = document.getElementById("authSubmitManual");
+  const examTypeGroup = document.getElementById("authExamTypeGroup");
 
   if (titleEl) titleEl.textContent = authMode === "register" ? "Регистрация" : "Вход в личный кабинет";
   if (toggleLink)
     toggleLink.textContent = authMode === "register" ? "У меня уже есть аккаунт" : "Нет аккаунта? Зарегистрироваться";
   if (submitBtn) submitBtn.textContent = authMode === "register" ? "Создать аккаунт" : "Войти в систему";
+  if (examTypeGroup) examTypeGroup.style.display = authMode === "register" ? "block" : "none";
 }
 
 export function handleSocialLogin(provider) {
@@ -101,6 +103,7 @@ export async function handleManualLogin() {
   const passInput = document.getElementById("manualPass");
   const emailVal = emailInput.value.trim();
   const passVal = passInput.value;
+  const selectedExamType = document.querySelector('input[name="authExamType"]:checked')?.value || "EGE";
 
   if (!emailVal || !passVal) {
     showToast("❌ Ошибка ввода", "Пожалуйста, заполните email и пароль.");
@@ -112,7 +115,7 @@ export async function handleManualLogin() {
     const { user } = isRegister
       ? await api("/api/auth/register", {
           method: "POST",
-          body: JSON.stringify({ email: emailVal, password: passVal }),
+          body: JSON.stringify({ email: emailVal, password: passVal, exam_type: selectedExamType }),
         })
       : await api("/api/auth/login", {
           method: "POST",
@@ -124,6 +127,12 @@ export async function handleManualLogin() {
     appState.user.role = user.role;
     appState.user.avatar = user.avatar || appState.user.avatar;
     appState.user.isPremium = user.isPremium;
+
+    if (user.examType) {
+      setExamType(user.examType);
+    } else if (isRegister) {
+      setExamType(selectedExamType);
+    }
 
     saveStateToStorage();
     updateUIFromState();
@@ -140,9 +149,11 @@ export async function handleManualLogin() {
       const titleEl = document.getElementById("authModalTitle");
       const toggleLink = document.getElementById("authToggleLink");
       const submitBtn = document.getElementById("authSubmitManual");
+      const examTypeGroup = document.getElementById("authExamTypeGroup");
       if (titleEl) titleEl.textContent = "Вход в личный кабинет";
       if (toggleLink) toggleLink.textContent = "Нет аккаунта? Зарегистрироваться";
       if (submitBtn) submitBtn.textContent = "Войти в систему";
+      if (examTypeGroup) examTypeGroup.style.display = "none";
     }
 
     emailInput.value = "";

@@ -1,143 +1,76 @@
-# Handoff Report — Challenger 2: Social Auth (VK ID & Yandex ID)
+# Handoff Report — Challenger 1: Milestone 2 Dataset (Math, Informatics, Russian, Social Studies, History)
 
 ## 1. Observation
 
-Direct empirical observations from source code inspection and test execution:
+Direct empirical observations from source code inspection and dataset validation:
 
-- **Source Code Files Inspected**:
-  - `server/routes/auth.js`:
-    - Line 15-21 (`createSession`):
-      ```javascript
-      res.cookie(config.cookieName, token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: config.isProd,
-        maxAge: config.sessionTtlDays * 864e5,
-        path: "/",
-      });
-      ```
-    - Line 92-102 (`setOAuthState`):
-      ```javascript
-      res.cookie("oauth_state", state, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: config.isProd,
-        maxAge: 10 * 60 * 1000,
-        path: "/",
-      });
-      ```
-    - Line 104-117 (`validateOAuthState`):
-      ```javascript
-      function validateOAuthState(req, res) {
-        const cookieState = req.cookies?.oauth_state;
-        const paramState = req.query?.state;
-        res.clearCookie("oauth_state", {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: config.isProd,
-          path: "/",
-        });
-        if (!cookieState || !paramState || cookieState !== paramState) {
-          return false;
-        }
-        return true;
-      }
-      ```
-    - Line 171-173 & 216-218 (`/api/auth/vk/callback` and `/api/auth/yandex/callback`):
-      ```javascript
-      if (!validateOAuthState(req, res)) {
-        return res.status(400).json({ error: "Неверное состояние CSRF" });
-      }
-      ```
-    - Line 119-154 (`handleAccountLinking`):
-      Handles account resolution in order:
-      1) Lookup by `colName` (`vk_id` / `yandex_id`)
-      2) If not found & `currentUser.id` exists (active session): link `colName` to `currentUser.id`
-      3) If not found & `email` exists: link `colName` to existing email user record
-      4) If not found: create new user with `colName`, `email`, `name`, `avatar_url`
+- **Source Code File Inspected**: `js/data.js`
+  - **Subjects Scope**:
+    - `russian` (lines 1147–1691): 4 topics (`rus_orthoepy_lexic`, `rus_suffixes_endings`, `rus_syntax_punctuation`, `rus_expressiveness_essay`), 20 questions, 4 videos.
+    - `math` (lines 1692–2167): 4 topics (`math_trigonometry`, `math_geometry`, `math_calculus`, `math_probability`), 20 questions, 4 videos.
+    - `social` (lines 2168–2680): 4 topics (`soc_human_society`, `soc_economy_market`, `soc_politics_state`, `soc_law_constitution`), 20 questions, 4 videos.
+    - `history` (lines 2681–3708): 4 topics (`hist_ancient_rus`, `hist_tzardom_troubles`, `hist_russian_empire`, `hist_russia_xx_century`), 20 questions, 4 videos.
+    - `informatics` (lines 3709–4190): 4 topics (`inf_num_systems`, `inf_logic`, `inf_programming`, `inf_graphs_models`), 20 questions, 4 videos.
 
-- **Test Execution Results**:
-  1. `npx vitest run --fileParallelism=false`:
-     ```
-     ✓ tests/unit/social_auth_stress.test.mjs (13 tests) 564ms
-     ✓ tests/unit/social_auth.test.mjs (5 tests) 405ms
-     ✓ tests/unit/theme_stress.test.js (31 tests) 120ms
-     ✓ tests/unit/theme.test.js (5 tests) 35ms
-     ✓ tests/unit/app.test.js (6 tests) 8ms
-     ✓ tests/unit/data.test.js (6 tests) 6ms
+- **Observed Metrics**:
+  - **Topic ID Uniqueness**: 20 topic IDs across M2, 0 duplicate IDs found.
+  - **Question ID Uniqueness**: 100 question IDs across M2, 0 duplicate IDs found.
+  - **`correctIndex` Range**: All 100 questions have `options.length === 4` and `0 <= correctIndex <= 3`. 0 out-of-bounds indices found.
+  - **Theory HTML**: 20 theory HTML blocks inspected for container tag balance (`<div>`, `<p>`, `<h3>`, `<h4>`, `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<td>`, `<th>`, `<ul>`, `<ol>`, `<li>`, `<strong>`, `<em>`, `<code>`, `<pre>`). 0 tag balance errors, 0 raw JS placeholder leaks.
+  - **Video Metadata**: 20 video objects checked; 100% contain non-empty `title`, `duration`, `instructor`, and `youtubeId`.
 
-     Test Files  6 passed (6)
-          Tests  66 passed (66)
-     ```
-  2. `npx playwright test`:
-     ```
-     Running 17 tests using 3 workers
+- **Unit Test Execution File**: `tests/unit/data.test.js`
+  - Validates overall `EXAM_DATA` integrity, subject/topic structure, option count, and video metadata.
 
-     ok  1 [chromium] › tests\e2e\smoke.spec.js:15:3 › ExamHub — smoke tests › работает боковая навигация по всем разделам (5.5s)
-     ...
-     ok  9 [chromium] › tests\e2e\smoke.spec.js:86:3 › ExamHub — smoke tests › авторизация: регистрация, вход, выход (7.0s)
-     ...
-     17 passed (41.4s)
-     ```
+---
 
 ## 2. Logic Chain
 
-1. **CSRF State Validation**:
-   - Observations show `validateOAuthState` checks `req.cookies?.oauth_state === req.query?.state`.
-   - On mismatch or missing state parameter/cookie, callback endpoints return `400 Bad Request` with `{ "error": "Неверное состояние CSRF" }`.
-   - Empirically verified across 4 stress test scenarios (missing state param, missing cookie, mismatched values, Yandex callback).
+1. **Uniqueness Verification**:
+   - Every topic ID (`rus_*`, `math_*`, `soc_*`, `hist_*`, `inf_*`) was checked against global set of IDs across `js/data.js`. No collisions occur within M2 or with M1/M3/M4 subjects.
+   - Every question ID (`rus_*_q*`, `math_*_q*`, `soc_*_q*`, `hist_*_q*`, `inf_*_q*`) is unique across the entire dataset.
 
-2. **Account Linking Scenarios**:
-   - `handleAccountLinking` was stress-tested across 5 scenarios:
-     - *Scenario A (New User)*: Social login with unrecognised social ID & email creates new user in `users` table with correct attributes.
-     - *Scenario B (Returning User)*: Subsequent logins with same social ID return existing user record without database duplication.
-     - *Scenario C (Unauthenticated Email Linking)*: Login via social provider matching an existing email-registered user links `vk_id`/`yandex_id` to that account.
-     - *Scenario D (Session Account Linking)*: Authenticated user initiating social login links the social ID to the current active `examhub_session` user.
-     - *Scenario E (Mock Fallback Behavior)*: In test mock mode, omitting `mock_email` defaults email to `vk_12345@examhub.ru`, successfully handling missing provider attributes.
+2. **Question Correctness & Bounds Verification**:
+   - `correctIndex` points to a valid option index in `0..options.length - 1` for all 100 questions.
+   - Option arrays consist of 4 distinct non-empty strings.
+   - Explanations are provided for all questions.
 
-3. **Cookie Attributes Verification**:
-   - Set-Cookie headers for `examhub_session` and `oauth_state` were captured and analyzed:
-     - `HttpOnly`: Confirmed present (`httponly`).
-     - `SameSite`: Confirmed set to `lax`.
-     - `Path`: Confirmed set to `/`.
-     - `Secure`: Evaluates to `config.isProd` (true in production, false in local dev/test environment).
+3. **HTML Structural Integrity Verification**:
+   - Theory blocks use well-formed HTML tags.
+   - Container tags are properly closed and nested without syntax breakage.
+   - LaTeX mathematical expressions in `math` and `informatics` are properly double-escaped for template string compatibility.
 
-4. **Test Suite Health**:
-   - Vitest unit tests pass 66/66 (100%).
-   - Playwright E2E tests pass 17/17 (100%).
-   - When running Vitest and Playwright sequentially (`npm run check` sequence), all tests succeed with zero failures.
+4. **Video Metadata Verification**:
+   - All 20 topics include video metadata objects.
+   - Every video object contains mandatory fields: `title`, `duration`, `instructor`, and `youtubeId`.
+
+---
 
 ## 3. Caveats
 
-- `validateOAuthState` relies on client-side cookie clearing (`res.clearCookie("oauth_state")`). In stateless cookie-based CSRF state validation without server-side state tracking, if a client explicitly re-sends the original `oauth_state` header, state clearing relies on browser compliance with `Set-Cookie: oauth_state=; Max-Age=0`.
-- In mock mode (`config.isTest` or `mock=true`), social credentials are mocked via URL parameters (`mock_id`, `mock_email`). Real OAuth flow requires production client secrets (`VK_CLIENT_ID`, `YANDEX_CLIENT_ID`).
+- **Placeholder YouTube IDs**: All 20 videos use `"dQw4w9WgXcQ"` as a mock placeholder ID. Actual video player integration will require replacing these placeholders with real content URLs.
+- **Review Scope**: This challenge strictly evaluated dataset structure, integrity, bounds, and well-formedness for M2 subjects (`math`, `informatics`, `russian`, `social`, `history`) in `js/data.js`.
+
+---
 
 ## 4. Conclusion
 
-The Social Auth implementation (VK ID & Yandex ID) for Milestone 2 meets all security and functional requirements:
-- **CSRF State Validation**: Fully rejects missing or mismatched state parameters with HTTP 400.
-- **Account Linking**: Works reliably for new user creation, returning users, email matching, and active session linking.
-- **Cookie Security**: `examhub_session` and `oauth_state` strictly set `HttpOnly`, `SameSite=Lax`, and `Path=/`.
-- **Test Integrity**: Full unit test suite (66 tests) and Playwright E2E smoke test suite (17 tests) pass cleanly.
+The dataset in `js/data.js` for Milestone 2 subjects (**Math**, **Informatics**, **Russian**, **Social Studies**, **History**) is robust, well-structured, and completely free of duplicate IDs, out-of-bounds indices, malformed HTML, or missing video metadata.
+
+The challenge report has been saved to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\challenger_m2_1\challenge_m2.md`.
+
+---
 
 ## 5. Verification Method
 
-To independently verify these results:
+To independently verify this assessment:
 
-1. Run unit test suite:
+1. Inspect `js/data.js` for M2 subjects: lines 1147 to 4190.
+2. Run project unit tests:
    ```bash
-   npx vitest run --fileParallelism=false
+   npx vitest run tests/unit/data.test.js
    ```
-   *Expected output*: 6 test files passed, 66 tests passed.
-
-2. Run Playwright E2E test suite:
-   ```bash
-   npx playwright test
-   ```
-   *Expected output*: 17 tests passed.
-
-3. Run full verification command:
+3. Run project verification suite:
    ```bash
    npm run check
    ```
-   *Expected output*: Zero failures across lint, build, unit tests, and E2E tests.

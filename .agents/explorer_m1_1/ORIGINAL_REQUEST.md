@@ -1,24 +1,17 @@
-## 2026-08-01T09:02:10Z
+## 2026-08-02T16:35:19Z
+Role: Explorer for Biology Content Expansion (Milestone 1).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_1
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
+Project scope file: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\orchestrator\PROJECT.md
 
-You are Explorer 1 for ExamHub Milestone 1 (R1: Design System & Styling Variants).
-
-Your working directory is: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_1`
-The project root is: `c:\Users\мишка\Desktop\сайтик_бахчасарай`
-
-## Task Objective:
-Investigate the existing styling in `css/style.css`, HTML structure in `index.html`, and JS modules (`js/modules/*`, `js/app.js`). Formulate an implementation strategy for Requirement R1:
-- Design system & styling variants in `css/style.css` (Glassmorphism, dark/light themes via `data-theme` attribute, WCAG color contrast tokens).
-- A theme switcher control (light/dark/auto) integrated into the header/sidebar UI and persisted in `localStorage`.
-- High-contrast / accessible tokens for text, inputs, buttons, panels, and badges.
-- Glassmorphism utility classes (`.glass-panel`, `.glass-card`, `.glass-modal`, backdrop filters).
-
-## Requirements & Constraints:
-- Read `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\orchestrator\PROJECT.md`, `AGENTS.md`, and `DEVELOPMENT_RULES.md`.
-- Pure CSS3 custom properties (CSS variables), no Sass/SCSS/PostCSS processors or external CSS frameworks.
-- Do NOT modify `index.html` or `js/app.js` directly — report findings and recommended changes.
-- Ensure all color tokens meet WCAG AA contrast ratio standards (4.5:1 for standard text, 3:1 for large text).
-- Do NOT add code comments without explicit request.
-
-## Deliverable:
-Write your detailed findings and implementation proposal to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_1\analysis.md` and `handoff.md`.
-When done, use `send_message` to report your summary back to the parent orchestrator (conversation ID: `2b276051-2697-46e6-8823-70b590d0e555`).
+Task:
+Analyze current Biology content in `js/data.js` and design a comprehensive FIPI-aligned curriculum for Biology (ЕГЭ/ОГЭ).
+1. Define 4 key FIPI topics for Biology (e.g. Цитология: Строение и функции клетки, Генетика и Законы Менделя, Анатомия человека и физиология, Экология и Эволюционное учение).
+2. For each topic, design detailed theory HTML content including:
+   - Structured headings (`<h3>`, `<h4>`).
+   - Rich callouts (`<div class="note-info-box">...</div>`).
+   - Data tables (`<table class="data-table">...</table>`) for comparisons (e.g. Митоз vs Мейоз, Органоиды, Симпатическая vs Парасимпатическая НС).
+   - Key terms in `<strong>` and lists `<ul>`/`<ol>`.
+3. For each topic, design 4-5 test questions with `options` array, `correctIndex`, and detailed `explanation`.
+4. Provide video metadata (`title`, `instructor`, `duration`, `youtubeId`, `views`, `thumbnail`).
+5. Write your report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m1_1\handbook_biology.md` and send a summary message back to parent.

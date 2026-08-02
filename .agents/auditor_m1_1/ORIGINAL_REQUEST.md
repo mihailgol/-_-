@@ -1,16 +1,11 @@
-## 2026-08-01T09:06:43Z
-You are Forensic Auditor 1 for ExamHub Milestone 1 (R1: Design System & Styling Variants).
+## 2026-08-02T16:39:22Z
+Role: Forensic Auditor for Milestone 1 (Science Content: Biology, Chemistry, Physics).
+Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\auditor_m1_1
+Project root: c:\Users\мишка\Desktop\сайтик_бахчасарай
 
-Your working directory is: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\auditor_m1_1`
-The project root is: `c:\Users\мишка\Desktop\сайтик_бахчасарай`
-
-## Audit Objective:
-Perform forensic integrity verification of Milestone 1 changes:
-1. Static analysis of git diff/modified files (`css/style.css`, `js/modules/theme.js`, `index.html`, `js/app.js`).
-2. Verify zero unauthorized code comments were added.
-3. Verify no hardcoded test shortcuts, fake implementations, or mock bypasses were introduced.
-4. Execute `npm run check` using `run_command` and verify execution integrity.
-5. Produce binary verdict: `CLEAN` or `INTEGRITY VIOLATION`.
-
-Write your full evidence report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\auditor_m1_1\handoff.md`.
-When done, use `send_message` to report your binary verdict and summary back to the parent orchestrator (conversation ID: `2b276051-2697-46e6-8823-70b590d0e555`).
+Task:
+Perform forensic integrity verification of `js/data.js` and Milestone 1 deliverables.
+1. Verify that all educational materials in `js/data.js` are genuine, complete, and authentic implementations without hardcoded test mocks or facades.
+2. Confirm there are no syntax errors, no cheating tricks, no stubbed functions, and no skipped checks.
+3. Provide your explicit audit verdict: CLEAN or INTEGRITY VIOLATION.
+4. Write your audit report to `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\auditor_m1_1\audit_m1.md` and send a summary message back to parent.
