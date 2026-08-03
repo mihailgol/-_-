@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import vm from "node:vm";
+import { fileURLToPath } from "node:url";
 import { config } from "./config.js";
-import { db, transaction } from "./db.js";
+import { db, transaction, initSchema } from "./db.js";
 
 export function seedContent() {
   const src = readFileSync(resolve(config.root, "js/data.js"), "utf8");
@@ -13,24 +14,67 @@ export function seedContent() {
   if (!data?.subjects) return;
 
   const insSubject = db.prepare(
-    `INSERT OR IGNORE INTO subjects (id, title, icon, color, color_hex, bg_gradient, is_active, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, 1, ?)`
+    `INSERT INTO subjects (id, title, icon, color, color_hex, bg_gradient, is_active, is_other, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       title = excluded.title,
+       icon = excluded.icon,
+       color = excluded.color,
+       color_hex = excluded.color_hex,
+       bg_gradient = excluded.bg_gradient,
+       is_active = excluded.is_active,
+       sort_order = excluded.sort_order`
   );
   const insTopic = db.prepare(
-    `INSERT OR IGNORE INTO topics (id, subject_id, title, is_premium, duration, theory, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO topics (id, subject_id, title, is_premium, duration, theory, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       subject_id = excluded.subject_id,
+       title = excluded.title,
+       is_premium = excluded.is_premium,
+       duration = excluded.duration,
+       theory = excluded.theory,
+       sort_order = excluded.sort_order`
   );
   const insVideo = db.prepare(
-    `INSERT OR IGNORE INTO videos (id, topic_id, title, instructor, duration, youtube_id, views, thumbnail)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO videos (id, topic_id, title, instructor, duration, youtube_id, views, thumbnail, description)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(topic_id) DO UPDATE SET
+       id = excluded.id,
+       title = excluded.title,
+       instructor = excluded.instructor,
+       duration = excluded.duration,
+       youtube_id = excluded.youtube_id,
+       views = excluded.views,
+       thumbnail = excluded.thumbnail,
+       description = excluded.description`
   );
   const insQuestion = db.prepare(
-    `INSERT OR IGNORE INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order, points, correct_answer_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       topic_id = excluded.topic_id,
+       type = excluded.type,
+       question = excluded.question,
+       options_json = excluded.options_json,
+       correct_index = excluded.correct_index,
+       explanation = excluded.explanation,
+       sort_order = excluded.sort_order,
+       points = excluded.points,
+       correct_answer_json = excluded.correct_answer_json`
   );
   const insMockExam = db.prepare(
-    `INSERT OR IGNORE INTO mock_exams (id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, questions_json, conversion_table_json)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO mock_exams (id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, questions_json, conversion_table_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       subject_id = excluded.subject_id,
+       title = excluded.title,
+       exam_type = excluded.exam_type,
+       duration_minutes = excluded.duration_minutes,
+       total_questions = excluded.total_questions,
+       is_premium = excluded.is_premium,
+       questions_json = excluded.questions_json,
+       conversion_table_json = excluded.conversion_table_json`
   );
 
   transaction(() => {
@@ -43,27 +87,39 @@ export function seedContent() {
         if (topic.video) {
           const v = topic.video;
           insVideo.run(
-            v.youtubeId || `${topic.id}_video`,
+            v.id || `${topic.id}_video`,
             topic.id,
             v.title,
             v.instructor,
             v.duration,
             v.youtubeId,
             String(v.views ?? "0"),
-            v.thumbnail
+            v.thumbnail,
+            v.description || ""
           );
         }
 
         (topic.questions || []).forEach((q, qi) => {
+          const correctAnswerJson =
+            q.correctAnswer != null
+              ? JSON.stringify(q.correctAnswer)
+              : q.correct_answer_json
+                ? typeof q.correct_answer_json === "string"
+                  ? q.correct_answer_json
+                  : JSON.stringify(q.correct_answer_json)
+                : null;
+
           insQuestion.run(
             q.id,
             topic.id,
             q.type || "single",
             q.question,
             JSON.stringify(q.options),
-            q.correctIndex,
-            q.explanation,
-            qi
+            q.correctIndex ?? 0,
+            q.explanation || "",
+            qi,
+            q.points ?? 1,
+            correctAnswerJson
           );
         });
       });
@@ -119,4 +175,10 @@ export function seedContent() {
     insMockExam.run("mock_rus_ege_1", "russian", "ЕГЭ по русскому языку — Вариант 1", "EGE", 235, 1, 0, JSON.stringify(rusEgeQuestions), egeConversion);
     insMockExam.run("mock_math_ege_1", "math", "ЕГЭ по математике (Профиль) — Вариант 1", "EGE", 235, 1, 0, JSON.stringify(mathEgeQuestions), egeConversion);
   });
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  initSchema();
+  seedContent();
+  console.log("Database seeded successfully.");
 }

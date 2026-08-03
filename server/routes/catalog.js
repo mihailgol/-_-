@@ -18,6 +18,8 @@ const OTHER_SUBJECTS = [
 
 function buildCatalog(user) {
   const rows = db.prepare("SELECT * FROM subjects WHERE is_active = 1 ORDER BY sort_order").all();
+  const activeSubjectIds = new Set(rows.map((sub) => sub.id));
+  const otherSubjects = OTHER_SUBJECTS.filter((sub) => !activeSubjectIds.has(sub.id));
 
   const subjects = rows.map((sub) => {
     const topics = db.prepare("SELECT * FROM topics WHERE subject_id = ? ORDER BY sort_order").all(sub.id);
@@ -67,7 +69,7 @@ function buildCatalog(user) {
     };
   });
 
-  return { subjects, otherSubjects: OTHER_SUBJECTS };
+  return { subjects, otherSubjects };
 }
 
 router.get("/subjects", optionalAuth, (req, res) => {

@@ -82,11 +82,11 @@
 - **Решение:** Добавлены стили `:focus-visible` и `button:disabled` в [css/style.css](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/css/style.css).
 - **Статус:** исправлено.
 
-### 14. Отсутствие Favicon в HTML
-- **Симптом:** 404 ошибка `/favicon.ico` в консоли браузера.
-- **Причина:** Отсутствовал тег `<link rel="icon">`.
-- **Решение:** Добавлен SVG favicon в `<head>` [index.html](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/index.html).
-- **Статус:** исправлено.
+### 15. Коллизия UNIQUE constraint в videos.id при сидинге базы данных
+- **Симптом:** При выполнении `node server/seed.js` возникала ошибка `UNIQUE constraint failed: videos.id`.
+- **Причина:** В `js/data.js` у нескольких тем использовался одинаковый `youtubeId: "dQw4w9WgXcQ"`. В `server/seed.js` в качестве primary key `id` таблицы `videos` передавалось значение `v.youtubeId`, из-за чего повторные вставки вызывали коллизию уникального ключа SQLite.
+- **Решение:** В `server/seed.js` в качестве первичного ключа `id` используется `v.id || `${topic.id}_video``, а сама ссылка на YouTube хранится в поле `youtube_id`. Запросы на вставку во все таблицы переведены на синтаксис SQLite UPSERT (`ON CONFLICT... DO UPDATE SET...`).
+- **Статус:** исправлено, проверено юнит-тестами `tests/unit/m3_verification.test.js` и повторным вызовом `node server/seed.js`.
 
 ## Открытые вопросы
 - Содержимое конспектов/вопросов — учебный контент, динамически пополняется.
