@@ -26,6 +26,20 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/mock-exams", mockExamRoutes);
 app.use("/api/teacher", teacherRoutes);
 
+const FRONTEND_ASSETS = ["/js", "/css", "/index.html"];
+
+app.use((req, res, next) => {
+  const pathname = req.path;
+  const isFrontend =
+    pathname === "/" ||
+    FRONTEND_ASSETS.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  if (!isFrontend) {
+    res.status(404).end();
+    return;
+  }
+  next();
+});
+
 app.use(express.static(config.root));
 
 app.use((err, _req, res, _next) => {

@@ -35,7 +35,7 @@ export async function renderMockExamCatalog() {
         const lockIcon = isLocked ? `<span class="premium-badge">👑 Premium</span>` : `<span class="free-badge">Бесплатно</span>`;
 
         return `
-          <div class="mock-exam-card ${isLocked ? "locked" : ""}" data-id="${exam.id}" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border); position: relative; display: flex; flex-direction: column; justify-space-between;">
+          <div class="mock-exam-card ${isLocked ? "locked" : ""}" data-id="${exam.id}" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border); position: relative; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span class="exam-type-badge" style="background: var(--color-bg-secondary); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;">${badgeText}</span>

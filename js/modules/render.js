@@ -1,5 +1,5 @@
 import { appState } from "./state.js";
-import { formatNumber } from "./utils.js";
+import { formatNumber, pluralDays } from "./utils.js";
 import { renderAuthHeader } from "./auth.js";
 import { updatePlanUI } from "./plan.js";
 import { updateAnalyticsUI } from "./analytics.js";
@@ -49,6 +49,16 @@ export function updateUIFromState() {
   if (streakEl) streakEl.textContent = appState.stats.streak;
   if (achievementEl) achievementEl.textContent = appState.stats.achievements;
   if (todayEl) todayEl.textContent = appState.stats.questionsToday;
+
+  const notifStreakText = document.getElementById("notifStreakText");
+  if (notifStreakText) {
+    notifStreakText.textContent = pluralDays(appState.stats.streak);
+  }
+
+  const analyticsStreakText = document.getElementById("analyticsStreakText");
+  if (analyticsStreakText) {
+    analyticsStreakText.textContent = pluralDays(appState.stats.streak);
+  }
 
   updatePlanUI();
   updateAnalyticsUI();

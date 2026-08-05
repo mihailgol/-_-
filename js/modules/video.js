@@ -1,4 +1,4 @@
-import { appState, saveStateToStorage } from "./state.js";
+import { appState, saveStateToStorage, registerActivity } from "./state.js";
 import { parseDuration } from "./utils.js";
 import { showToast, openModal } from "./ui.js";
 import { updateUIFromState } from "./render.js";
@@ -93,6 +93,7 @@ export function toggleMockVideoPlay() {
         if (!appState.videoState.rewarded) {
           appState.videoState.rewarded = true;
           appState.stats.lessonsWatched = (appState.stats.lessonsWatched || 0) + 1;
+          registerActivity();
           saveStateToStorage();
           updateUIFromState();
           showToast("🎓 Лекция изучена", "Вы прослушали лекцию до конца. Прогресс сохранен!");

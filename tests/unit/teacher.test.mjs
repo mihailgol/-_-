@@ -150,4 +150,114 @@ describe("Teacher / Tutor Cabinet API", () => {
     expect(detailData.assignments.length).toBe(1);
     expect(detailData.assignments[0].title).toBe("Домашнее задание: Строение клетки");
   });
+
+  it("allows student to submit an assignment", async () => {
+    const teacher = await registerUser("Виктор Петрович", "teacher4@example.com");
+    const student = await registerUser("Дарья Ученица", "student2@example.com");
+
+    const groupRes = await globalThis.fetch(`${baseUrl}/api/teacher/groups`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: teacher.cookie,
+      },
+      body: JSON.stringify({ name: "ЕГЭ Химия" }),
+    });
+    const { group } = await groupRes.json();
+
+    await globalThis.fetch(`${baseUrl}/api/teacher/join`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: student.cookie,
+      },
+      body: JSON.stringify({ inviteCode: group.inviteCode }),
+    });
+
+    const assignRes = await globalThis.fetch(`${baseUrl}/api/teacher/assignments`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: teacher.cookie,
+      },
+      body: JSON.stringify({
+        groupId: group.id,
+        title: "ДЗ: Строение атома",
+        subjectId: "chemistry",
+      }),
+    });
+    const { assignment } = await assignRes.json();
+
+    const submitRes = await globalThis.fetch(`${baseUrl}/api/teacher/assignments/${assignment.id}/submit`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: student.cookie,
+      },
+      body: JSON.stringify({ score: 4, total: 5 }),
+    });
+    expect(submitRes.status).toBe(200);
+    const submitData = await submitRes.json();
+    expect(submitData.submission.percent).toBe(80);
+
+    const listRes = await globalThis.fetch(`${baseUrl}/api/teacher/my-assignments`, {
+      headers: { cookie: student.cookie },
+    });
+    const listData = await listRes.json();
+    expect(listData.assignments[0].submission).toEqual({
+      score: 4,
+      total: 5,
+      percent: 80,
+      submittedAt: expect.any(String),
+    });
+  });
+
+  it("rejects invalid assignment submissions", async () => {
+    const teacher = await registerUser("Ирина Олеговна", "teacher5@example.com");
+    const outsider = await registerUser("Посторонний", "outsider1@example.com");
+
+    const groupRes = await globalThis.fetch(`${baseUrl}/api/teacher/groups`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: teacher.cookie,
+      },
+      body: JSON.stringify({ name: "Контрольная группа" }),
+    });
+    const { group } = await groupRes.json();
+
+    const assignRes = await globalThis.fetch(`${baseUrl}/api/teacher/assignments`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: teacher.cookie,
+      },
+      body: JSON.stringify({
+        groupId: group.id,
+        title: "ДЗ: Запрет доступа",
+        subjectId: "biology",
+      }),
+    });
+    const { assignment } = await assignRes.json();
+
+    const notMemberRes = await globalThis.fetch(`${baseUrl}/api/teacher/assignments/${assignment.id}/submit`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: outsider.cookie,
+      },
+      body: JSON.stringify({ score: 3, total: 3 }),
+    });
+    expect(notMemberRes.status).toBe(403);
+
+    const badBodyRes = await globalThis.fetch(`${baseUrl}/api/teacher/assignments/${assignment.id}/submit`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: teacher.cookie,
+      },
+      body: JSON.stringify({ score: 10, total: 5 }),
+    });
+    expect(badBodyRes.status).toBe(400);
+  });
 });

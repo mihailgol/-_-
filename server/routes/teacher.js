@@ -183,6 +183,45 @@ router.post("/assignments", requireAuth, (req, res) => {
   });
 });
 
+router.post("/assignments/:id/submit", requireAuth, (req, res) => {
+  const { score, total } = req.body || {};
+
+  if (typeof score !== "number" || typeof total !== "number" || total <= 0 || score < 0 || score > total) {
+    return res.status(400).json({ error: "Некорректный результат выполнения" });
+  }
+
+  const assignment = db
+    .prepare(`SELECT a.* FROM assignments a WHERE a.id = ?`)
+    .get(req.params.id);
+  if (!assignment) {
+    return res.status(404).json({ error: "Задание не найдено" });
+  }
+
+  const member = db
+    .prepare(`SELECT id FROM group_members WHERE group_id = ? AND student_id = ?`)
+    .get(assignment.group_id, req.user.id);
+  if (!member) {
+    return res.status(403).json({ error: "Вы не состоите в группе этого задания" });
+  }
+
+  const percent = Math.round((score / total) * 100);
+  const existing = db
+    .prepare(`SELECT id FROM assignment_submissions WHERE assignment_id = ? AND student_id = ?`)
+    .get(assignment.id, req.user.id);
+
+  if (existing) {
+    db.prepare(
+      `UPDATE assignment_submissions SET score = ?, total = ?, percent = ?, submitted_at = datetime('now') WHERE id = ?`
+    ).run(score, total, percent, existing.id);
+  } else {
+    db.prepare(
+      `INSERT INTO assignment_submissions (assignment_id, student_id, score, total, percent) VALUES (?, ?, ?, ?, ?)`
+    ).run(assignment.id, req.user.id, score, total, percent);
+  }
+
+  res.json({ success: true, submission: { score, total, percent } });
+});
+
 router.get("/my-assignments", requireAuth, (req, res) => {
   const assignments = db.prepare(`
     SELECT a.*, g.name as group_name, u.name as teacher_name,

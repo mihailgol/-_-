@@ -1,13 +1,9 @@
-import { appState } from "./state.js";
+import { getSubjectProgress } from "./state.js";
 
 export function updateAnalyticsUI() {
-  const solved = appState.stats.testsSolved;
-  const avgPercent = appState.stats.avgPercent || 0;
-
-  const baseBio = 50 + Math.round(avgPercent * 0.3);
-  const baseChem = 42 + Math.round(avgPercent * 0.28);
-  const bioPercentVal = Math.min(100, Math.round(baseBio + solved * 0.015));
-  const chemPercentVal = Math.min(100, Math.round(baseChem + solved * 0.015));
+  const subjects = window.EXAM_DATA ? window.EXAM_DATA.subjects : {};
+  const bioPercentVal = getSubjectProgress(subjects.biology);
+  const chemPercentVal = getSubjectProgress(subjects.chemistry);
 
   const bioPercentText = document.getElementById("analyticsBioPercent");
   const bioBar = document.getElementById("analyticsBioBar");

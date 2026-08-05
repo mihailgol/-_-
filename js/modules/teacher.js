@@ -1,6 +1,7 @@
 import { api } from "./utils.js";
 import { showToast, openModal, closeModal } from "./ui.js";
 import { appState } from "./state.js";
+import { startQuiz } from "./quiz.js";
 
 export async function renderTeacherCabinet() {
   const container = document.getElementById("teacherGroupsList");
@@ -261,16 +262,36 @@ export async function renderStudentAssignments() {
             ${
               a.submission
                 ? `<span style="background: var(--color-bg-secondary); color: var(--color-green); padding: 6px 12px; border-radius: 8px; font-weight: 600;">Выполнено: ${a.submission.percent}%</span>`
-                : `<button class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 16px;">Выполнить</button>`
+                : `<button class="btn btn-primary assignment-submit-btn" data-assignment-id="${a.id}" data-subject-id="${a.subjectId}" data-topic-id="${a.topicId || ""}" style="font-size: 0.85rem; padding: 8px 16px;">Выполнить</button>`
             }
           </div>
         </div>
       `
       )
       .join("");
+
+    container.querySelectorAll(".assignment-submit-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const subjectId = btn.getAttribute("data-subject-id");
+        const topicId = btn.getAttribute("data-topic-id");
+        const assignmentId = btn.getAttribute("data-assignment-id");
+        startAssignmentQuiz({ id: assignmentId, subjectId, topicId });
+      });
+    });
   } catch (err) {
     console.error("Failed to load student assignments:", err);
   }
+}
+
+function startAssignmentQuiz(assignment) {
+  const subject = window.EXAM_DATA.subjects[assignment.subjectId];
+  const topic = subject && subject.topics.find((t) => t.id === assignment.topicId);
+  if (!topic || !topic.questions || topic.questions.length === 0) {
+    showToast("⚠️ Нет теста", "К этому заданию не привязан тест. Обратитесь к преподавателю.");
+    return;
+  }
+  appState.pendingAssignmentId = assignment.id;
+  startQuiz(topic.questions, `Задание: ${topic.title}`, "teacher");
 }
 
 export function initTeacherEvents() {

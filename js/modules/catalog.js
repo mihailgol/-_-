@@ -1,8 +1,9 @@
-import { appState } from "./state.js";
+import { appState, markTopicRead, isTopicRead } from "./state.js";
 import { showToast, openModal, closeModal } from "./ui.js";
 import { switchView, pushSubView } from "./navigation.js";
 import { startQuiz } from "./quiz.js";
 import { openVideoPlayer } from "./video.js";
+import { updateUIFromState } from "./render.js";
 
 let subjectTabsInitDone = false;
 
@@ -186,7 +187,7 @@ export function renderSubjectNotes(subject) {
       </div>
       <h4 class="note-item-title">${topic.title}</h4>
       <div class="note-item-footer">
-        <span class="note-item-meta">100% изучено</span>
+        <span class="note-item-meta">${isTopicRead(subject.id, topic.id) ? "Изучено" : "Не изучено"}</span>
         <button class="note-item-btn ${topic.isPremium ? "premium" : ""}">Читать конспект →</button>
       </div>
     `;
@@ -302,6 +303,7 @@ export function loadNoteReader(subjectId, noteId, { replace = false } = {}) {
   } else {
     document.getElementById("noteBody").innerHTML = topic.theory;
     lockOverlay.style.display = "none";
+    markTopicRead(subjectId, noteId);
   }
 
   document.getElementById("noteReaderBackBtn").onclick = () => {
@@ -324,6 +326,8 @@ export function loadNoteReader(subjectId, noteId, { replace = false } = {}) {
   });
 
   switchView("note-reader");
+
+  updateUIFromState();
 
   if (replace) {
     history.replaceState({ view: "note-reader", subjectId, noteId }, "", `#note-reader:${subjectId}:${noteId}`);
@@ -350,7 +354,7 @@ export function renderGeneralNotes() {
         </div>
         <h4 class="note-item-title">${topic.title}</h4>
         <div class="note-item-footer">
-          <span class="note-item-meta">100% изучено</span>
+          <span class="note-item-meta">${isTopicRead(subject.id, topic.id) ? "Изучено" : "Не изучено"}</span>
           <button class="note-item-btn" style="color: ${subject.color}">Читать →</button>
         </div>
       `;

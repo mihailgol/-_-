@@ -1,9 +1,10 @@
-import { appState, saveStateToStorage } from "./state.js";
+import { appState, saveStateToStorage, registerActivity } from "./state.js";
 import { api } from "./utils.js";
 import { showToast } from "./ui.js";
 import { switchView, pushSubView } from "./navigation.js";
 import { loadSubjectDetail } from "./catalog.js";
 import { updateUIFromState } from "./render.js";
+import { renderStudentAssignments } from "./teacher.js";
 
 export function startQuiz(questions, title, origin) {
   appState.activeQuizQuestions = questions;
@@ -143,6 +144,7 @@ export function finishQuiz() {
 
   appState.stats.testsSolved += 1;
   appState.stats.avgPercent = Math.round((appState.stats.avgPercent * 9 + percentage) / 10);
+  registerActivity();
   saveStateToStorage();
   updateUIFromState();
 
@@ -160,6 +162,20 @@ export function finishQuiz() {
         appState.stats.avgPercent = res.avgPercent;
         saveStateToStorage();
         updateUIFromState();
+      })
+      .catch(() => {});
+  }
+
+  if (appState.pendingAssignmentId) {
+    const assignmentId = appState.pendingAssignmentId;
+    appState.pendingAssignmentId = null;
+    api(`/api/teacher/assignments/${assignmentId}/submit`, {
+      method: "POST",
+      body: JSON.stringify({ score, total }),
+    })
+      .then(() => {
+        showToast("✅ Задание выполнено", "Результат отправлен преподавателю.");
+        renderStudentAssignments();
       })
       .catch(() => {});
   }
@@ -198,6 +214,8 @@ export function returnFromQuiz() {
     switchView("tests");
   } else if (origin === "subject" && appState.currentSubject) {
     loadSubjectDetail(appState.currentSubject.id);
+  } else if (origin === "teacher") {
+    switchView("teacher");
   } else {
     switchView("subjects");
   }

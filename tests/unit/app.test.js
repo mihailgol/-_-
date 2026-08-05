@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { formatNumber, parseDuration } from "../../js/modules/utils.js";
-import { appState, saveStateToStorage, loadStateFromStorage } from "../../js/modules/state.js";
+import { formatNumber, parseDuration, pluralDays } from "../../js/modules/utils.js";
+import {
+  appState,
+  saveStateToStorage,
+  loadStateFromStorage,
+  markTopicRead,
+  isTopicRead,
+  registerActivity,
+  getSubjectProgress,
+  setPlanTaskDone,
+} from "../../js/modules/state.js";
 
 beforeEach(() => {
   localStorage.clear();
@@ -12,14 +21,18 @@ beforeEach(() => {
     isPremium: false,
   };
   appState.stats = {
-    testsSolved: 1248,
-    avgPercent: 87,
-    streak: 23,
-    achievements: 15,
-    questionsToday: 125,
+    testsSolved: 0,
+    avgPercent: 0,
+    streak: 0,
+    achievements: 0,
+    questionsToday: 0,
     lessonsWatched: 0,
+    readTopics: [],
+    lastActiveDate: null,
+    planTasks: {},
   };
   appState.customTopics = {};
+  appState.pendingAssignmentId = null;
 });
 
 describe("formatNumber", () => {
@@ -74,5 +87,98 @@ describe("state persistence", () => {
     localStorage.setItem("examhub_state", "{not valid json");
     expect(() => loadStateFromStorage()).not.toThrow();
     expect(appState.user.name).toBe("Артём Иванов");
+  });
+});
+
+describe("pluralDays", () => {
+  it("pluralizes russian day words", () => {
+    expect(pluralDays(1)).toBe("1 день");
+    expect(pluralDays(2)).toBe("2 дня");
+    expect(pluralDays(5)).toBe("5 дней");
+    expect(pluralDays(11)).toBe("11 дней");
+    expect(pluralDays(21)).toBe("21 день");
+    expect(pluralDays(23)).toBe("23 дня");
+    expect(pluralDays(0)).toBe("0 дней");
+  });
+});
+
+describe("study progress tracking", () => {
+  it("marks a topic as read", () => {
+    markTopicRead("biology", "bio_cytology");
+    expect(isTopicRead("biology", "bio_cytology")).toBe(true);
+    expect(isTopicRead("biology", "bio_genetics")).toBe(false);
+  });
+
+  it("computes subject progress percentage", () => {
+    const subject = {
+      id: "biology",
+      topics: [{ id: "a" }, { id: "b" }, { id: "c" }],
+    };
+    markTopicRead("biology", "a");
+    markTopicRead("biology", "b");
+    expect(getSubjectProgress(subject)).toBe(67);
+    expect(getSubjectProgress({ id: "empty", topics: [] })).toBe(0);
+  });
+
+  it("persists read topics to localStorage", () => {
+    markTopicRead("chemistry", "chem_atom");
+    const saved = JSON.parse(localStorage.getItem("examhub_state"));
+    expect(saved.stats.readTopics).toContain("chemistry:chem_atom");
+  });
+});
+
+describe("streak calculation", () => {
+  function dateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function shiftDays(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return dateKey(d);
+  }
+
+  it("starts streak from the first activity", () => {
+    registerActivity();
+    expect(appState.stats.streak).toBe(1);
+    expect(appState.stats.lastActiveDate).toBe(dateKey(new Date()));
+  });
+
+  it("keeps streak on same-day activity", () => {
+    appState.stats.streak = 5;
+    appState.stats.lastActiveDate = dateKey(new Date());
+    registerActivity();
+    expect(appState.stats.streak).toBe(5);
+  });
+
+  it("increments streak when active on consecutive days", () => {
+    appState.stats.streak = 5;
+    appState.stats.lastActiveDate = shiftDays(-1);
+    registerActivity();
+    expect(appState.stats.streak).toBe(6);
+  });
+
+  it("resets streak after a gap", () => {
+    appState.stats.streak = 5;
+    appState.stats.lastActiveDate = shiftDays(-3);
+    registerActivity();
+    expect(appState.stats.streak).toBe(1);
+  });
+});
+
+describe("plan tasks persistence", () => {
+  it("stores completed tasks and restores them", () => {
+    setPlanTaskDone("t1", true);
+    setPlanTaskDone("t2", true);
+    setPlanTaskDone("t2", false);
+
+    expect(appState.stats.planTasks).toEqual({ t1: true });
+
+    localStorage.clear();
+    loadStateFromStorage();
+    expect(appState.stats.planTasks).toEqual({ t1: true });
   });
 });

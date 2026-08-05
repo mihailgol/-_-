@@ -61,7 +61,7 @@ test.describe("ExamHub — smoke tests", () => {
       if (msg.type() === "error") errors.push(msg.text());
     });
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
 
     expect(errors).toEqual([]);
@@ -77,7 +77,7 @@ test.describe("ExamHub — smoke tests", () => {
       if (url.includes("localhost") || /\.(js|css)$/.test(url)) critical.push(url);
     });
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
 
     expect(critical).toEqual([]);
@@ -144,6 +144,37 @@ test.describe("ExamHub — smoke tests", () => {
     await expect(page.locator("#resultsPercentText")).toBeVisible();
   });
 
+  test("отслеживание изучения конспектов и серии дней", async ({ page }) => {
+    await page.locator("#heroStartBtn").click();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
+
+    const firstNoteCard = page.locator(".note-item-card").first();
+    await expect(firstNoteCard.locator(".note-item-meta").last()).toHaveText("Не изучено");
+
+    await firstNoteCard.click();
+    await expect(page.locator("#view-note-reader")).toBeVisible();
+    await expect(page.locator("#statStreak")).toHaveText("1");
+
+    await page.locator("#noteReaderBackBtn").click();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
+    await expect(page.locator(".note-item-card").first().locator(".note-item-meta").last()).toHaveText("Изучено");
+  });
+
+  test("прогресс плана сохраняется в localStorage", async ({ page }) => {
+    await page.locator('.sidebar-nav .nav-item[data-view="plan"]').click();
+    await expect(page.locator("#view-plan")).toBeVisible();
+
+    await expect(page.locator("#planWeekPercentText")).toHaveText("0%");
+    await page.locator("#planTask1").evaluate((el) => {
+      el.checked = true;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await expect(page.locator("#planWeekPercentText")).toHaveText("20%");
+
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("examhub_state")));
+    expect(saved.stats.planTasks.t1).toBe(true);
+  });
+
   test("работает навигация кнопками браузера «Назад»/«Вперёд»", async ({ page }) => {
     const errors = [];
     page.on("pageerror", (err) => errors.push(String(err)));
@@ -151,19 +182,19 @@ test.describe("ExamHub — smoke tests", () => {
     await page.locator("#heroStartBtn").click();
     await expect(page.locator("#view-subject-detail")).toBeVisible();
 
-    await page.goBack();
+    await page.goBack({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#view-subjects")).toBeVisible();
 
-    await page.goForward();
+    await page.goForward({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#view-subject-detail")).toBeVisible();
 
     await page.locator('.sidebar-nav .nav-item[data-view="notes"]').click();
     await expect(page.locator("#view-notes")).toBeVisible();
 
-    await page.goBack();
+    await page.goBack({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#view-subject-detail")).toBeVisible();
 
-    await page.goBack();
+    await page.goBack({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#view-subjects")).toBeVisible();
 
     expect(errors).toEqual([]);

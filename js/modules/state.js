@@ -19,12 +19,15 @@ export let appState = {
     isPremium: false,
   },
   stats: {
-    testsSolved: 1248,
-    avgPercent: 87,
-    streak: 23,
-    achievements: 15,
-    questionsToday: 125,
+    testsSolved: 0,
+    avgPercent: 0,
+    streak: 0,
+    achievements: 0,
+    questionsToday: 0,
     lessonsWatched: 0,
+    readTopics: [],
+    lastActiveDate: null,
+    planTasks: {},
   },
   currentSubject: null,
   activeNoteId: null,
@@ -35,6 +38,7 @@ export let appState = {
   activeQuizScore: 0,
   activeQuizAnswers: [],
   activeSelectedOptionIndex: null,
+  pendingAssignmentId: null,
   customTopics: {},
   videoState: {
     isPlaying: false,
@@ -78,4 +82,54 @@ export function saveStateToStorage() {
       customTopics: appState.customTopics,
     })
   );
+}
+
+function toDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function registerActivity() {
+  const today = toDateKey(new Date());
+  const last = appState.stats.lastActiveDate;
+  if (last === today) {
+    return;
+  }
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  appState.stats.streak = last === toDateKey(yesterday) ? appState.stats.streak + 1 : 1;
+  appState.stats.lastActiveDate = today;
+  saveStateToStorage();
+}
+
+export function markTopicRead(subjectId, topicId) {
+  const key = `${subjectId}:${topicId}`;
+  if (!appState.stats.readTopics.includes(key)) {
+    appState.stats.readTopics.push(key);
+  }
+  registerActivity();
+  saveStateToStorage();
+}
+
+export function isTopicRead(subjectId, topicId) {
+  return appState.stats.readTopics.includes(`${subjectId}:${topicId}`);
+}
+
+export function getSubjectProgress(subject) {
+  if (!subject || !Array.isArray(subject.topics) || subject.topics.length === 0) {
+    return 0;
+  }
+  const read = subject.topics.filter((topic) => isTopicRead(subject.id, topic.id)).length;
+  return Math.round((read / subject.topics.length) * 100);
+}
+
+export function setPlanTaskDone(taskId, done) {
+  if (done) {
+    appState.stats.planTasks[taskId] = true;
+  } else {
+    delete appState.stats.planTasks[taskId];
+  }
+  saveStateToStorage();
 }

@@ -1,17 +1,32 @@
-import { appState } from "./state.js";
+import { appState, setPlanTaskDone } from "./state.js";
 import { showToast, openModal } from "./ui.js";
 
+export function restorePlanTasks() {
+  const checkboxes = document.querySelectorAll(".plan-check-input");
+  checkboxes.forEach((cb) => {
+    const taskId = cb.dataset.taskId;
+    if (!taskId || !appState.stats.planTasks[taskId]) return;
+    cb.checked = true;
+    const parentLabel = cb.closest(".plan-task-item");
+    if (parentLabel) parentLabel.classList.add("done");
+  });
+}
+
 export function initPlanEvents() {
+  restorePlanTasks();
+
   const checkboxes = document.querySelectorAll(".plan-check-input");
   checkboxes.forEach((cb) => {
     cb.addEventListener("change", () => {
       const parentLabel = cb.closest(".plan-task-item");
+      if (!parentLabel) return;
       if (cb.checked) {
         parentLabel.classList.add("done");
       } else {
         parentLabel.classList.remove("done");
       }
 
+      setPlanTaskDone(cb.dataset.taskId, cb.checked);
       calculatePlanProgress();
     });
   });
@@ -22,18 +37,15 @@ export function initPlanEvents() {
       openModal("premiumModal");
     });
   }
+
+  calculatePlanProgress({ silent: true });
 }
 
-export function calculatePlanProgress() {
+export function calculatePlanProgress({ silent = false } = {}) {
   const checkboxes = document.querySelectorAll(".plan-check-input");
-  let checkedCount = 2;
-  const totalTasks = 7;
-
-  checkboxes.forEach((cb) => {
-    if (cb.checked) checkedCount++;
-  });
-
-  const percent = Math.round((checkedCount / totalTasks) * 100);
+  const totalTasks = checkboxes.length;
+  const checkedCount = Array.from(checkboxes).filter((cb) => cb.checked).length;
+  const percent = totalTasks === 0 ? 0 : Math.round((checkedCount / totalTasks) * 100);
 
   const percentText = document.getElementById("planWeekPercentText");
   if (percentText) {
@@ -56,7 +68,7 @@ export function calculatePlanProgress() {
     }
   }
 
-  if (percent === 100) {
+  if (percent === 100 && !silent) {
     showToast("🎉 План выполнен!", "Поздравляем! Вы полностью закрыли учебный трек этой недели.");
   }
 }
