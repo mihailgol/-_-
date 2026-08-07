@@ -1,8 +1,10 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import bcrypt from "bcryptjs";
 import { config } from "./config.js";
 import { seedContent } from "./seed.js";
+
 
 mkdirSync(dirname(config.dbPath), { recursive: true });
 
@@ -290,20 +292,19 @@ export function initSchema() {
 }
 
 export function seedAdminUser() {
-  import("bcryptjs").then((bcrypt) => {
-    const passwordHash = bcrypt.default.hashSync("admin123", 10);
-    const admin = db.prepare("SELECT id FROM users WHERE email = ?").get("admin@examhub.ru");
-    if (!admin) {
-      db.prepare(
-        "INSERT INTO users (email, password_hash, name, role, status, exam_type) VALUES (?, ?, ?, 'ADMIN', 'active', 'EGE')"
-      ).run("admin@examhub.ru", passwordHash, "Главный Администратор");
-    } else {
-      db.prepare(
-        "UPDATE users SET password_hash = ?, role = 'ADMIN', status = 'active' WHERE email = ?"
-      ).run(passwordHash, "admin@examhub.ru");
-    }
-  });
+  const passwordHash = bcrypt.hashSync("admin123", 10);
+  const admin = db.prepare("SELECT id FROM users WHERE email = ?").get("admin@examhub.ru");
+  if (!admin) {
+    db.prepare(
+      "INSERT INTO users (email, password_hash, name, role, status, exam_type) VALUES (?, ?, ?, 'ADMIN', 'active', 'EGE')"
+    ).run("admin@examhub.ru", passwordHash, "Главный Администратор");
+  } else {
+    db.prepare(
+      "UPDATE users SET password_hash = ?, role = 'ADMIN', status = 'active' WHERE email = ?"
+    ).run(passwordHash, "admin@examhub.ru");
+  }
 }
+
 
 
 export function transaction(fn) {
