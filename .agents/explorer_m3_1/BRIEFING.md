@@ -1,36 +1,38 @@
-# BRIEFING — 2026-08-02T22:14:40Z
+# BRIEFING — 2026-08-03T21:32:20Z
 
 ## Mission
-Analyze database seeding in `server/seed.js` and data structure in `js/data.js` to recommend clean DB seeding strategy for 8 subjects, 32 topics, 160 questions, theories, videos, options.
+Investigate SQLite DB schema in server/db.js and seeding logic in server/seed.js vs js/data.js, determine data sync strategy for Milestone 3.
 
 ## 🔒 My Identity
 - Archetype: explorer
-- Roles: Explorer 1 for Milestone 3
+- Roles: DB explorer, system analyst
 - Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1
-- Original parent: e673ff19-9024-4136-8a23-ecd878887588
-- Milestone: Milestone 3 (DB Sync & API Integration)
+- Original parent: 6e381b70-aa58-4c53-983f-3135b190edd8
+- Milestone: Milestone 3 (DB Sync & Seeding Strategy)
 
 ## 🔒 Key Constraints
-- Read-only investigation — do NOT implement / modify source code
-- Analyze server/seed.js, server/db.js, js/data.js
+- Read-only investigation — do NOT implement code changes in project code (only write reports in explorer_m3_1 folder)
+- Must inspect db.js, seed.js, data.js, ORIGINAL_REQUEST.md, PROJECT.md
 
 ## Current Parent
-- Conversation ID: e673ff19-9024-4136-8a23-ecd878887588
-- Updated: 2026-08-02T22:14:40Z
+- Conversation ID: 6e381b70-aa58-4c53-983f-3135b190edd8
+- Updated: 2026-08-03T21:32:20Z
 
 ## Investigation State
-- **Explored paths**: `server/seed.js`, `server/db.js`, `js/data.js`
+- **Explored paths**: `server/db.js`, `server/seed.js`, `server/index.js`, `server/config.js`, `js/data.js`, `tests/unit/m3_verification.test.js`, `.agent/bugs.md`
 - **Key findings**:
-  - `js/data.js` contains 10 subjects (8 core primary subjects with 4 topics each = 32 topics, 5 questions per topic = 160 core questions + 2 supplementary subjects).
-  - `server/seed.js` uses `INSERT OR IGNORE INTO`, which silently ignores content/theory/question updates when database already exists.
-  - `INSERT OR REPLACE` risks cascade-deleting user data due to `ON DELETE CASCADE` in `mock_exam_attempts`.
-  - Fix recommendation: SQLite UPSERT syntax (`INSERT INTO ... ON CONFLICT(id) DO UPDATE SET ...`).
-- **Unexplored areas**: None (investigation complete).
+  1. `server/seed.js` uses `UPSERT` (`INSERT INTO ... ON CONFLICT(...) DO UPDATE SET ...`) within a transaction (`transaction(...)`).
+  2. `UPSERT` is critical for data preservation because `mock_exam_attempts` has `mock_exam_id REFERENCES mock_exams(id) ON DELETE CASCADE`. Clean table deletion (`DELETE FROM mock_exams;`) would wipe user test attempts.
+  3. `initDb()` runs on server startup (`server/index.js`), executing `initSchema()` and `seedContent()` automatically.
+  4. Current database contents in `data/examhub.db`: 10 subjects, 34 topics, 34 videos, 162 questions, 16 mock exams (fully synced with `js/data.js` and `seed.js`).
+- **Unexplored areas**: None. Investigation complete.
 
 ## Key Decisions Made
-- Completed analysis report `analysis.md` and handoff report `handoff.md`.
+- Initialized DISPATCH.md, BRIEFING.md, analysis.md, handoff.md.
+- Verified that UPSERT pattern in `seed.js` is safe, idempotent, and optimal for Milestone 3 DB sync strategy.
 
 ## Artifact Index
-- ORIGINAL_REQUEST.md — Original task prompt
-- analysis.md — Detailed DB seeding analysis report
-- handoff.md — 5-component handoff report
+- `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1\DISPATCH.md` — Dispatch log
+- `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1\BRIEFING.md` — Working memory
+- `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1\analysis.md` — Detailed DB & seeding strategy investigation report
+- `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1\handoff.md` — Handoff summary report for Parent/Worker

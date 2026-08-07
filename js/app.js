@@ -1,6 +1,7 @@
 import { appState, GUEST_USER, HASH_VIEWS, loadStateFromStorage } from "./modules/state.js";
 import { api } from "./modules/utils.js";
-import { showToast, initGlobalUIEvents } from "./modules/ui.js";
+import { showToast, initGlobalUIEvents, closeModal } from "./modules/ui.js";
+
 import { switchView, initRouter } from "./modules/navigation.js";
 import { renderSubjects, renderGeneralNotes, renderGeneralVideos } from "./modules/catalog.js";
 import { updateUIFromState } from "./modules/render.js";
@@ -11,9 +12,13 @@ import { initAIEvents } from "./modules/ai.js";
 import { initPlanEvents } from "./modules/plan.js";
 import { initAdminEvents } from "./modules/admin.js";
 import { initTheme } from "./modules/theme.js";
-import { initExamTypeToggle } from "./modules/exam-type.js";
+import { initExamTypeToggle, setExamType } from "./modules/exam-type.js";
 import { renderMockExamCatalog, initMockExamEvents } from "./modules/mock-exam.js";
 import { renderTeacherCabinet, renderStudentAssignments, initTeacherEvents } from "./modules/teacher.js";
+import { renderAdminDashboard } from "./modules/admin-dashboard.js";
+import { initTheoryEditor } from "./modules/theory-editor.js";
+import { initTestEditor } from "./modules/test-editor.js";
+import { initAnalyticsTracker } from "./modules/analytics-engine.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -35,6 +40,9 @@ async function loadAppData() {
       appState.user.role = user.role;
       appState.user.avatar = user.avatar || appState.user.avatar;
       appState.user.isPremium = user.isPremium;
+      if (user.examType) {
+        setExamType(user.examType, false);
+      }
     } else {
       appState.user = { ...GUEST_USER };
     }
@@ -67,6 +75,34 @@ document.addEventListener("DOMContentLoaded", () => {
   initAdminEvents();
   initTeacherEvents();
   initMockExamEvents();
+  initTheoryEditor();
+  initTestEditor();
+  initAnalyticsTracker();
+
+  document.getElementById("adminLoginSubmitBtn")?.addEventListener("click", async () => {
+    const email = document.getElementById("adminLoginEmail")?.value.trim();
+    const password = document.getElementById("adminLoginPass")?.value;
+
+    try {
+      const res = await api("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.user) {
+        appState.user.isLoggedIn = true;
+        appState.user.name = res.user.name;
+        appState.user.role = res.user.role;
+        closeModal("adminLoginModal");
+        updateUIFromState();
+        showToast("🔑 Успешный вход", `Вы авторизованы как ${res.user.name}`);
+        switchView("admin");
+        renderAdminDashboard();
+      }
+    } catch (err) {
+      showToast("⚠️ Ошибка входа", err.message || "Неверные данные Администратора");
+    }
+  });
 
   window.addEventListener("examTypeChanged", () => {
     renderSubjects();
@@ -82,11 +118,15 @@ document.addEventListener("DOMContentLoaded", () => {
       renderGeneralVideos();
       renderTeacherCabinet();
       renderStudentAssignments();
+      renderAdminDashboard();
       updateUIFromState();
 
       const initialView = (location.hash || "#subjects").replace("#", "");
       if (HASH_VIEWS.includes(initialView)) {
         switchView(initialView, { replace: true });
+        if (initialView === "admin") {
+          renderAdminDashboard();
+        }
       }
     })
     .catch((err) => {
@@ -116,3 +156,4 @@ document.addEventListener("DOMContentLoaded", () => {
     window.lucide.createIcons();
   }
 });
+

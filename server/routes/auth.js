@@ -61,6 +61,7 @@ router.post("/register", (req, res) => {
     .run(email, passwordHash, name, examType);
 
   createSession(res, Number(info.lastInsertRowid));
+  db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(info.lastInsertRowid);
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(info.lastInsertRowid);
   res.status(201).json({ user: serializeUser(user) });
 });
@@ -76,7 +77,25 @@ router.post("/login", (req, res) => {
     return res.status(401).json({ error: "Неверный email или пароль" });
   }
 
+  if (user.status === "disabled") {
+    return res.status(403).json({ error: "Ваш аккаунт отключен администратором" });
+  }
+
+  db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
   createSession(res, user.id);
+  const updatedUser = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
+  res.json({ user: serializeUser(updatedUser) });
+});
+
+router.patch("/exam-type", requireAuth, (req, res) => {
+  const rawType = String(req.body?.examType || "EGE").toUpperCase();
+  const examType = rawType === "OGE" ? "OGE" : "EGE";
+  db.prepare("UPDATE users SET exam_type = ?, target_exam = ?, updated_at = datetime('now') WHERE id = ?").run(
+    examType,
+    examType,
+    req.user.id
+  );
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user.id);
   res.json({ user: serializeUser(user) });
 });
 
@@ -86,6 +105,7 @@ router.post("/logout", (req, res) => {
   clearSession(res);
   res.json({ ok: true });
 });
+
 
 router.get("/premium", requireAuth, (req, res) => {
   res.json({ isPremium: req.user.isPremium, premiumUntil: req.user.premiumUntil });

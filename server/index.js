@@ -10,6 +10,7 @@ import premiumRoutes from "./routes/premium.js";
 import aiRoutes from "./routes/ai.js";
 import mockExamRoutes from "./routes/mock-exam.js";
 import teacherRoutes from "./routes/teacher.js";
+import adminRoutes from "./routes/admin.js";
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.use("/api/premium", premiumRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/mock-exams", mockExamRoutes);
 app.use("/api/teacher", teacherRoutes);
+app.use("/api/admin", adminRoutes);
+
 
 const FRONTEND_ASSETS = ["/js", "/css", "/index.html"];
 

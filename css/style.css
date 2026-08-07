@@ -53,7 +53,43 @@
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --sidebar-width: 260px;
+  --exam-primary-color: #6366f1;
+  --exam-badge-color: #6366f1;
+  --exam-badge-bg: rgba(99, 102, 241, 0.15);
 }
+
+body.exam-mode-ege {
+  --color-green: #6366f1;
+  --color-green-hover: #4f46e5;
+  --color-green-light: #eef2ff;
+  --exam-primary-color: #6366f1;
+}
+
+body.exam-mode-oge {
+  --color-green: #0ea5e9;
+  --color-green-hover: #0284c7;
+  --color-green-light: #f0f9ff;
+  --exam-primary-color: #0ea5e9;
+}
+
+.btn-tab {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.btn-tab.active,
+.btn-tab:hover {
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 
 [data-theme="dark"] {
   --color-bg: #121613;

@@ -36,28 +36,34 @@ export function renderSubjects() {
   if (!grid) return;
   grid.innerHTML = "";
 
-  Object.values(window.EXAM_DATA.subjects).forEach((sub) => {
-    const card = document.createElement("div");
-    card.className = "subject-card active-subject";
-    card.style.setProperty("--theme-color", sub.color);
-    card.style.background = sub.bgGradient;
-    card.innerHTML = `
-      <div class="subject-icon-box" style="background-color: var(--color-surface); box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: ${sub.color}; font-size: 20px;">
-        ${sub.icon}
-      </div>
-      <div class="subject-details">
-        <span class="subject-title">${sub.title}</span>
-        <span class="subject-status">${sub.topics.length} тем доступно</span>
-      </div>
-    `;
-    card.addEventListener("click", () => {
-      loadSubjectDetail(sub.id);
+  import("./exam-engine.js").then(({ examEngine }) => {
+    const allSubjects = Object.values(window.EXAM_DATA.subjects);
+    const filteredSubjects = examEngine.filterSubjects(allSubjects);
+
+    filteredSubjects.forEach((sub) => {
+      const card = document.createElement("div");
+      card.className = "subject-card active-subject";
+      card.style.setProperty("--theme-color", sub.color);
+      card.style.background = sub.bgGradient;
+      card.innerHTML = `
+        <div class="subject-icon-box" style="background-color: var(--color-surface); box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: ${sub.color}; font-size: 20px;">
+          ${sub.icon}
+        </div>
+        <div class="subject-details">
+          <span class="subject-title">${sub.title}</span>
+          <span class="subject-status">${sub.topics.length} тем доступно</span>
+        </div>
+      `;
+      card.addEventListener("click", () => {
+        loadSubjectDetail(sub.id);
+      });
+      grid.appendChild(card);
     });
-    grid.appendChild(card);
   });
 
   window.EXAM_DATA.otherSubjects.forEach((sub) => {
     const card = document.createElement("div");
+
     card.className = "subject-card locked-subject";
     card.innerHTML = `
       <span class="lock-badge">Скоро</span>

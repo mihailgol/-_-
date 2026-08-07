@@ -207,6 +207,39 @@ export function initSchema() {
       submitted_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      action TEXT NOT NULL,
+      details TEXT,
+      ip_address TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS theory (
+      id TEXT PRIMARY KEY,
+      subject_id TEXT NOT NULL,
+      exam_type TEXT NOT NULL DEFAULT 'EGE',
+      title TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'Общее',
+      content TEXT NOT NULL,
+      author_id INTEGER,
+      is_draft INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS tests (
+      id TEXT PRIMARY KEY,
+      subject_id TEXT NOT NULL,
+      exam_type TEXT NOT NULL DEFAULT 'EGE',
+      title TEXT NOT NULL,
+      timer_seconds INTEGER NOT NULL DEFAULT 0,
+      is_random INTEGER NOT NULL DEFAULT 0,
+      created_by INTEGER,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_topics_subject_id ON topics(subject_id);
     CREATE INDEX IF NOT EXISTS idx_questions_topic_id ON questions(topic_id);
     CREATE INDEX IF NOT EXISTS idx_videos_topic_id ON videos(topic_id);
@@ -244,6 +277,28 @@ export function initSchema() {
   } catch (err) {
     void err;
   }
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active';");
+  } catch (err) {
+    void err;
+  }
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT;");
+  } catch (err) {
+    void err;
+  }
+}
+
+export function seedAdminUser() {
+  import("bcryptjs").then((bcrypt) => {
+    const admin = db.prepare("SELECT id FROM users WHERE email = ? OR role = 'ADMIN'").get("admin@examhub.ru");
+    if (!admin) {
+      const passwordHash = bcrypt.default.hashSync("AdminPass123!", 10);
+      db.prepare(
+        "INSERT INTO users (email, password_hash, name, role, status, exam_type) VALUES (?, ?, ?, ?, 'active', 'EGE')"
+      ).run("admin@examhub.ru", passwordHash, "Главный Администратор", "ADMIN");
+    }
+  });
 }
 
 export function transaction(fn) {
@@ -260,6 +315,9 @@ export function transaction(fn) {
 
 export function resetDb() {
   db.exec(`
+    DROP TABLE IF EXISTS activity_logs;
+    DROP TABLE IF EXISTS theory;
+    DROP TABLE IF EXISTS tests;
     DROP TABLE IF EXISTS assignment_submissions;
     DROP TABLE IF EXISTS assignments;
     DROP TABLE IF EXISTS group_members;
@@ -281,4 +339,6 @@ export function resetDb() {
 export function initDb() {
   initSchema();
   seedContent();
+  seedAdminUser();
 }
+

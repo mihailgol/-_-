@@ -6,15 +6,32 @@ import { convertScore } from "../utils/score-converter.js";
 const router = Router();
 
 router.get("/", optionalAuth, (req, res) => {
-  const { subjectId } = req.query;
+  const { subjectId, examType, exam_type } = req.query;
+  const rawExamType = String(examType || exam_type || "").toUpperCase();
+  const targetExamType = ["EGE", "OGE"].includes(rawExamType) ? rawExamType : null;
+
   let rows;
-  if (subjectId) {
+  if (subjectId && targetExamType) {
+    rows = db
+      .prepare(
+        `SELECT id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, created_at
+         FROM mock_exams WHERE subject_id = ? AND exam_type = ? ORDER BY id ASC`
+      )
+      .all(String(subjectId), targetExamType);
+  } else if (subjectId) {
     rows = db
       .prepare(
         `SELECT id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, created_at
          FROM mock_exams WHERE subject_id = ? ORDER BY id ASC`
       )
       .all(String(subjectId));
+  } else if (targetExamType) {
+    rows = db
+      .prepare(
+        `SELECT id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, created_at
+         FROM mock_exams WHERE exam_type = ? ORDER BY id ASC`
+      )
+      .all(targetExamType);
   } else {
     rows = db
       .prepare(

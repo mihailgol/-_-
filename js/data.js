@@ -3972,6 +3972,44 @@ def get_divisors(n):
 for x in range(120406, 129496, 10):
     if fnmatch(str(x), '12*4?6'):
         print(x)</code></pre>
+
+            <h3>3. Таблица сложности базовых операций и типов данных Python</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Тип / Структура</th>
+                  <th>Операция</th>
+                  <th>Временная сложность</th>
+                  <th>Применение в ЕГЭ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>list</code> (Список)</td>
+                  <td>Поиск <code>x in lst</code> / <code>lst.append()</code></td>
+                  <td>O(N) / O(1)</td>
+                  <td>Перебор последовательностей и подпоследовательностей (Задание 17, 24)</td>
+                </tr>
+                <tr>
+                  <td><code>set</code> (Множество)</td>
+                  <td>Поиск <code>x in s</code> / <code>s.add()</code></td>
+                  <td>O(1) в среднем</td>
+                  <td>Быстрый поиск уникальных делителей и элементов (Задание 25)</td>
+                </tr>
+                <tr>
+                  <td><code>dict</code> (Словарь)</td>
+                  <td>Доступ по ключу <code>d[key]</code></td>
+                  <td>O(1) в среднем</td>
+                  <td>Подсчет частоты элементов и динамическое программирование (Задание 27)</td>
+                </tr>
+                <tr>
+                  <td><code>str</code> (Строка)</td>
+                  <td><code>s.split()</code>, <code>s.replace()</code></td>
+                  <td>O(N)</td>
+                  <td>Обработка текстовых файлов и регулярных масок (Задание 24)</td>
+                </tr>
+              </tbody>
+            </table>
           `,
           video: {
             title: "Python для ЕГЭ по информатике: Полный курс программирования",

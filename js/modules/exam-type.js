@@ -1,3 +1,4 @@
+import { examEngine } from "./exam-engine.js";
 import { appState } from "./state.js";
 
 const STORAGE_KEY = "examhub_exam_type";
@@ -6,19 +7,24 @@ export function getExamType() {
   return localStorage.getItem(STORAGE_KEY) || appState.selectedExamType || "all";
 }
 
-export function setExamType(type) {
+export function setExamType(type, syncServer = true) {
   const validTypes = ["all", "EGE", "OGE"];
   const normalized = validTypes.includes(type) ? type : "all";
   appState.selectedExamType = normalized;
   localStorage.setItem(STORAGE_KEY, normalized);
-  updateToggleUI(normalized);
 
+  if (normalized !== "all") {
+    examEngine.setActiveExam(normalized, syncServer);
+  }
+
+  updateToggleUI(normalized);
   window.dispatchEvent(new CustomEvent("examTypeChanged", { detail: { examType: normalized } }));
 }
 
+
 export function initExamTypeToggle() {
   const savedType = getExamType();
-  setExamType(savedType);
+  setExamType(savedType, false);
 
   const container = document.getElementById("examTypeToggle");
   if (!container) return;
@@ -28,12 +34,12 @@ export function initExamTypeToggle() {
     if (!btn) return;
     const type = btn.getAttribute("data-exam-type");
     if (type) {
-      setExamType(type);
+      setExamType(type, true);
     }
   });
 }
 
-function updateToggleUI(type) {
+export function updateToggleUI(type) {
   const container = document.getElementById("examTypeToggle");
   if (!container) return;
 

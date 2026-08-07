@@ -1,26 +1,26 @@
-# BRIEFING — 2026-08-02T22:16:10+03:00
+# BRIEFING — 2026-08-03T13:06:15+03:00
 
 ## Mission
-Sentinel monitoring and orchestration relay for ExamHub: FIPI Content Expansion & ExamType Registration/Filtering.
+Record user requests, monitor orchestrator progress via crons, manage orchestrator lifecycle, and trigger mandatory victory audit upon completion.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\sentinel
-- Orchestrator: e673ff19-9024-4136-8a23-ecd878887588
+- Orchestrator: 6e381b70-aa58-4c53-983f-3135b190edd8
 - Victory Auditor: to be spawned on victory claim
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
 - Victory Audit is MANDATORY before reporting completion
-- Must run progress reporting cron and liveness check cron
+- Must not write code, analyze problems, or make any technical decisions
 
 ## User Context
-- **Last user request**: ExamType registration selection (ЕГЭ / ОГЭ) in #authModal / onboarding, saving to SQLite DB (users.exam_type) and localStorage, end-to-end filtering across all content, and full npm run check pass.
+- **Last user request**: Expand educational materials (theory notes, problem sets, exam variants for USE/BSE) across all 8 ExamHub subjects, update database/API, run check, auto-publish to GitHub main branch.
 - **Pending clarifications**: none
-- **Delivered results**: M1 & M2 completed & verified clean. M3 (DB Sync & API Integration) worker active.
+- **Delivered results**: none
 
 ## Project Status
-- **Phase**: in progress (M1 & M2 PASSED; M3 DB Sync worker active; M4 ExamType Filtering scheduled)
+- **Phase**: in progress
 
 ## Victory Audit Status
 - **Triggered**: no
@@ -28,4 +28,4 @@ Sentinel monitoring and orchestration relay for ExamHub: FIPI Content Expansion 
 - **Retry count**: 0
 
 ## Artifact Index
-- ORIGINAL_REQUEST.md — Verbatim record of user requests
+- c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\ORIGINAL_REQUEST.md — Verbatim user request record

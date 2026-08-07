@@ -1,25 +1,17 @@
-# Execution Progress — ExamHub Orchestrator (Generation 2)
+# Progress Log
 
 ## Current Status
-Last visited: 2026-08-02T22:15:30+03:00
+Last visited: 2026-08-03T21:37:00Z
 
 ## Iteration Status
-Current iteration: 1 / 32
+Current iteration: 5 / 32
 
-## Milestone Progress
-- [x] M1: Science_Content (PASSED & VERIFIED CLEAN - Biology, Chemistry, Physics)
-- [x] M2: Humanities_Tech_Content (PASSED & VERIFIED CLEAN - Math, Informatics, Russian, Social Studies, History)
-- [/] M3: DB_Sync_API_Integration (Worker Dispatched - 706175ce-1b06-4fe5-abb5-ff42e96bb285)
-- [ ] M4: ExamType_Registration_Filtering (Pending)
-- [ ] M5: Final_QA_Audit_Gate (Pending)
+## Checklist
+- [x] Initialized DISPATCH.md, BRIEFING.md, plan.md, progress.md
+- [x] Gen 1: M1 & M2 Content Expansion (8 Subjects) completed and verified
+- [x] Milestone 3 (DB Sync & API Integration): SQLite UPSERT seeding & catalog/mock-exam API routes verified 100%
+- [ ] Milestone 4 (ExamType Registration & Content Filtering): Auth modal radio switch, DB exam_type schema, localStorage, and SPA filtering
+- [ ] Milestone 5 (Final Quality Gate & Victory Claim): Full `npm run check` verification, audit, Git commit/push
+- [ ] Report completion to Parent Sentinel
 
-## Spawn Count & Lifecycle Tracking
-- Current spawn count: 4 / 16
-- Active subagents: 706175ce-1b06-4fe5-abb5-ff42e96bb285
 
-## Activity Log
-- 2026-08-02T22:12:15Z: Resumed work as Generation 2 Orchestrator. Read handoff.md, BRIEFING.md, plan.md, progress.md.
-- 2026-08-02T22:12:21Z: Scheduled heartbeat cron (task-19).
-- 2026-08-02T22:12:29Z: Dispatched 3 M3 Explorers (Seed a1f0a369, Schema fb1d42a3, API Sync 118a00e3).
-- 2026-08-02T22:15:14Z: Explorers 1, 2, 3 completed analysis reports.
-- 2026-08-02T22:15:20Z: Dispatched M3 Worker (706175ce-1b06-4fe5-abb5-ff42e96bb285) for DB UPSERT, schema updates, index creation, and route deduplication.

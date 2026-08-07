@@ -1,46 +1,45 @@
-# BRIEFING — 2026-08-02T22:11:00Z
+# BRIEFING — 2026-08-03T10:27:03Z
 
 ## Mission
-Review Milestone 2 content additions in js/data.js (Math, Informatics, Russian, Social Studies, History) for correctness, rich formatting, test passing, and integrity.
+Review Milestone 2 (DB & API Integration) code changes and handoff from worker_m2. Verify catalog and mock exam REST endpoints, query parameters, submission processing, and code quality. Issue verdict.
 
 ## 🔒 My Identity
-- Archetype: Reviewer / Critic
+- Archetype: Reviewer & Adversarial Critic
 - Roles: reviewer, critic
 - Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\reviewer_m2_1
-- Original parent: 88a83980-8bc6-41e7-b378-7052725caf5c
-- Milestone: Milestone 2
+- Original parent: 0a504215-06c4-4a2b-831c-b6b5209b7866
+- Milestone: Milestone 2 (DB & API Integration)
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code
-- Network restriction: CODE_ONLY
+- Perform independent evidence-based review and adversarial testing
+- Check for integrity violations (hardcoded test results, facade implementations, bypassed tasks, fabricated outputs)
 
 ## Current Parent
-- Conversation ID: 88a83980-8bc6-41e7-b378-7052725caf5c
-- Updated: 2026-08-02T22:11:00Z
+- Conversation ID: 0a504215-06c4-4a2b-831c-b6b5209b7866
+- Updated: 2026-08-03T10:27:03Z
 
 ## Review Scope
-- **Files to review**: `js/data.js` (subjects: math, informatics, russian, social, history)
-- **Interface contracts**: DEVELOPMENT_RULES.md, AGENTS.md
-- **Review criteria**: 4 topics per subject, rich HTML theory (`<h3>`, `<h4>`, `<div class="note-info-box">`, `<table class="data-table">`, `<pre><code>`), video metadata, 5 questions per topic (valid options, correctIndex, detailed explanation), zero linter errors, 100% test pass.
-
-## Key Decisions Made
-- Executed `npm run lint` -> 0 errors.
-- Executed `npm run test` -> 10/10 test files passing (89/89 unit tests).
-- Inspected all 5 target subjects in `js/data.js` (`math`, `informatics`, `russian`, `social`, `history`). Verified 4 topics per subject, rich HTML formatting, video metadata, and 5 valid questions per topic with detailed explanations.
-- Issued verdict: **APPROVE**.
-
-## Artifact Index
-- ORIGINAL_REQUEST.md — Original request instructions
-- review_m2.md — Detailed review report
-- handoff.md — Handoff report
+- **Files to review**: `server/routes/catalog.js`, `server/routes/mock-exam.js`, `server/db/schema.sql`, `server/db/seed.js`, `server/db/index.js`, `server/app.js`, `js/modules/api.js`, etc.
+- **Interface contracts**: PROJECT.md / AGENTS.md / ORIGINAL_REQUEST.md
+- **Review criteria**: Correctness, completeness, quality, security, integrity
 
 ## Review Checklist
-- **Items reviewed**: `js/data.js` (`math`, `informatics`, `russian`, `social`, `history`)
-- **Verdict**: APPROVE
-- **Unverified claims**: None
+- **Items reviewed**: Pending
+- **Verdict**: PENDING
+- **Unverified claims**: Worker's claims in handoff.md
 
 ## Attack Surface
-- **Hypotheses tested**: Checked for dummy text, invalid option indices, duplicate questions, missing HTML tags.
-- **Vulnerabilities found**: None.
-- **Untested angles**: None.
+- **Hypotheses tested**: Pending
+- **Vulnerabilities found**: Pending
+- **Untested angles**: Pending
+
+## Key Decisions Made
+- [2026-08-03] Initialized briefing and review setup.
+
+## Artifact Index
+- `.agents/reviewer_m2_1/DISPATCH.md` — Initial dispatch message
+- `.agents/reviewer_m2_1/BRIEFING.md` — Agent briefing & memory
+- `.agents/reviewer_m2_1/progress.md` — Liveness heartbeat and progress tracking
+- `.agents/reviewer_m2_1/handoff.md` — Final review handoff report

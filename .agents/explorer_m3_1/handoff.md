@@ -1,68 +1,76 @@
-# Handoff Report — Explorer 1 (Milestone 3: DB Sync & API Integration)
-
-**Date**: 2026-08-02  
-**Working Directory**: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1`  
-**Target Analysis Report**: `c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\explorer_m3_1\analysis.md`  
-
----
+# Milestone 3 (DB Sync & Seeding Strategy) — Handoff Report
 
 ## 1. Observation
 
-Direct observations from examining the codebase:
+1. **File Locations & Roles**:
+   - `server/db.js` (lines 15-220): `initSchema()` creates tables (`users`, `sessions`, `subjects`, `topics`, `videos`, `questions`, `attempts`, `payments`, `ai_generations`, `mock_exams`, `mock_exam_attempts`, `groups`, `group_members`, `assignments`, `assignment_submissions`) and 10 FK indexes (`idx_topics_subject_id`, `idx_questions_topic_id`, `idx_videos_topic_id`, `idx_attempts_user_id`, `idx_mock_exams_subject_id`, `idx_mock_exam_attempts_user_id`, `idx_groups_teacher_id`, `idx_group_members_student_id`, `idx_assignments_group_id`, `idx_assignment_submissions_assignment_student`).
+   - `server/seed.js` (lines 8-126): `seedContent()` loads `js/data.js` via `node:vm` sandbox (`sandbox.window.EXAM_DATA`), executing UPSERT queries (`INSERT ... ON CONFLICT(...) DO UPDATE SET ...`) inside `transaction(...)`.
+   - `server/index.js` (lines 36-39):
+     ```javascript
+     if (config.isTest) {
+       resetDb();
+     }
+     initDb();
+     ```
+     `initDb()` calls `initSchema()` and `seedContent()` automatically on server startup.
+   - `server/config.js` (line 11-13):
+     ```javascript
+     dbPath: process.env.DB_PATH || resolve(root, "data", process.env.NODE_ENV === "test" ? "examhub.test.db" : "examhub.db")
+     ```
 
-1. **`js/data.js` Structure**:
-   - Defines `window.EXAM_DATA.subjects` with **10 subjects**: 8 core primary subjects (`biology`, `chemistry`, `physics`, `math`, `russian`, `social`, `informatics`, `history`) + 2 supplementary subjects (`english`, `literature`).
-   - The 8 primary subjects contain **4 topics each** (32 topics total).
-   - Each primary topic contains **5 questions** (160 questions total).
-   - Topics include rich HTML string fields (`theory`), metadata (`isPremium`, `duration`), and an optional embedded `video` object (`youtubeId`, `instructor`, `duration`, `views`, `thumbnail`).
+2. **Database Content Counts (Verified via Node.js script)**:
+   - `js/data.js`: 8 primary subjects (`biology`, `chemistry`, `russian`, `math`, `social`, `history`, `physics`, `informatics`) with 4 topics each (32 topics) and 20 practice questions each (160 questions), plus 2 secondary subjects (`english`, `literature`, 1 topic & 1 question each). Total: 10 subjects, 34 topics, 34 videos, 162 practice questions.
+   - `server/seed.js`: 16 mock exams hardcoded for 8 primary subjects (1 OGE + 1 EGE for each subject).
+   - SQLite DB (`data/examhub.db`): Contains 10 subjects, 34 topics, 34 videos, 162 questions, and 16 mock exams.
 
-2. **`server/db.js` Schema**:
-   - `subjects`: `id TEXT PRIMARY KEY`, `title`, `icon`, `color`, `color_hex`, `bg_gradient`, `is_active`, `sort_order`.
-   - `topics`: `id TEXT PRIMARY KEY`, `subject_id TEXT REFERENCES subjects(id) ON DELETE CASCADE`, `title`, `is_premium`, `duration`, `theory`, `sort_order`.
-   - `videos`: `id TEXT PRIMARY KEY`, `topic_id TEXT REFERENCES topics(id) ON DELETE CASCADE`, `title`, `instructor`, `duration`, `youtube_id`, `views`, `thumbnail`.
-   - `questions`: `id TEXT PRIMARY KEY`, `topic_id TEXT REFERENCES topics(id) ON DELETE CASCADE`, `type`, `question`, `options_json`, `correct_index`, `explanation`, `sort_order`.
-   - `mock_exams`: `id TEXT PRIMARY KEY`, `subject_id TEXT REFERENCES subjects(id) ON DELETE CASCADE`, `title`, `exam_type`, `duration_minutes`, `total_questions`, `is_premium`, `questions_json`, `conversion_table_json`.
-   - `mock_exam_attempts`: `id INTEGER PRIMARY KEY`, `user_id INTEGER`, `mock_exam_id TEXT REFERENCES mock_exams(id) ON DELETE CASCADE`.
-
-3. **`server/seed.js` Implementation**:
-   - Evaluates `js/data.js` via `vm.runInNewContext`.
-   - Lines 15–34: Uses `INSERT OR IGNORE INTO` statements for `subjects`, `topics`, `videos`, `questions`, and `mock_exams`.
+3. **FK Cascading Behavior on `mock_exams`**:
+   - `mock_exam_attempts` table schema in `server/db.js` (line 164):
+     `mock_exam_id TEXT NOT NULL REFERENCES mock_exams(id) ON DELETE CASCADE`
 
 ---
 
 ## 2. Logic Chain
 
-1. **Premise 1**: `INSERT OR IGNORE INTO` in SQLite skips execution if a primary key (`id`) already exists in the table.
-2. **Premise 2**: When database `server/database.sqlite` is already created from a previous run, subsequent calls to `seedContent()` (e.g. at server startup) will skip any existing `subjects`, `topics`, `videos`, `questions`, or `mock_exams`.
-3. **Inference 1**: Any updates to `theory` text, fixes in `questions`, revisions of `options`, or updates to `video` metadata in `js/data.js` will NOT be reflected in the SQLite database as long as the primary keys match.
-4. **Premise 3**: Replacing `INSERT OR IGNORE` with `INSERT OR REPLACE` would execute a `DELETE` followed by `INSERT` in SQLite.
-5. **Inference 2**: Because `mock_exam_attempts` references `mock_exams(id)` with `ON DELETE CASCADE`, using `INSERT OR REPLACE INTO mock_exams` would cascade-delete user test attempt data in `mock_exam_attempts`.
-6. **Conclusion**: Using SQLite `INSERT INTO ... ON CONFLICT(id) DO UPDATE SET ...` (UPSERT syntax) performs in-place column updates on matching primary keys. It updates changed theories, question texts, explanations, video links, or option arrays without triggering `ON DELETE CASCADE` or deleting user records.
+1. **Observation 1** shows that `mock_exam_attempts` uses `ON DELETE CASCADE` referencing `mock_exams(id)`.
+2. **Observation 1** shows `server/seed.js` uses `UPSERT` (`INSERT ... ON CONFLICT(id) DO UPDATE SET ...`) rather than `DELETE FROM mock_exams;`.
+3. If `seed.js` executed `DELETE FROM mock_exams;` (Clean Table Sync), SQLite foreign key cascades would delete all existing user mock exam attempts in `mock_exam_attempts`.
+4. Therefore, `UPSERT` (`ON CONFLICT DO UPDATE`) in `server/seed.js` is essential to preserve user attempts and ensure idempotent seeding.
+5. **Observation 2** shows that `js/data.js` and `server/seed.js` currently contain 10 subjects, 34 topics, 34 videos, 162 questions, and 16 mock exams, all of which are 100% synchronized into `data/examhub.db` without constraint errors.
+6. **Observation 1** shows `initDb()` is called during server startup (`server/index.js`), guaranteeing that schema initialization and UPSERT seeding occur automatically whenever the Express server starts up or tests run.
 
 ---
 
 ## 3. Caveats
 
-* **Deleted Content**: UPSERT updates existing primary keys and inserts new ones, but does not delete primary keys that were completely removed from `js/data.js`. (For ExamHub's fixed catalog structure, this is standard and desirable to preserve historical reference integrity).
-* **Option Serialization**: Question `options` array in `js/data.js` must be converted via `JSON.stringify(q.options)` prior to UPSERT binding (already implemented in `server/seed.js`).
+- **Orphaned Record Retention**: UPSERT updates or inserts records but does not remove rows from SQLite if a topic/question ID is removed from `js/data.js`. If a future milestone deprecates/removes topic IDs, an explicit cleanup transaction or soft-delete would be required.
+- **Environment DB Paths**: Documentation (`PROJECT.md`) refers to `server/database.sqlite`, whereas runtime configuration (`server/config.js`) defaults to `data/examhub.db` (and `data/examhub.test.db` for tests). All backend code uses `config.dbPath`.
 
 ---
 
 ## 4. Conclusion
 
-`server/seed.js` should be updated to replace `INSERT OR IGNORE INTO` with `INSERT INTO ... ON CONFLICT(id) DO UPDATE SET ...` for `subjects`, `topics`, `videos`, `questions`, and `mock_exams`. This will ensure clean, safe, and immediate synchronization of all 8 core subjects, 32 topics, 160 core questions, theories, videos, and options across database restarts without risk of user data loss.
+- **DB Schema & Seeding Status**: `server/db.js` and `server/seed.js` are fully aligned and functioning correctly.
+- **Seeding Strategy Assessment**: `UPSERT` (`ON CONFLICT DO UPDATE`) is verified as the correct, safe strategy for ExamHub. It guarantees data sync from `js/data.js` without deleting user attempt history.
+- **Worker Action Plan**: Worker does not need to rewrite the seeding mechanism or schema structure. Worker should maintain the UPSERT pattern and verify `npm run check` passes.
 
 ---
 
 ## 5. Verification Method
 
-1. **Source Inspection**: Confirm `server/seed.js` contains `ON CONFLICT(id) DO UPDATE SET` clauses for all content insertion statements.
-2. **Execution Test**:
-   - Run `node server/seed.js`.
-   - Verify table counts using `node -e`:
-     - `subjects`: 10 rows
-     - `topics`: 34 rows (32 core + 2 supplementary)
-     - `questions`: 162 rows (160 core + 2 supplementary)
-     - `mock_exams`: 6 rows
-3. **Update Propagation Test**: Modify a theory string or question explanation in `js/data.js`, run `node server/seed.js`, and check that the DB record reflects the updated string.
-4. **Regression Test**: Run `npm run check` to verify ESLint, unit tests, and Playwright E2E tests pass.
+1. **Unit & E2E Test Suite**:
+   ```bash
+   npm run check
+   ```
+   Must pass 100% (ESLint, Vitest unit tests including `tests/unit/m3_verification.test.js`, and Playwright E2E tests).
+
+2. **Standalone Seeding Verification**:
+   ```bash
+   node server/seed.js
+   ```
+   Must output `Database seeded successfully.` without throwing `UNIQUE constraint failed` or `FOREIGN KEY constraint failed`.
+
+3. **Database Row Count Inspection**:
+   ```bash
+   node -e "import('./server/db.js').then(({db}) => { console.log('Subjects:', db.prepare('SELECT count(*) as c FROM subjects').get()); console.log('Topics:', db.prepare('SELECT count(*) as c FROM topics').get()); console.log('Questions:', db.prepare('SELECT count(*) as c FROM questions').get()); console.log('MockExams:', db.prepare('SELECT count(*) as c FROM mock_exams').get()); });"
+   ```
+   Expected output: `Subjects: { c: 10 }`, `Topics: { c: 34 }`, `Questions: { c: 162 }`, `MockExams: { c: 16 }`.

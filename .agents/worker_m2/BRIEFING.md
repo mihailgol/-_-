@@ -1,41 +1,52 @@
-# BRIEFING — 2026-08-02T19:45:30Z
+# BRIEFING — 2026-08-03T13:22:00+03:00
 
 ## Mission
-Expand educational content in `js/data.js` for Milestone 2 subjects (`math`, `informatics`, `russian`, `social`, `history`) to full 4-topic structures containing rich theory HTML, video metadata, and 5 test questions per topic.
+Verify and ensure full Database and REST API integration for all 8 expanded subjects and 16 mock exams in ExamHub.
 
 ## 🔒 My Identity
-- Archetype: worker_m2
-- Roles: implementer, qa
+- Archetype: worker
+- Roles: implementer, qa, specialist
 - Working directory: c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m2
-- Original parent: 88a83980-8bc6-41e7-b378-7052725caf5c
-- Milestone: M2 (Humanities & Tech Content)
+- Original parent: 0a504215-06c4-4a2b-831c-b6b5209b7866
+- Milestone: Milestone 2 (DB & API Integration)
 
 ## 🔒 Key Constraints
-- Update `js/data.js` using content from explorer reports (`handbook_math_inf.md`, `handbook_rus_soc.md`, `handbook_history.md`).
-- Ensure all 4 topics per subject contain detailed theory HTML (tables, code blocks, callout boxes), video metadata, and 5 quiz questions.
-- Guarantee unique topic and question IDs across the entire `EXAM_DATA`.
-- Pass `npm run check` (`npm run lint`, `npm run build`, `npm run test`, `npm run test:e2e`).
-- Write self-contained `handoff.md` and notify parent.
+- Pure HTML/CSS/JS frontend + Node.js/Express/SQLite backend.
+- Do not cheat: no hardcoded outputs, fake tests, or dummy implementations.
+- Execute `npm run check` / `npm run test` and playwright tests before handoff.
+- All interface and content in Russian, code in English.
+- No code comments unless explicitly requested.
 
 ## Current Parent
-- Conversation ID: 88a83980-8bc6-41e7-b378-7052725caf5c
-- Updated: 2026-08-02T19:45:30Z
+- Conversation ID: 0a504215-06c4-4a2b-831c-b6b5209b7866
+- Updated: 2026-08-03T13:22:00+03:00
 
 ## Task Summary
-- **What to build**: Full dataset expansion for 5 M2 subjects in `js/data.js` (20 topics, 100 questions total).
-- **Success criteria**: Zero lint errors, 100% passing Vitest and Playwright tests.
+- **What to build/verify**: SQLite Seeding, REST API endpoints, Client integration for 8 subjects and 16 mock exams, complete test suite execution.
+- **Success criteria**: Seeding populates database with 8 subjects, 32 topics, 160 practice questions, 16 mock exams. API returns complete data with query params and filters. Client components render data correctly. 100% tests pass.
+- **Interface contracts**: PROJECT.md, AGENTS.md, DEVELOPMENT_RULES.md
+- **Code layout**: server/ (Express, SQLite), js/modules/ (ES modules)
 
 ## Change Tracker
-- **Files modified**:
-  - `js/data.js`: Updated `russian`, `math`, `social`, `history`, and `informatics` data objects with 4 topics each.
-- **Build status**: PASS (ESLint 0 errors, Vitest 89/89 tests pass).
+- **Files modified**: None required (verified existing implementation and DB schema)
+- **Build status**: All unit tests & Playwright exam_type_switch tests passing; npm run check in progress
+- **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: PASS
-- **Lint status**: PASS (0 violations)
-- **Tests added/modified**: Validated against `tests/unit/science_data_challenge.test.js` and `tests/unit/data.test.js`.
+- **Build/test result**: 12/12 Vitest files passed (97 tests), Playwright exam_type_switch passed (3 tests)
+- **Lint status**: Passed 0 errors
+- **Tests added/modified**: Verified unit and E2E suites
+
+## Loaded Skills
+- None
+
+## Key Decisions Made
+- Confirmed SQLite seeding populates 10 active subjects, 34 topics, 162 questions, 16 mock exams (8 OGE + 8 EGE).
+- Confirmed REST API endpoints `/api/catalog/subjects` and `/api/mock-exams` (including `?subjectId=...`, `/:id`, and `/:id/submit`) function correctly.
+- Confirmed client integration (`exam-type.js`, `mock-exam.js`, `catalog.js`, `app.js`) renders data properly.
 
 ## Artifact Index
-- `ORIGINAL_REQUEST.md` — Initial task prompt
-- `progress.md` — Task progress log
-- `handoff.md` — Final handoff report
+- c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m2\DISPATCH.md — Dispatch assignment
+- c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m2\BRIEFING.md — Persistent memory
+- c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m2\progress.md — Liveness heartbeat
+- c:\Users\мишка\Desktop\сайтик_бахчасарай\.agents\worker_m2\handoff.md — Final handoff report

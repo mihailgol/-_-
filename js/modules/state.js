@@ -1,4 +1,19 @@
-export const HASH_VIEWS = ["subjects", "notes", "videos", "tests", "mock-exam", "teacher", "plan", "analytics", "admin", "cart", "support"];
+export const HASH_VIEWS = [
+  "subjects",
+  "notes",
+  "videos",
+  "tests",
+  "mock-exam",
+  "teacher",
+  "plan",
+  "analytics",
+  "admin",
+  "theory-editor",
+  "test-editor",
+  "cart",
+  "support",
+];
+
 
 export const GUEST_USER = {
   isLoggedIn: false,

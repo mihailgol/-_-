@@ -1426,8 +1426,25 @@
               <div id="studentAssignmentsList"></div>
             </div>
           </section>
+
+          <section class="view-section" id="view-admin">
+            <div style="margin-bottom: 24px;">
+              <h2 style="margin: 0 0 8px 0; font-size: 1.75rem;">Система Администратора ⚙️</h2>
+              <p style="margin: 0; color: var(--color-text-secondary);">Полный контроль над пользователями, учителями, подписками, контентом и аналитикой.</p>
+            </div>
+            <div id="adminContentContainer"></div>
+          </section>
+
+          <section class="view-section" id="view-theory-editor">
+            <div id="theoryEditorContainer"></div>
+          </section>
+
+          <section class="view-section" id="view-test-editor">
+            <div id="testEditorContainer"></div>
+          </section>
         </div>
       </main>
+
 
       <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-view="subjects">
@@ -1658,7 +1675,34 @@
       </div>
     </div>
 
+    <div class="modal-overlay" id="adminModal">
+      <div class="modal-card" style="max-width: 600px;">
+        <button class="modal-close-btn" data-close-modal="adminModal">&times;</button>
+        <div id="adminModalBody"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="adminLoginModal">
+      <div class="modal-card" style="max-width: 420px;">
+        <button class="modal-close-btn" data-close-modal="adminLoginModal">&times;</button>
+        <div style="padding: 24px; text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">🔑</div>
+          <h3 style="margin: 0 0 16px 0;">Вход для Администратора</h3>
+          <div style="margin-bottom: 12px; text-align: left;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Email Администратора</label>
+            <input type="email" id="adminLoginEmail" class="search-input" value="admin@examhub.ru" style="width: 100%; box-sizing: border-box;" />
+          </div>
+          <div style="margin-bottom: 20px; text-align: left;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Пароль</label>
+            <input type="password" id="adminLoginPass" class="search-input" placeholder="••••••••" value="AdminPass123!" style="width: 100%; box-sizing: border-box;" />
+          </div>
+          <button class="btn btn-primary" id="adminLoginSubmitBtn" style="width: 100%;">Авторизоваться</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast-message" id="toastMessage">
+
       <span class="toast-icon" id="toastIcon">✨</span>
       <span id="toastText">Привет! Успешный вход выполнен.</span>
     </div>

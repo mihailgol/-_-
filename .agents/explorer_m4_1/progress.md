@@ -1,18 +1,12 @@
 # Progress Log
 
-Last visited: 2026-08-01T09:28:12Z
+Last visited: 2026-08-03T21:37:22Z
 
-## Current Status
-Completed investigation and architectural design for Milestone 4 (R4: Mock Exam Mode Backend).
-
-## Completed Tasks
-- Initialized ORIGINAL_REQUEST.md, BRIEFING.md, and progress.md.
-- Investigated existing backend files (`server/db.js`, `server/seed.js`, `server/index.js`, `server/routes/*`, `server/middleware/auth.js`, `js/data.js`).
-- Designed SQLite database schema extensions (`mock_exams` and `mock_exam_attempts`).
-- Formulated complete primary-to-secondary score conversion algorithm (`server/utils/score-converter.js`).
-- Formulated complete REST API design (`server/routes/mock-exam.js`).
-- Defined Free vs Premium access control matrix.
-- Generated `analysis.md` and `handoff.md` in `.agents/explorer_m4_1/`.
-
-## Next Steps
-- Send final handoff message to parent (`ab7220c7-5f9f-4051-a347-a8cd7688600d`).
+- [x] Received dispatch and initialized BRIEFING.md and DISPATCH.md.
+- [ ] Read required project files (ORIGINAL_REQUEST.md, PROJECT.md, index.html, js/modules/auth.js, server/routes/auth.js, server/db.js).
+- [ ] Inspect `#authModal` in `index.html` and register logic in `js/modules/auth.js`.
+- [ ] Inspect SQLite schema in `server/db.js` for `exam_type`.
+- [ ] Inspect server endpoints in `server/routes/auth.js` (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`).
+- [ ] Synthesize findings and formulate step-by-step implementation strategy for Worker.
+- [ ] Write analysis.md and handoff.md.
+- [ ] Send completion message to parent.
