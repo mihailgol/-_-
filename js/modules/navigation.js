@@ -18,6 +18,11 @@ export function switchView(viewName, { replace = false } = {}) {
     targetSection.classList.add("active");
   }
 
+  if (viewName === "admin") {
+    import("./admin-dashboard.js").then((m) => m.renderAdminDashboard());
+  }
+
+
   const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
   navItems.forEach((n) => {
     if (n.getAttribute("data-view") === viewName) {
