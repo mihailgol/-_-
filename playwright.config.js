@@ -21,7 +21,10 @@ export default defineConfig({
   webServer: {
     command: "node server/index.js",
     url: "http://localhost:8000/api/health",
-    reuseExistingServer: false,
+    reuseExistingServer: true,
+
+
+
     timeout: 30000,
     env: {
       PORT: "8000",

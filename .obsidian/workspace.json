@@ -1,0 +1,240 @@
+{
+  "main": {
+    "id": "9a8f704359999922",
+    "type": "split",
+    "children": [
+      {
+        "id": "f0da4ac06810860c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "db8e586032e4a38e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ИНСТРУКЦИЯ.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ИНСТРУКЦИЯ"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "80c904ed7ea21e79",
+    "type": "split",
+    "children": [
+      {
+        "id": "52ce8bae5dc65898",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "31d91b9696cd1a8b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Файловый менеджер"
+            }
+          },
+          {
+            "id": "92d8d88b07fd1168",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Поиск"
+            }
+          },
+          {
+            "id": "9a2f991bb86c9bcc",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Закладки"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "8952bd61a5d7a008",
+    "type": "split",
+    "children": [
+      {
+        "id": "98a40cec2c6d7e75",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3f0669b5183398be",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "ИНСТРУКЦИЯ.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Обратные ссылки"
+            }
+          },
+          {
+            "id": "049bc00f9d607191",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "ИНСТРУКЦИЯ.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Исходящие ссылки"
+            }
+          },
+          {
+            "id": "2ad1ae7c8cf57bd3",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Теги"
+            }
+          },
+          {
+            "id": "ebb70356cf8f729b",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Все свойства"
+            }
+          },
+          {
+            "id": "0cab196cf5d3f60e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "ИНСТРУКЦИЯ.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Структура"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "bases:Создать новую базу": false
+    }
+  },
+  "active": "db8e586032e4a38e",
+  "lastOpenFiles": [
+    "test-results/admin_crud-Admin-Panel-Edi-f1c35-ми-ученика-и-очистка-текста-chromium/error-context.md",
+    "test-results/admin_crud-Admin-Panel-Edi-f1c35-ми-ученика-и-очистка-текста-chromium/test-failed-1.png",
+    "test-results/admin_crud-Admin-Panel-Edi-f1c35-ми-ученика-и-очистка-текста-chromium",
+    "Без названия.base",
+    "ИНСТРУКЦИЯ.md",
+    "Без названия.canvas",
+    "test-results/admin_crud-Admin-Panel-Edi-b2909-тора-и-переключение-вкладок-chromium/error-context.md",
+    "test-results/admin_crud-Admin-Panel-Edi-b2909-тора-и-переключение-вкладок-chromium/test-failed-1.png",
+    "test-results/admin_crud-Admin-Panel-Edi-b2909-тора-и-переключение-вкладок-chromium",
+    "test-results",
+    "test-results/smoke-ExamHub-—-smoke-test-e82bb-ния-конспектов-и-серии-дней-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-test-e82bb-ния-конспектов-и-серии-дней-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-test-e82bb-ния-конспектов-и-серии-дней-chromium",
+    "test-results/smoke-ExamHub-—-smoke-tests-полный-цикл-прохождения-теста-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-tests-полный-цикл-прохождения-теста-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-tests-полный-цикл-прохождения-теста-chromium",
+    "test-results/smoke-ExamHub-—-smoke-test-a4b8e-ация-регистрация-вход-выход-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-test-a4b8e-ация-регистрация-вход-выход-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-test-a4b8e-ация-регистрация-вход-выход-chromium",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-критических-сетевых-ошибок-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-критических-сетевых-ошибок-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-критических-сетевых-ошибок-chromium",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-ошибок-в-консоли-браузера-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-ошибок-в-консоли-браузера-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-tests-нет-ошибок-в-консоли-браузера-chromium",
+    "test-results/smoke-ExamHub-—-smoke-tests-работает-форма-обратной-связи-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-tests-работает-форма-обратной-связи-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-tests-работает-форма-обратной-связи-chromium",
+    "test-results/smoke-ExamHub-—-smoke-tests-работает-глобальный-поиск-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-tests-работает-глобальный-поиск-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-test-0604e-ные-кнопки-главной-страницы-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-test-0604e-ные-кнопки-главной-страницы-chromium/test-failed-1.png",
+    "test-results/smoke-ExamHub-—-smoke-test-fbfff-льная-навигация-Bottom-Nav--chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-test-4681f--навигация-по-всем-разделам-chromium/error-context.md",
+    "test-results/smoke-ExamHub-—-smoke-test-a3a2d-ным-заголовком-и-структурой-chromium/error-context.md",
+    "test-results/exam_type_switch-ExamType--3dbee-нов-при-переключении-на-ОГЭ-chromium/error-context.md",
+    "test-results/exam_type_switch-ExamType--fc3ff-ктивный-класс-и-сохраняется-chromium/error-context.md",
+    "test-results/exam_type_switch-ExamType--0cf2c-ючатель-Все-ЕГЭ-ОГЭ-в-шапке-chromium/error-context.md",
+    "playwright-report/data/d657216ca7e5f868098d596dc0b2a56c341a0a6a.md",
+    "playwright-report/data/b4a548f1c871591ca090a22176ec8f76f2d3c664.md",
+    "playwright-report/data/86a16a6e037a41429afa69ad83bbadaa2357a051.md",
+    "test-results/admin_crud-Admin-Panel-Edi-54a33-отр-вопроса-и-очистка-формы-chromium/error-context.md",
+    "README.md",
+    "PROJECT.md",
+    "AGENTS.md",
+    "DEVELOPMENT_RULES.md"
+  ]
+}
