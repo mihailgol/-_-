@@ -22,6 +22,8 @@ export function initSchema() {
       password_hash TEXT NOT NULL DEFAULT '',
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'Ученик',
+      status TEXT NOT NULL DEFAULT 'active',
+      last_login_at TEXT,
       avatar TEXT NOT NULL DEFAULT '',
       avatar_url TEXT NOT NULL DEFAULT '',
       vk_id TEXT UNIQUE,
@@ -34,6 +36,7 @@ export function initSchema() {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
 
   try {
     db.exec("ALTER TABLE users ADD COLUMN vk_id TEXT UNIQUE;");
