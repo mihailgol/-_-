@@ -119,7 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTeacherCabinet();
       renderStudentAssignments();
       renderAdminDashboard();
+      initTheoryEditor();
+      initTestEditor();
       updateUIFromState();
+
 
       const initialView = (location.hash || "#subjects").replace("#", "");
       if (HASH_VIEWS.includes(initialView)) {

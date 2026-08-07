@@ -290,6 +290,106 @@ async function loadAdminTabContent(tabName) {
     return;
   }
 
+  if (tabName === "theory") {
+    contentArea.innerHTML = `
+      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0;">📖 Управление Теоретическими Материалами</h3>
+            <p style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.85rem;">Создавайте конспекты с поддержкой Markdown, HTML, формул и медиа.</p>
+          </div>
+          <button class="btn btn-primary" id="adminOpenTheoryEditorBtn">➕ Открыть Редактор Теории (Rich Editor)</button>
+        </div>
+        <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
+          <div style="font-weight: 600; margin-bottom: 8px;">🚀 Возможности Редактора Теории:</div>
+          <ul style="margin: 0; padding-left: 20px; color: var(--color-text-secondary); line-height: 1.6;">
+            <li>Полная поддержка Markdown & HTML форматирования</li>
+            <li>Вставка математических формул LaTeX ($$E=mc^2$$)</li>
+            <li>Интеграция видеоуроков и учебных PDF-материалов</li>
+            <li>Автосохранение черновиков и живой предпросмотр (Live Preview)</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    document.getElementById("adminOpenTheoryEditorBtn")?.addEventListener("click", () => {
+      import("./navigation.js").then((m) => m.switchView("theory-editor"));
+      import("./theory-editor.js").then((m) => m.initTheoryEditor());
+    });
+    return;
+  }
+
+  if (tabName === "tests") {
+    contentArea.innerHTML = `
+      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0;">📝 Конструктор Тестов и Банк Вопросов</h3>
+            <p style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.85rem;">Создавайте тестовые задания всех типов в формате ЕГЭ/ОГЭ.</p>
+          </div>
+          <button class="btn btn-primary" id="adminOpenTestEditorBtn">➕ Открыть Конструктор Тестов (Test Constructor)</button>
+        </div>
+        <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
+          <div style="font-weight: 600; margin-bottom: 8px;">🎯 Поддерживаемые 5 типов вопросов:</div>
+          <ul style="margin: 0; padding-left: 20px; color: var(--color-text-secondary); line-height: 1.6;">
+            <li>1️⃣ Одиночный выбор ответа</li>
+            <li>☑️ Множественный выбор ответов</li>
+            <li>✍️ Текстовый ввод решения</li>
+            <li>🔄 Установление соответствия между столбцами</li>
+            <li>🔢 Упорядочивание правильной последовательности</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    document.getElementById("adminOpenTestEditorBtn")?.addEventListener("click", () => {
+      import("./navigation.js").then((m) => m.switchView("test-editor"));
+      import("./test-editor.js").then((m) => m.initTestEditor());
+    });
+    return;
+  }
+
+  if (tabName === "subscriptions") {
+    const data = await api("/api/admin/dashboard");
+    contentArea.innerHTML = `
+      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
+        <h3 style="margin-top: 0; margin-bottom: 16px;">💳 Управление Подписками и Тарифами</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px;">
+            <div style="font-size: 0.8rem; color: var(--color-text-secondary);">Активных Premium подписок</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #f59e0b;">${data.kpis.subscriptionsCount}</div>
+          </div>
+          <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px;">
+            <div style="font-size: 0.8rem; color: var(--color-text-secondary);">Общая выручка</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #10b981;">${data.kpis.revenue.toLocaleString("ru-RU")} ₽</div>
+          </div>
+        </div>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem;">Все платежи и активные тарифы пользователей валидируются сервером и отражаются в едином финансовом отчете.</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (tabName === "settings") {
+    contentArea.innerHTML = `
+      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
+        <h3 style="margin-top: 0; margin-bottom: 16px;">⚙️ Системные Настройки Платформы</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 480px;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Название платформы</label>
+            <input type="text" class="search-input" value="ExamHub — Изолированная платформа подготовки к ЕГЭ и ОГЭ" style="width: 100%;" disabled />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Режим изолированных экзаменов</label>
+            <input type="text" class="search-input" value="Включен (ЕГЭ / ОГЭ)" style="width: 100%;" disabled />
+          </div>
+          <div style="margin-top: 8px;">
+            <span style="font-size: 0.85rem; color: #10b981; font-weight: 600;">✅ Серверное окружение активно, RBAC включен</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   if (tabName === "analytics") {
     const data = await api("/api/admin/analytics");
     contentArea.innerHTML = `
@@ -330,6 +430,7 @@ async function loadAdminTabContent(tabName) {
     `;
     return;
   }
+
 
   contentArea.innerHTML = `
     <div style="background: var(--color-card-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--color-border);">
