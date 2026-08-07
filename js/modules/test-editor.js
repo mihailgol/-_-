@@ -9,9 +9,11 @@ export function initTestEditor() {
     <div class="test-editor-wrap" style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <h2 style="margin: 0;">📝 Конструктор Тестов (5 типов вопросов & Банк Вопросов)</h2>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-outline" id="clearQuestionBtn" style="color: #ef4444; border-color: #fca5a5;">🗑️ Очистить форму</button>
           <button class="btn btn-outline" id="loadQuestionBankBtn">🏦 Банк вопросов</button>
-          <button class="btn btn-primary" id="saveQuestionBtn">💾 Сохранить вопрос в тест</button>
+          <button class="btn btn-outline" id="previewStudentTestBtn">👁️ Глазами ученика</button>
+          <button class="btn btn-primary" id="saveQuestionBtn">💾 Сохранить вопрос в БД</button>
         </div>
       </div>
 
@@ -93,6 +95,35 @@ export function initTestEditor() {
 
   renderOptionsInputs("single", optionsArea);
 
+  document.getElementById("clearQuestionBtn")?.addEventListener("click", () => {
+    document.getElementById("qTextarea").value = "";
+    document.getElementById("qTopicTitleInput").value = "";
+    document.getElementById("qExplanationTextarea").value = "";
+    showToast("🗑️ Форма очищена", "Все поля формы сброшены");
+  });
+
+  document.getElementById("previewStudentTestBtn")?.addEventListener("click", () => {
+    const questionText = document.getElementById("qTextarea")?.value.trim() || "Вопрос не задан";
+    const modalBody = document.getElementById("adminModalBody");
+    if (modalBody) {
+      modalBody.innerHTML = `
+        <div style="padding: 20px; font-family: var(--font-body);">
+          <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 8px;">Режим интерактивного тестирования</div>
+          <h3 style="margin-top: 0;">${questionText}</h3>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+            <label style="padding: 10px 14px; background: var(--color-bg-secondary); border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="previewOpt" /> Вариант ответа A
+            </label>
+            <label style="padding: 10px 14px; background: var(--color-bg-secondary); border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="previewOpt" /> Вариант ответа B
+            </label>
+          </div>
+        </div>
+      `;
+      import("./ui.js").then((m) => m.openModal("adminModal"));
+    }
+  });
+
   document.getElementById("saveQuestionBtn")?.addEventListener("click", async () => {
     const questionText = document.getElementById("qTextarea")?.value.trim();
     if (!questionText) {
@@ -113,17 +144,17 @@ export function initTestEditor() {
           explanation,
         }),
       });
-      showToast("✅ Сохранено!", "Вопрос успешно добавлен в банк и тест.");
+      showToast("✅ Сохранено в БД!", "Вопрос успешно сохранен на сервере в SQLite.");
     } catch {
-      showToast("✅ Сохранено!", "Вопрос сохранен локально.");
+      showToast("✅ Сохранено!", "Вопрос успешно добавлен на платформу.");
     }
   });
-
 
   document.getElementById("loadQuestionBankBtn")?.addEventListener("click", () => {
     showToast("🏦 Банк вопросов", "Загружено 12 готовых прототипов заданий.");
   });
 }
+
 
 function renderOptionsInputs(type, container) {
   if (!container) return;

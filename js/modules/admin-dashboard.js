@@ -291,6 +291,15 @@ async function loadAdminTabContent(tabName) {
   }
 
   if (tabName === "theory") {
+    let theoryList;
+    try {
+      const res = await api("/api/admin/theory");
+      theoryList = res?.theory || [];
+    } catch {
+      theoryList = [];
+    }
+
+
     contentArea.innerHTML = `
       <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
@@ -300,7 +309,8 @@ async function loadAdminTabContent(tabName) {
           </div>
           <button class="btn btn-primary" id="adminOpenTheoryEditorBtn">➕ Открыть Редактор Теории (Rich Editor)</button>
         </div>
-        <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
+
+        <div style="margin-bottom: 20px; background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
           <div style="font-weight: 600; margin-bottom: 8px;">🚀 Возможности Редактора Теории:</div>
           <ul style="margin: 0; padding-left: 20px; color: var(--color-text-secondary); line-height: 1.6;">
             <li>Полная поддержка Markdown & HTML форматирования</li>
@@ -309,16 +319,58 @@ async function loadAdminTabContent(tabName) {
             <li>Автосохранение черновиков и живой предпросмотр (Live Preview)</li>
           </ul>
         </div>
+
+        <h4 style="margin-bottom: 12px;">📚 Опубликованные Темы и Конспекты (${theoryList.length})</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${
+            theoryList.length === 0
+              ? `<div style="color: var(--color-text-secondary); padding: 16px; text-align: center;">Темы в базе данных еще не созданы</div>`
+              : theoryList
+                  .map(
+                    (item) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--color-bg-secondary); border-radius: 10px; border: 1px solid var(--color-border);">
+                  <div>
+                    <div style="font-weight: 600;">${item.title}</div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-secondary);">${item.subject_title || item.subject_id || "Предмет"} • ID: ${item.id}</div>
+                  </div>
+                  <button class="btn btn-outline delete-theory-btn" data-id="${item.id}" style="color: #ef4444; border-color: #fca5a5; padding: 4px 10px; font-size: 0.8rem;">🗑️ Удалить</button>
+                </div>
+              `
+                  )
+                  .join("")
+          }
+        </div>
       </div>
     `;
+
     document.getElementById("adminOpenTheoryEditorBtn")?.addEventListener("click", () => {
       import("./navigation.js").then((m) => m.switchView("theory-editor"));
       import("./theory-editor.js").then((m) => m.initTheoryEditor());
+    });
+
+    contentArea.querySelectorAll(".delete-theory-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        if (confirm("Вы действительно хотите удалить эту тему из базы данных?")) {
+          await api(`/api/admin/theory/${id}`, { method: "DELETE" });
+          showToast("🗑️ Удалено", "Тема теории удалена из базы данных");
+          loadAdminTabContent("theory");
+        }
+      });
     });
     return;
   }
 
   if (tabName === "tests") {
+    let questionsList;
+    try {
+      const res = await api("/api/admin/tests");
+      questionsList = res?.questions || [];
+    } catch {
+      questionsList = [];
+    }
+
+
     contentArea.innerHTML = `
       <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
@@ -328,7 +380,8 @@ async function loadAdminTabContent(tabName) {
           </div>
           <button class="btn btn-primary" id="adminOpenTestEditorBtn">➕ Открыть Конструктор Тестов (Test Constructor)</button>
         </div>
-        <div style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
+
+        <div style="margin-bottom: 20px; background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border); font-size: 0.9rem;">
           <div style="font-weight: 600; margin-bottom: 8px;">🎯 Поддерживаемые 5 типов вопросов:</div>
           <ul style="margin: 0; padding-left: 20px; color: var(--color-text-secondary); line-height: 1.6;">
             <li>1️⃣ Одиночный выбор ответа</li>
@@ -338,14 +391,48 @@ async function loadAdminTabContent(tabName) {
             <li>🔢 Упорядочивание правильной последовательности</li>
           </ul>
         </div>
+
+        <h4 style="margin-bottom: 12px;">🏦 Банк вопросов и тестовые задания (${questionsList.length})</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${
+            questionsList.length === 0
+              ? `<div style="color: var(--color-text-secondary); padding: 16px; text-align: center;">Вопросы в базе данных еще не созданы</div>`
+              : questionsList
+                  .map(
+                    (q) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--color-bg-secondary); border-radius: 10px; border: 1px solid var(--color-border);">
+                  <div>
+                    <div style="font-weight: 600;">${q.question}</div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-secondary);">${q.subject_title || "Предмет"} • ${q.topic_title || "Тема"} • Тип: ${q.type}</div>
+                  </div>
+                  <button class="btn btn-outline delete-question-btn" data-id="${q.id}" style="color: #ef4444; border-color: #fca5a5; padding: 4px 10px; font-size: 0.8rem;">🗑️ Удалить</button>
+                </div>
+              `
+                  )
+                  .join("")
+          }
+        </div>
       </div>
     `;
+
     document.getElementById("adminOpenTestEditorBtn")?.addEventListener("click", () => {
       import("./navigation.js").then((m) => m.switchView("test-editor"));
       import("./test-editor.js").then((m) => m.initTestEditor());
     });
+
+    contentArea.querySelectorAll(".delete-question-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        if (confirm("Вы действительно хотите удалить этот вопрос из БД?")) {
+          await api(`/api/admin/tests/questions/${id}`, { method: "DELETE" });
+          showToast("🗑️ Удалено", "Вопрос удален из банка тестовых заданий");
+          loadAdminTabContent("tests");
+        }
+      });
+    });
     return;
   }
+
 
   if (tabName === "subscriptions") {
     const data = await api("/api/admin/dashboard");

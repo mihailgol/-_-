@@ -11,9 +11,11 @@ export function initTheoryEditor() {
     <div class="theory-editor-wrap" style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <h2 style="margin: 0;">📖 Редактор Теории (Markdown / HTML / Формулы)</h2>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-outline" id="clearTheoryBtn" style="color: #ef4444; border-color: #fca5a5;">🗑️ Очистить текст</button>
           <button class="btn btn-outline" id="loadDraftTheoryBtn">📝 Загрузить черновик</button>
-          <button class="btn btn-primary" id="saveTheoryBtn">🚀 Опубликовать теорию</button>
+          <button class="btn btn-outline" id="previewStudentTheoryBtn">👁️ Глазами ученика</button>
+          <button class="btn btn-primary" id="saveTheoryBtn">🚀 Опубликовать теорию в БД</button>
         </div>
       </div>
 
@@ -59,7 +61,6 @@ export function initTheoryEditor() {
           <div>
             <label style="display: block; font-weight: 600; margin-bottom: 6px;">Содержание (Markdown & HTML)</label>
             <textarea id="theoryContentTextarea" class="search-input" style="width: 100%; height: 320px; font-family: monospace; line-height: 1.5; box-sizing: border-box;" placeholder="Введите текст конспекта, формулы sin^2(x) + cos^2(x) = 1 или таблицы..."></textarea>
-
           </div>
         </div>
 
@@ -84,6 +85,15 @@ export function initTheoryEditor() {
 
   bindToolbar(textarea, preview);
 
+  document.getElementById("clearTheoryBtn")?.addEventListener("click", () => {
+    if (textarea) textarea.value = "";
+    document.getElementById("theoryTitleInput").value = "";
+    document.getElementById("theoryCategoryInput").value = "";
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+    updatePreview("", preview);
+    showToast("🗑️ Очищено", "Текст и черновик удалены");
+  });
+
   document.getElementById("loadDraftTheoryBtn")?.addEventListener("click", () => {
     const draft = localStorage.getItem(DRAFT_STORAGE_KEY);
     if (draft && textarea) {
@@ -94,6 +104,32 @@ export function initTheoryEditor() {
       showToast("ℹ️ Черновик", "Сохраненный черновик не найден");
     }
   });
+
+  document.getElementById("previewStudentTheoryBtn")?.addEventListener("click", () => {
+    const title = document.getElementById("theoryTitleInput")?.value.trim() || "Без названия";
+    const rawText = textarea?.value || "";
+    let htmlContent;
+
+    if (!rawText.trim()) {
+      htmlContent = `<div style="padding: 20px; text-align: center; color: var(--color-text-secondary);">Конспект пуст</div>`;
+    } else {
+      htmlContent = `
+        <div style="padding: 20px; font-family: var(--font-body); line-height: 1.6;">
+          <h2 style="margin-top: 0; color: var(--color-text);">${title}</h2>
+          <div style="border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 12px;">
+            ${formatTheoryHTML(rawText)}
+          </div>
+        </div>
+      `;
+    }
+    const modalBody = document.getElementById("adminModalBody");
+    if (modalBody) {
+      modalBody.innerHTML = htmlContent;
+      import("./ui.js").then((m) => m.openModal("adminModal"));
+    }
+  });
+
+
 
   document.getElementById("saveTheoryBtn")?.addEventListener("click", async () => {
     const subjectId = document.getElementById("theorySubjectSelect")?.value;
@@ -107,18 +143,43 @@ export function initTheoryEditor() {
     }
 
     try {
-      await api("/api/admin/theory", {
+      const res = await api("/api/admin/theory", {
         method: "POST",
         body: JSON.stringify({ subjectId, title, category, theory: content }),
       });
 
+      if (window.EXAM_DATA?.subjects?.[subjectId]) {
+        const sub = window.EXAM_DATA.subjects[subjectId];
+        if (!sub.topics) sub.topics = [];
+        sub.topics.push({
+          id: res.id || `top_${Date.now()}`,
+          title: title,
+          isPremium: false,
+          duration: "45 мин",
+          theory: formatTheoryHTML(content),
+        });
+      }
+
       localStorage.removeItem(DRAFT_STORAGE_KEY);
-      showToast("🚀 Теория опубликована!", `Тема "${title}" добавлена на платформу.`);
+      showToast("🚀 Теория опубликована в БД!", `Тема "${title}" сохранена на сервере и доступна ученикам.`);
     } catch (err) {
       showToast("⚠️ Ошибка", err.message || "Не удалось сохранить теорию");
     }
   });
 }
+
+function formatTheoryHTML(rawText) {
+  return rawText
+    .replace(/^### (.*$)/gim, "<h3>$1</h3>")
+    .replace(/^## (.*$)/gim, "<h2>$1</h2>")
+    .replace(/^# (.*$)/gim, "<h1>$1</h1>")
+    .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
+    .replace(/\*(.*)\*/gim, "<em>$1</em>")
+    .replace(/\\\[(.*?)\\\]/gim, '<div style="background: rgba(99,102,241,0.1); padding: 8px 12px; border-radius: 8px; font-family: monospace; color: #6366f1; margin: 8px 0;">[ $1 ]</div>')
+    .replace(/`([^`]+)`/gim, "<code style=\"background: var(--color-card-bg); padding: 2px 6px; border-radius: 4px;\">$1</code>")
+    .replace(/\n/gim, "<br/>");
+}
+
 
 function updatePreview(rawText, previewEl) {
   if (!previewEl) return;
