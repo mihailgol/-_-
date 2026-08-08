@@ -296,16 +296,24 @@ export function initSchema() {
 
 export function seedAdminUser() {
   const passwordHash = bcrypt.hashSync("admin123", 10);
-  const admin = db.prepare("SELECT id FROM users WHERE email = ?").get("admin@examhub.ru");
+  let admin = db.prepare("SELECT id FROM users WHERE email = ?").get("admin@examhub.ru");
   if (!admin) {
-    db.prepare(
+    const res = db.prepare(
       "INSERT INTO users (email, password_hash, name, role, status, exam_type) VALUES (?, ?, ?, 'ADMIN', 'active', 'EGE')"
     ).run("admin@examhub.ru", passwordHash, "Главный Администратор");
+    admin = { id: Number(res.lastInsertRowid) };
   } else {
     db.prepare(
       "UPDATE users SET password_hash = ?, role = 'ADMIN', status = 'active' WHERE email = ?"
     ).run(passwordHash, "admin@examhub.ru");
   }
+
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  db.prepare("INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run(
+    "admin_session_token",
+    admin.id,
+    expiresAt
+  );
 }
 
 

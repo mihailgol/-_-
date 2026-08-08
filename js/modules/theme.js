@@ -11,6 +11,17 @@ function getSystemTheme() {
   return "light";
 }
 
+export function bindThemeButtons() {
+  if (typeof document === "undefined") return;
+  document.querySelectorAll("[data-theme-val]").forEach((btn) => {
+    btn.onclick = (e) => {
+      if (e) e.preventDefault();
+      const val = btn.getAttribute("data-theme-val");
+      if (val) setTheme(val);
+    };
+  });
+}
+
 function applyTheme(mode) {
   const effectiveTheme = mode === "auto" ? getSystemTheme() : mode;
   if (typeof document !== "undefined" && document.documentElement) {
@@ -37,8 +48,12 @@ function applyTheme(mode) {
         } else {
           icon.setAttribute("data-lucide", "sun");
         }
-        if (window.lucide && typeof window.lucide.createIcons === "function") {
-          window.lucide.createIcons();
+        try {
+          if (window.lucide && typeof window.lucide.createIcons === "function") {
+            window.lucide.createIcons();
+          }
+        } catch (e) {
+          void e;
         }
       }
     }
@@ -104,20 +119,27 @@ export function initTheme() {
   }
 
   applyTheme(currentThemeMode);
+  bindThemeButtons();
 
   if (!initialized && typeof document !== "undefined") {
     initialized = true;
     document.addEventListener("click", (e) => {
-      const themeBtn = e.target.closest("[data-theme-val]");
+      const themeBtn = e.target && e.target.closest ? e.target.closest("[data-theme-val]") : null;
       if (themeBtn) {
         const val = themeBtn.getAttribute("data-theme-val");
-        setTheme(val);
+        if (val) setTheme(val);
         return;
       }
-      const singleToggle = e.target.closest("#themeToggleBtn");
+      const singleToggle = e.target && e.target.closest ? e.target.closest("#themeToggleBtn") : null;
       if (singleToggle) {
         toggleTheme();
       }
     });
+  }
+
+  if (typeof window !== "undefined") {
+    window.setTheme = setTheme;
+    window.getTheme = getTheme;
+    window.toggleTheme = toggleTheme;
   }
 }

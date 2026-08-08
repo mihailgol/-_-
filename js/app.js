@@ -19,6 +19,7 @@ import { renderAdminDashboard } from "./modules/admin-dashboard.js";
 import { initTheoryEditor } from "./modules/theory-editor.js";
 import { initTestEditor } from "./modules/test-editor.js";
 import { initAnalyticsTracker } from "./modules/analytics-engine.js";
+import { initProfileView } from "./modules/profile.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -78,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTheoryEditor();
   initTestEditor();
   initAnalyticsTracker();
+  initProfileView();
 
   document.getElementById("adminLoginSubmitBtn")?.addEventListener("click", async () => {
     const email = document.getElementById("adminLoginEmail")?.value.trim();

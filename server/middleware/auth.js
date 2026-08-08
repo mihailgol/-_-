@@ -39,7 +39,11 @@ export function getUserByToken(token) {
 }
 
 export function optionalAuth(req, _res, next) {
-  req.user = getUserByToken(req.cookies?.[config.cookieName]);
+  const tokenFromHeader = req.headers.authorization
+    ? (req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.slice(7) : req.headers.authorization)
+    : null;
+  const token = req.cookies?.[config.cookieName] || tokenFromHeader;
+  req.user = getUserByToken(token);
   next();
 }
 

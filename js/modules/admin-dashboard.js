@@ -8,7 +8,20 @@ export async function renderAdminDashboard() {
   const container = document.getElementById("adminContentContainer");
   if (!container) return;
 
-  if (!appState.user.isLoggedIn || appState.user.role !== "ADMIN") {
+  let storedUser = null;
+  try {
+    const raw = localStorage.getItem("examhub_user") || localStorage.getItem("examhub_state");
+    if (raw) storedUser = JSON.parse(raw);
+    if (storedUser && storedUser.user) storedUser = storedUser.user;
+  } catch (e) {
+    void e;
+  }
+
+  const u = storedUser || appState.user;
+  const isLoggedIn = u.isLoggedIn || !!localStorage.getItem("examhub_token") || !!storedUser;
+  const roleStr = String(u?.role || "").toUpperCase();
+
+  if (!isLoggedIn || roleStr !== "ADMIN") {
     container.innerHTML = `
       <div style="text-align: center; color: var(--color-text-secondary); padding: 60px 20px; background: var(--color-card-bg); border-radius: 16px; border: 1px solid var(--color-border);">
         <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>

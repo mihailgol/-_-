@@ -232,10 +232,12 @@ body.exam-mode-oge {
   box-shadow: var(--box-shadow-sm);
 }
 
-.theme-toggle-btn svg {
+.theme-toggle-btn svg,
+.theme-toggle-btn i {
   width: 16px;
   height: 16px;
   stroke: currentColor;
+  pointer-events: none;
 }
 
 * {
@@ -306,6 +308,9 @@ textarea {
   padding: 24px 16px;
   justify-content: space-between;
   z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
 .brand-section {
@@ -407,6 +412,7 @@ textarea {
   position: relative;
   overflow: hidden;
   box-shadow: var(--box-shadow-sm);
+  flex-shrink: 0;
 }
 
 .premium-promo-card::before {
@@ -467,6 +473,7 @@ textarea {
   border-top: 1px solid var(--color-border);
   cursor: pointer;
   transition: var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .sidebar-user:hover {
@@ -3355,4 +3362,175 @@ button:disabled, .btn:disabled {
   cursor: not-allowed !important;
   pointer-events: none;
 }
+
+/* --- Profile View Styling --- */
+.profile-header-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-xl);
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--box-shadow-sm);
+  flex-wrap: wrap;
+}
+
+.profile-avatar-large-wrapper {
+  position: relative;
+}
+
+.profile-avatar-large {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-green);
+  box-shadow: 0 4px 14px rgba(0, 168, 89, 0.2);
+}
+
+.profile-badge-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--color-purple);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 2px solid var(--color-surface);
+}
+
+.profile-user-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.profile-user-email {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+}
+
+.profile-tags-row {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.role-tag {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.status-tag {
+  background: var(--color-green-light);
+  color: var(--color-green);
+}
+
+.profile-nav-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.profile-tab-btn {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.profile-tab-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.profile-tab-btn.active {
+  color: var(--color-green);
+  border-bottom-color: var(--color-green);
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.profile-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--box-shadow-sm);
+}
+
+.stat-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.profile-section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.profile-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: var(--transition-fast);
+}
+
+.profile-history-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-sm);
+}
+
+.profile-settings-form {
+  max-width: 500px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+}
+
 

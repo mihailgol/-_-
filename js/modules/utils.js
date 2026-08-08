@@ -1,7 +1,12 @@
 export async function api(url, options = {}) {
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("examhub_token") : null;
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (token && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

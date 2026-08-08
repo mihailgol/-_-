@@ -6,6 +6,18 @@
     <title>ExamHub — Твоя эффективная подготовка к ЕГЭ и ОГЭ</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
     <link rel="stylesheet" href="css/style.css" />
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("examhub_theme");
+          var mode = (saved === "light" || saved === "dark" || saved === "auto") ? saved : "auto";
+          var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var effective = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
+          document.documentElement.setAttribute("data-theme", effective);
+          document.documentElement.setAttribute("data-theme-setting", mode);
+        } catch(e) {}
+      })();
+    </script>
     <script src="js/lucide.min.js"></script>
   </head>
   <body>
@@ -59,6 +71,10 @@
               <i data-lucide="shopping-cart"></i>
               <span>Корзина</span>
             </button>
+            <button class="nav-item" data-view="profile">
+              <i data-lucide="user"></i>
+              <span>Личный кабинет</span>
+            </button>
             <button class="nav-item" data-view="support">
               <i data-lucide="life-buoy"></i>
               <span>Поддержка</span>
@@ -66,7 +82,8 @@
             <button
               class="nav-item"
               data-view="admin"
-              style="border-top: 1px dashed var(--color-border); border-radius: 0; padding-top: 16px; margin-top: 8px"
+              id="sidebarAdminBtn"
+              style="display: none !important; border-top: 1px dashed var(--color-border); border-radius: 0; padding-top: 16px; margin-top: 8px"
             >
               <i data-lucide="settings" style="stroke: var(--color-purple)"></i>
               <span style="color: var(--color-purple); font-weight: 600">Админка</span>
@@ -944,6 +961,93 @@
             </div>
           </section>
 
+          <section class="view-section" id="view-profile">
+            <div class="profile-header-card">
+              <div class="profile-avatar-large-wrapper">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Avatar" class="profile-avatar-large" id="profileHeaderAvatar" />
+                <span class="profile-badge-status" id="profileHeaderBadge">PRO</span>
+              </div>
+              <div class="profile-user-details">
+                <h2 class="profile-user-name" id="profileHeaderName">Артём Иванов</h2>
+                <p class="profile-user-email" id="profileHeaderEmail">artem.ivanov@example.com</p>
+                <div class="profile-tags-row">
+                  <span class="profile-tag role-tag" id="profileHeaderRoleTag">Ученик</span>
+                  <span class="profile-tag status-tag" id="profileHeaderStatusTag">Премиум до 2027</span>
+                </div>
+              </div>
+              <button class="btn btn-outline" id="profileQuickEditBtn" style="margin-left: auto;">⚙️ Настройки</button>
+            </div>
+
+            <div class="profile-nav-tabs">
+              <button class="profile-tab-btn active" data-profile-tab="overview">📊 Мой прогресс</button>
+              <button class="profile-tab-btn" data-profile-tab="history">📜 История решений</button>
+              <button class="profile-tab-btn" data-profile-tab="courses">🎓 Мои курсы</button>
+              <button class="profile-tab-btn" data-profile-tab="settings">⚙️ Настройки аккаунта</button>
+            </div>
+
+            <div class="profile-tab-content active" id="profileTabOverview">
+              <div class="profile-stats-grid">
+                <div class="profile-stat-card">
+                  <div class="stat-icon">🔥</div>
+                  <div class="stat-value" id="profileStatStreak">23 дня</div>
+                  <div class="stat-label">Серия занятий</div>
+                </div>
+                <div class="profile-stat-card">
+                  <div class="stat-icon">🎯</div>
+                  <div class="stat-value" id="profileStatSolved">142</div>
+                  <div class="stat-label">Решено задач</div>
+                </div>
+                <div class="profile-stat-card">
+                  <div class="stat-icon">🏆</div>
+                  <div class="stat-value" id="profileStatAccuracy">88%</div>
+                  <div class="stat-label">Точность ответов</div>
+                </div>
+                <div class="profile-stat-card">
+                  <div class="stat-icon">⚡</div>
+                  <div class="stat-value" id="profileStatRank">Топ 5%</div>
+                  <div class="stat-label">Рейтинг ученика</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-tab-content" id="profileTabHistory" style="display: none;">
+              <h3 class="profile-section-heading">История пройденных тестов и пробников</h3>
+              <div id="profileHistoryList" class="profile-history-container">
+                <div class="empty-history-text">Загрузка истории...</div>
+              </div>
+            </div>
+
+            <div class="profile-tab-content" id="profileTabCourses" style="display: none;">
+              <h3 class="profile-section-heading">Доступные и купленные предметы</h3>
+              <div id="profileCoursesGrid" class="profile-courses-grid">
+                <div class="empty-history-text">Загрузка предметов...</div>
+              </div>
+            </div>
+
+            <div class="profile-tab-content" id="profileTabSettings" style="display: none;">
+              <h3 class="profile-section-heading">Редактирование профиля</h3>
+              <form id="profileSettingsForm" class="profile-settings-form">
+                <div class="form-group">
+                  <label class="auth-input-label" for="profileInputName">Имя и фамилия</label>
+                  <input type="text" id="profileInputName" class="auth-form-input" value="Артём Иванов" required />
+                </div>
+                <div class="form-group">
+                  <label class="auth-input-label" for="profileInputEmail">Email адрес</label>
+                  <input type="email" id="profileInputEmail" class="auth-form-input" value="artem.ivanov@example.com" required />
+                </div>
+                <div class="form-group">
+                  <label class="auth-input-label" for="profileInputAvatar">URL аватара (Unsplash / Фото)</label>
+                  <input type="url" id="profileInputAvatar" class="auth-form-input" value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" />
+                </div>
+                <div class="form-group">
+                  <label class="auth-input-label" for="profileInputPassword">Новый пароль (оставьте пустым если не меняете)</label>
+                  <input type="password" id="profileInputPassword" class="auth-form-input" placeholder="••••••••" />
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: auto; padding: 12px 32px;">Сохранить изменения</button>
+              </form>
+            </div>
+          </section>
+
           <section class="view-section" id="view-admin-legacy" style="display: none !important;">
             <div class="section-title">Создание учебного материала</div>
 
@@ -1479,11 +1583,15 @@
           <i data-lucide="shopping-cart"></i>
           <span>Корзина</span>
         </button>
+        <button class="mobile-nav-item" data-view="profile">
+          <i data-lucide="user"></i>
+          <span>Профиль</span>
+        </button>
         <button class="mobile-nav-item" data-view="support">
           <i data-lucide="life-buoy"></i>
           <span>Поддержка</span>
         </button>
-        <button class="mobile-nav-item" data-view="admin">
+        <button class="mobile-nav-item" data-view="admin" id="mobileAdminBtn" style="display: none !important;">
           <i data-lucide="settings"></i>
           <span>Админка</span>
         </button>

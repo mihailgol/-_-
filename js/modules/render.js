@@ -3,9 +3,11 @@ import { formatNumber, pluralDays } from "./utils.js";
 import { renderAuthHeader } from "./auth.js";
 import { updatePlanUI } from "./plan.js";
 import { updateAnalyticsUI } from "./analytics.js";
+import { updateProfileUI } from "./profile.js";
 import { updateAILimitBadge } from "./ai.js";
 
 export function updateUIFromState() {
+  updateProfileUI();
   const nameEl = document.getElementById("sidebarName");
   const roleEl = document.getElementById("sidebarRole");
   const avatarEl = document.getElementById("sidebarAvatar");

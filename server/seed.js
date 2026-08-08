@@ -261,6 +261,14 @@ export function seedContent() {
       { id: "ieq5", question: "Алгоритм вычисления функции F(n) задан рекурсивно: F(1)=1; F(n)=F(n-1)+2*n при n > 1. Чему равно F(4)?", type: "single", options: ["19", "20", "12", "15"], correctIndex: 0, explanation: "F(1)=1. F(2)=1 + 2*2 = 5. F(3)=5 + 2*3 = 11. F(4)=11 + 2*4 = 19.", points: 1 }
     ];
 
+    const geoOgeQuestions = [
+      { id: "gmoq1", question: "Какая крайняя северная материковая точка территории России?", type: "single", options: ["Мыс Челюскин", "Мыс Флигели", "Мыс Дежнёва", "Мыс Канин Нос"], correctIndex: 0, explanation: "Мыс Челюскин на полуострове Таймыр является крайней северной материковой точкой России и всей Евразии.", points: 1 },
+      { id: "gmoq2", question: "Какой угольный бассейн является ведущим по добыче каменного угля в России?", type: "single", options: ["Кузнецкий (Кузбасс)", "Печорский", "Ленский", "Тунгусский"], correctIndex: 0, explanation: "Кузнецкий угольный бассейн (Кузбасс) в Кемеровской области обеспечивает более 50% добычи каменного угля в стране.", points: 1 },
+      { id: "gmoq3", question: "В каком климатическом поясе расположена большая часть территории России?", type: "single", options: ["Умеренный", "Субарктический", "Арктический", "Субтропический"], correctIndex: 0, explanation: "Подавляющая часть территории России находится в умеренном климатическом поясе.", points: 1 },
+      { id: "gmoq4", question: "Где расположены крупнейшие запасы железной руды в России (КМА)?", type: "single", options: ["Белгородская и Курская области", "Республика Коми", "Магаданская область", "Приморский край"], correctIndex: 0, explanation: "Курская магнитная аномалия (КМА) — крупнейший в мире железорудный бассейн, расположен в Белгородской и Курской областях.", points: 1 },
+      { id: "gmoq5", question: "В каких единицах обычно измеряется естественный прирост населения?", type: "single", options: ["В промилле (‰)", "В процентах (%)", "В тоннах", "В километрах"], correctIndex: 0, explanation: "Показатели рождаемости, смертности и естественного прироста измеряются в промилле (число человек на 1000 жителей в год).", points: 1 }
+    ];
+
     insMockExam.run("mock_rus_oge_1", "russian", "ОГЭ по русскому языку — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(rusOgeQuestions), ogeConversion);
     insMockExam.run("mock_rus_ege_1", "russian", "ЕГЭ по русскому языку — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(rusEgeQuestions), egeConversion);
     insMockExam.run("mock_math_oge_1", "math", "ОГЭ по математике — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(mathOgeQuestions), ogeConversion);
@@ -273,6 +281,7 @@ export function seedContent() {
     insMockExam.run("mock_phys_ege_1", "physics", "ЕГЭ по физике — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(physEgeQuestions), egeConversion);
     insMockExam.run("mock_inf_oge_1", "informatics", "ОГЭ по информатике — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(infOgeQuestions), ogeConversion);
     insMockExam.run("mock_inf_ege_1", "informatics", "ЕГЭ по информатике — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(infEgeQuestions), egeConversion);
+    insMockExam.run("mock_geo_oge_1", "geography", "ОГЭ по географии — Вариант 1", "OGE", 150, 5, 0, JSON.stringify(geoOgeQuestions), ogeConversion);
   });
 }
 

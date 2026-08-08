@@ -11,6 +11,7 @@ export const HASH_VIEWS = [
   "theory-editor",
   "test-editor",
   "cart",
+  "profile",
   "support",
 ];
 

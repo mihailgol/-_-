@@ -14,6 +14,7 @@ describe("EXAM_DATA", () => {
       "biology",
       "chemistry",
       "english",
+      "geography",
       "history",
       "informatics",
       "literature",

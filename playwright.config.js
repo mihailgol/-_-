@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: "node server/index.js",
     url: "http://localhost:8000/api/health",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
 
 
 

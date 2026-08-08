@@ -21,6 +21,9 @@ export function switchView(viewName, { replace = false } = {}) {
   if (viewName === "admin") {
     import("./admin-dashboard.js").then((m) => m.renderAdminDashboard());
   }
+  if (viewName === "profile") {
+    import("./profile.js").then((m) => m.updateProfileUI());
+  }
 
 
   const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
