@@ -11,6 +11,7 @@ import aiRoutes from "./routes/ai.js";
 import mockExamRoutes from "./routes/mock-exam.js";
 import teacherRoutes from "./routes/teacher.js";
 import adminRoutes from "./routes/admin.js";
+import supportRoutes from "./routes/support.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/mock-exams", mockExamRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/support", supportRoutes);
 
 
 const FRONTEND_ASSETS = ["/js", "/css", "/index.html"];

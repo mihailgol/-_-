@@ -59,6 +59,7 @@ function renderAdminOverview(container, data) {
         <button class="btn btn-tab" data-admin-tab="theory">📖 Теория</button>
         <button class="btn btn-tab" data-admin-tab="tests">📝 Тесты</button>
         <button class="btn btn-tab" data-admin-tab="analytics">📈 Аналитика</button>
+        <button class="btn btn-tab" data-admin-tab="support">📩 Обращения</button>
         <button class="btn btn-tab" data-admin-tab="settings">⚙️ Настройки</button>
       </div>
 
@@ -178,6 +179,11 @@ async function loadAdminTabContent(tabName) {
 
   if (tabName === "dashboard") {
     renderAdminOverview(document.getElementById("adminContentContainer"), adminDataCache);
+    return;
+  }
+
+  if (tabName === "support") {
+    await renderAdminSupportTickets(contentArea);
     return;
   }
 
@@ -608,4 +614,80 @@ export function openCreateTeacherModal() {
       showToast("⚠️ Ошибка", err.message || "Не удалось создать преподавателя");
     }
   });
+}
+
+async function renderAdminSupportTickets(contentArea) {
+  try {
+    const data = await api("/api/admin/support/tickets");
+    const tickets = data.tickets || [];
+
+    contentArea.innerHTML = `
+      <div style="background: var(--color-card-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--color-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <h3 style="margin: 0;">📩 Обращения клиентов (${tickets.length})</h3>
+          <span style="font-size: 0.85rem; color: var(--color-text-secondary);">Все поступившие вопросы и обращения пользователей</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--color-border); color: var(--color-text-secondary);">
+                <th style="padding: 10px;">ID</th>
+                <th style="padding: 10px;">Дата</th>
+                <th style="padding: 10px;">Email / Ученик</th>
+                <th style="padding: 10px;">Тема обращения</th>
+                <th style="padding: 10px;">Текст сообщения</th>
+                <th style="padding: 10px;">Статус</th>
+                <th style="padding: 10px;">Действие</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tickets.length === 0 ? `
+                <tr>
+                  <td colspan="7" style="padding: 24px; text-align: center; color: var(--color-text-secondary);">Обращений пока нет</td>
+                </tr>
+              ` : tickets.map((t) => `
+                <tr style="border-bottom: 1px solid var(--color-border-light);">
+                  <td style="padding: 10px; font-weight: 700;">#${t.id}</td>
+                  <td style="padding: 10px; font-size: 0.8rem; color: var(--color-text-secondary);">${t.created_at || '—'}</td>
+                  <td style="padding: 10px; font-weight: 600;">${t.user_email}</td>
+                  <td style="padding: 10px; font-weight: 700; color: var(--color-text-primary);">${t.subject}</td>
+                  <td style="padding: 10px; max-width: 300px; word-break: break-word;">${t.message}</td>
+                  <td style="padding: 10px;">
+                    <span style="padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: ${t.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${t.status === 'resolved' ? '#10b981' : '#f59e0b'};">
+                      ${t.status === 'resolved' ? '✅ Решено' : '⏳ В обработке'}
+                    </span>
+                  </td>
+                  <td style="padding: 10px;">
+                    ${t.status === 'open' ? `
+                      <button class="btn btn-outline resolve-ticket-btn" data-id="${t.id}" style="padding: 4px 8px; font-size: 0.75rem; color: #10b981; border-color: #10b981;">
+                        ✓ Отметить решенным
+                      </button>
+                    ` : '—'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    contentArea.querySelectorAll(".resolve-ticket-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        try {
+          await api(`/api/admin/support/tickets/${id}/status`, {
+            method: "PATCH",
+            body: JSON.stringify({ status: "resolved" })
+          });
+          showToast("✅ Статус обновлен", `Обращение #${id} отмечено решенным`);
+          renderAdminSupportTickets(contentArea);
+        } catch (e) {
+          showToast("⚠️ Ошибка", e.message);
+        }
+      });
+    });
+  } catch (err) {
+    showToast("⚠️ Ошибка", err.message || "Не удалось загрузить обращения");
+  }
 }

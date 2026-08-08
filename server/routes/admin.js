@@ -389,4 +389,16 @@ function escapeCsv(str) {
   return String(str || "").replace(/"/g, '""');
 }
 
+router.get("/support/tickets", (req, res) => {
+  const tickets = db.prepare("SELECT * FROM support_tickets ORDER BY id DESC").all();
+  res.json({ tickets });
+});
+
+router.patch("/support/tickets/:id/status", (req, res) => {
+  const ticketId = Number(req.params.id);
+  const status = String(req.body?.status || "resolved");
+  db.prepare("UPDATE support_tickets SET status = ? WHERE id = ?").run(status, ticketId);
+  res.json({ ok: true });
+});
+
 export default router;

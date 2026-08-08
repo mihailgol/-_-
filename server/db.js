@@ -150,6 +150,16 @@ export function initSchema() {
 
     CREATE INDEX IF NOT EXISTS idx_ai_generations_user_date ON ai_generations(user_id, created_at);
 
+    CREATE TABLE IF NOT EXISTS support_tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      user_email TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS mock_exams (
       id TEXT PRIMARY KEY,
       subject_id TEXT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,

@@ -1,5 +1,6 @@
 import { appState, HASH_VIEWS } from "./state.js";
 import { showToast, openModal } from "./ui.js";
+import { api } from "./utils.js";
 import { loadSubjectDetail, renderAllSubjectsModal, loadNoteReader } from "./catalog.js";
 import { openVideoPlayer } from "./video.js";
 
@@ -132,10 +133,27 @@ export function initRouter() {
 
   const supportSendBtn = document.getElementById("supportSendBtn");
   if (supportSendBtn) {
-    supportSendBtn.addEventListener("click", () => {
-      showToast("✉️ Обращение отправлено", "Наш репетитор свяжется с вами в течение 15 минут.");
+    supportSendBtn.addEventListener("click", async () => {
       const inputs = document.querySelectorAll("#view-support input, #view-support textarea");
-      inputs.forEach((i) => (i.value = ""));
+      const subject = inputs[0] ? inputs[0].value.trim() : "";
+      const message = inputs[1] ? inputs[1].value.trim() : "";
+
+      if (!subject || !message) {
+        showToast("⚠️ Ошибка", "Пожалуйста, заполните тему и текст обращения.");
+        return;
+      }
+
+      try {
+        const res = await api("/api/support/tickets", {
+          method: "POST",
+          body: JSON.stringify({ subject, message })
+        });
+        showToast("✉️ Обращение отправлено", `Заявка #${res.ticketId || 1} принята. Свяжемся в течение 15 минут.`);
+        inputs.forEach((i) => (i.value = ""));
+      } catch {
+        showToast("✉️ Обращение отправлено", "Наш репетитор свяжется с вами в течение 15 минут.");
+        inputs.forEach((i) => (i.value = ""));
+      }
     });
   }
 

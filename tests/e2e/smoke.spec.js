@@ -49,6 +49,7 @@ test.describe("ExamHub — smoke tests", () => {
   test("работает форма обратной связи", async ({ page }) => {
     await page.locator('.sidebar-nav .nav-item[data-view="support"]').click();
     await page.locator("#view-support input[type='text']").first().fill("Иван");
+    await page.locator("#view-support textarea").first().fill("Тестовое обращение в поддержку");
     await page.locator("#supportSendBtn").click();
     await expect(page.locator("#toastMessage")).toHaveClass(/active/);
     await expect(page.locator("#toastText")).toContainText("отправлено");
