@@ -2269,11 +2269,18 @@ textarea {
 .auth-form-input {
   width: 100%;
   padding: 10px 14px;
+  background-color: var(--color-bg-app);
   border: 1.5px solid var(--color-border);
   border-radius: var(--border-radius-sm);
   font-size: 13px;
   color: var(--color-text-primary);
   transition: var(--transition-fast);
+}
+
+[data-theme="dark"] .auth-form-input {
+  background-color: var(--color-bg-app);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
 }
 
 .auth-form-input:focus {

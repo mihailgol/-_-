@@ -54,6 +54,7 @@ test.describe("Admin Panel & Editor Systems — QA E2E Tests", () => {
     });
 
     await expect(page.locator("#view-test-editor")).toBeVisible();
+    await page.locator("#qTextarea").waitFor({ state: "visible" });
     await page.locator("#qTextarea").fill("Найдите корень уравнения x^2 = 16");
 
     // Предпросмотр глазами ученика

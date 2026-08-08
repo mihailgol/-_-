@@ -57,6 +57,25 @@ export function updateProfileUI() {
   if (inputEmail) inputEmail.value = user.email || "";
   if (inputAvatar && user.avatar) inputAvatar.value = user.avatar;
 
+  // Compute dynamic user stats from history
+  const attempts = appState.userHistory || [];
+  const solvedCount = attempts.reduce((acc, a) => acc + (a.total || 0), 0);
+  const avgPercent = attempts.length
+    ? Math.round(attempts.reduce((acc, a) => acc + (a.percent || 0), 0) / attempts.length)
+    : 0;
+  const streak = attempts.length > 0 ? (appState.streakDays || 1) : 0;
+  const rank = solvedCount > 100 ? "Топ 5%" : (solvedCount > 20 ? "Продвинутый" : (solvedCount > 0 ? "Новичок" : "—"));
+
+  const statStreak = document.getElementById("profileStatStreak");
+  const statSolved = document.getElementById("profileStatSolved");
+  const statAccuracy = document.getElementById("profileStatAccuracy");
+  const statRank = document.getElementById("profileStatRank");
+
+  if (statStreak) statStreak.textContent = `${streak} дн.`;
+  if (statSolved) statSolved.textContent = solvedCount;
+  if (statAccuracy) statAccuracy.textContent = `${avgPercent}%`;
+  if (statRank) statRank.textContent = rank;
+
   updateAdminVisibility(user);
   loadUserHistory();
   loadUserCourses();

@@ -1,4 +1,4 @@
-import { getSubjectProgress } from "./state.js";
+import { getSubjectProgress, appState } from "./state.js";
 
 export function updateAnalyticsUI() {
   const subjects = window.EXAM_DATA ? window.EXAM_DATA.subjects : {};
@@ -15,4 +15,9 @@ export function updateAnalyticsUI() {
 
   if (chemPercentText) chemPercentText.textContent = `${chemPercentVal}%`;
   if (chemBar) chemBar.style.width = `${chemPercentVal}%`;
+
+  const streakText = document.getElementById("analyticsStreakText");
+  const attempts = appState.userHistory || [];
+  const streak = attempts.length > 0 ? (appState.streakDays || 1) : 0;
+  if (streakText) streakText.textContent = `${streak} дней подряд`;
 }
