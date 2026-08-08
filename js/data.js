@@ -4229,9 +4229,9 @@ for x in range(120406, 129496, 10):
       id: "geography",
       title: "География",
       icon: "🌍",
-      color: "teal",
+      color: "var(--color-green)",
       colorHex: "#00b894",
-      bgGradient: "linear-gradient(135deg, #00b894 0%, #00cec9 100%)",
+      bgGradient: "linear-gradient(135deg, rgba(0, 184, 148, 0.15) 0%, rgba(0, 184, 148, 0.03) 100%)",
       topics: [
         {
           id: "geo_russia_pos",

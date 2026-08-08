@@ -65,11 +65,27 @@ body.exam-mode-ege {
   --exam-primary-color: #6366f1;
 }
 
+[data-theme="dark"] body.exam-mode-ege,
+[data-theme="dark"].exam-mode-ege {
+  --color-green: #818cf8;
+  --color-green-hover: #6366f1;
+  --color-green-light: rgba(99, 102, 241, 0.18);
+  --exam-primary-color: #818cf8;
+}
+
 body.exam-mode-oge {
   --color-green: #0ea5e9;
   --color-green-hover: #0284c7;
   --color-green-light: #f0f9ff;
   --exam-primary-color: #0ea5e9;
+}
+
+[data-theme="dark"] body.exam-mode-oge,
+[data-theme="dark"].exam-mode-oge {
+  --color-green: #38bdf8;
+  --color-green-hover: #0ea5e9;
+  --color-green-light: rgba(14, 165, 233, 0.18);
+  --exam-primary-color: #38bdf8;
 }
 
 .btn-tab {
