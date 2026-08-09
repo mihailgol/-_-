@@ -13,6 +13,9 @@ export const HASH_VIEWS = [
   "cart",
   "profile",
   "support",
+  "offer",
+  "privacy",
+  "terms",
 ];
 
 

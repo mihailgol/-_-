@@ -100,6 +100,13 @@
           <button class="premium-promo-btn" id="sidebarPremiumBtn">Подробнее</button>
         </div>
 
+        <div style="padding: 12px 16px; margin-top: 8px; font-size: 11px; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--color-border);">
+          <a href="#offer" data-view="offer" style="color: var(--color-text-secondary); text-decoration: none;">📜 Публичная оферта</a>
+          <a href="#privacy" data-view="privacy" style="color: var(--color-text-secondary); text-decoration: none;">🔒 Политика конфиденциальности</a>
+          <a href="#terms" data-view="terms" style="color: var(--color-text-secondary); text-decoration: none;">💳 Оплата и возврат средств</a>
+          <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">© 2026 ExamHub Inc. Все права защищены</div>
+        </div>
+
         <div class="sidebar-user" id="sidebarUserBlock">
           <div class="user-avatar-wrapper">
             <img
@@ -659,6 +666,64 @@
                   </p>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section class="view-section" id="view-offer">
+            <div class="section-title">Публичная оферта (Договор оказания услуг)</div>
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-xl); padding: 32px; color: var(--color-text-primary); line-height: 1.6; font-size: 14px; max-width: 900px; margin: 0 auto;">
+              <h3 style="margin-top: 0; color: var(--color-text-primary);">1. Общие положения</h3>
+              <p>Настоящая Публичная оферта (далее — «Оферта») является официальным предложением Сервиса <strong>ExamHub</strong> (далее — «Исполнитель») заключить договор возмездного оказания услуг по предоставлению доступа к интерактивным материалам подготовки к ОГЭ и ЕГЭ с любым физическим лицом (далее — «Пользователь»).</p>
+              
+              <h3 style="color: var(--color-text-primary);">2. Предмет Договора</h3>
+              <p>2.1. Исполнитель предоставляет Пользователю доступ к функциональным возможностям Платформы ExamHub, включая конспекты, обучающие видео, банк заданий, генерацию тестов с помощью ИИ и персональную аналитику в соответствии с выбранным Тарифом (Free или Premium).</p>
+              
+              <h3 style="color: var(--color-text-primary);">3. Порядок оплаты и предоставления подписки</h3>
+              <p>3.1. Доступ к тарифам Premium предоставляется на условиях предоплаты через подключенные платежные системы (ЮKassa / Robokassa / Т-Банк).</p>
+              <p>3.2. Доступ активируется мгновенно после подтверждения успешного платежа платежным шлюзом.</p>
+
+              <h3 style="color: var(--color-text-primary);">4. Права и обязанности сторон</h3>
+              <p>4.1. Пользователь обязуется не передавать учетные данные третьим лицам и не использовать материалы платформы в коммерческих целях без письменного согласия Исполнителя.</p>
+              <p>4.2. Исполнитель обязуется обеспечивать круглосуточную работоспособность сервиса, за исключением времени проведения плановых технических работ.</p>
+
+              <h3 style="color: var(--color-text-primary);">5. Реквизиты Исполнителя</h3>
+              <div style="background: var(--color-bg-app); padding: 16px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 13px;">
+                <strong>Платформа ExamHub</strong><br/>
+                ИНН: 000000000000 (Шаблонные реквизиты Исполнителя)<br/>
+                ОГРНИП / ОГРН: 000000000000000<br/>
+                Email поддержки: support@examhub.ru<br/>
+                Телефон: 8 (800) 555-35-35
+              </div>
+            </div>
+          </section>
+
+          <section class="view-section" id="view-privacy">
+            <div class="section-title">Политика конфиденциальности (ФЗ-152)</div>
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-xl); padding: 32px; color: var(--color-text-primary); line-height: 1.6; font-size: 14px; max-width: 900px; margin: 0 auto;">
+              <h3 style="margin-top: 0; color: var(--color-text-primary);">1. Обработка персональных данных</h3>
+              <p>Настоящая Политика конфиденциальности разработана в соответствии с Федеральным законом РФ № 152-ФЗ «О персональных данных» и определяет порядок обработки персональных данных пользователей платформы ExamHub.</p>
+              
+              <h3 style="color: var(--color-text-primary);">2. Собираемые данные</h3>
+              <p>Мы обрабатываем только необходимые данные: адрес электронной почты (email), имя пользователя, выбранный предмет и статус подготовки, а также обезличенные куки (cookies) для сохранения авторизации и выбранной темы оформления.</p>
+
+              <h3 style="color: var(--color-text-primary);">3. Цели обработки</h3>
+              <p>Данные используются исключительно для авторизации, сохранения прогресса прохождения тестов, отправки уведомлений и предоставления доступа к подписке.</p>
+
+              <h3 style="color: var(--color-text-primary);">4. Защита данных</h3>
+              <p>Все данные передаются по защищенному шифрованному протоколу HTTPS и хранятся в зашифрованном виде. Мы никогда не передаем ваши данные третьим лицам.</p>
+            </div>
+          </section>
+
+          <section class="view-section" id="view-terms">
+            <div class="section-title">Оплата и Возврат средств</div>
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-xl); padding: 32px; color: var(--color-text-primary); line-height: 1.6; font-size: 14px; max-width: 900px; margin: 0 auto;">
+              <h3 style="margin-top: 0; color: var(--color-text-primary);">1. Способы оплаты</h3>
+              <p>Оплата подписки и обучающих материалов осуществляется электронными способами: банковскими картами (МИР, Visa, Mastercard) и Системой Быстрых Платежей (СБП) через защищенный шлюз ЮKassa / Robokassa / Т-Банк.</p>
+              
+              <h3 style="color: var(--color-text-primary);">2. Порядок и условия возврата средств</h3>
+              <p>2.1. Пользователь имеет право на полный возврат денежных средств в течение 14 (четырнадцати) дней с момента оплаты, если доступ к Premium подписке фактически не использовался.</p>
+              <p>2.2. Для оформления возврата достаточно отправить заявку через раздел «Поддержка» на сайте или написать на email: <strong>support@examhub.ru</strong> с указанием даты платежа и почты аккаунта.</p>
+              <p>2.3. Возврат денежных средств осуществляется на ту же карту/счет, с которой была произведена оплата, в течение 3–10 рабочих дней.</p>
             </div>
           </section>
 

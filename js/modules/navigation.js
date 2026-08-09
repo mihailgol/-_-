@@ -91,17 +91,13 @@ function restoreView(state) {
 }
 
 export function initRouter() {
-  document.querySelectorAll(".sidebar-nav .nav-item").forEach((item) => {
-    item.addEventListener("click", () => {
+  document.querySelectorAll("[data-view]").forEach((item) => {
+    item.addEventListener("click", (e) => {
       const view = item.getAttribute("data-view");
-      switchView(view);
-    });
-  });
-
-  document.querySelectorAll(".mobile-bottom-nav .mobile-nav-item").forEach((item) => {
-    item.addEventListener("click", () => {
-      const view = item.getAttribute("data-view");
-      switchView(view);
+      if (view && HASH_VIEWS.includes(view)) {
+        e.preventDefault();
+        switchView(view);
+      }
     });
   });
 
