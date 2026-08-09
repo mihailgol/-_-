@@ -401,4 +401,31 @@ router.patch("/support/tickets/:id/status", (req, res) => {
   res.json({ ok: true });
 });
 
+router.get("/site/settings", (req, res) => {
+  const rows = db.prepare("SELECT key, value FROM site_settings").all();
+  const settings = {};
+  rows.forEach((r) => (settings[r.key] = r.value));
+  res.json({ settings });
+});
+
+router.put("/site/settings", (req, res) => {
+  const settings = req.body?.settings || {};
+  const upsert = db.prepare(
+    "INSERT INTO site_settings (key, value, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+  );
+
+  db.exec("BEGIN TRANSACTION;");
+  try {
+    for (const [key, val] of Object.entries(settings)) {
+      upsert.run(key, String(val || "").trim());
+    }
+    db.exec("COMMIT;");
+  } catch (err) {
+    db.exec("ROLLBACK;");
+    throw err;
+  }
+
+  res.json({ ok: true, settings });
+});
+
 export default router;

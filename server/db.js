@@ -160,6 +160,12 @@ export function initSchema() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS mock_exams (
       id TEXT PRIMARY KEY,
       subject_id TEXT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
@@ -363,9 +369,26 @@ export function resetDb() {
   `);
 }
 
+export function seedSiteSettings() {
+  const defaults = {
+    legal_name: "Платформа ExamHub",
+    legal_status: "Индивидуальный предприниматель / Самозанятый",
+    legal_inn: "770000000000",
+    legal_ogrn: "320000000000000",
+    support_email: "support@examhub.ru",
+    support_phone: "8 (800) 555-35-35",
+  };
+
+  const insert = db.prepare("INSERT OR IGNORE INTO site_settings (key, value) VALUES (?, ?)");
+  for (const [key, val] of Object.entries(defaults)) {
+    insert.run(key, val);
+  }
+}
+
 export function initDb() {
   initSchema();
   seedContent();
   seedAdminUser();
+  seedSiteSettings();
 }
 

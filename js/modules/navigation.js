@@ -25,6 +25,17 @@ export function switchView(viewName, { replace = false } = {}) {
   if (viewName === "profile") {
     import("./profile.js").then((m) => m.updateProfileUI());
   }
+  if (["offer", "privacy", "terms"].includes(viewName)) {
+    api("/api/site/settings").then((res) => {
+      const s = res.settings || {};
+      document.querySelectorAll(".legal-setting-name").forEach((el) => (el.textContent = s.legal_name || "Платформа ExamHub"));
+      document.querySelectorAll(".legal-setting-status").forEach((el) => (el.textContent = s.legal_status || "Индивидуальный предприниматель / Самозанятый"));
+      document.querySelectorAll(".legal-setting-inn").forEach((el) => (el.textContent = s.legal_inn || "770000000000"));
+      document.querySelectorAll(".legal-setting-ogrn").forEach((el) => (el.textContent = s.legal_ogrn || "320000000000000"));
+      document.querySelectorAll(".legal-setting-email").forEach((el) => (el.textContent = s.support_email || "support@examhub.ru"));
+      document.querySelectorAll(".legal-setting-phone").forEach((el) => (el.textContent = s.support_phone || "8 (800) 555-35-35"));
+    }).catch(() => {});
+  }
 
 
   const navItems = document.querySelectorAll(".sidebar-nav .nav-item");

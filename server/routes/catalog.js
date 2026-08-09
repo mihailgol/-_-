@@ -4,6 +4,13 @@ import { optionalAuth } from "../middleware/auth.js";
 
 const router = Router();
 
+router.get("/settings", (_req, res) => {
+  const rows = db.prepare("SELECT key, value FROM site_settings").all();
+  const settings = {};
+  rows.forEach((r) => (settings[r.key] = r.value));
+  res.json({ settings });
+});
+
 const OTHER_SUBJECTS = [
   { id: "russian", title: "Русский язык", icon: "Aa" },
   { id: "math", title: "Математика", icon: "√x" },

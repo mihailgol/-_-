@@ -29,6 +29,7 @@ app.use("/api/mock-exams", mockExamRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/site", catalogRoutes);
 
 
 const FRONTEND_ASSETS = ["/js", "/css", "/index.html"];

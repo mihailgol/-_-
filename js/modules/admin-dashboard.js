@@ -475,24 +475,80 @@ async function loadAdminTabContent(tabName) {
   }
 
   if (tabName === "settings") {
+    let settings;
+    try {
+      const res = await api("/api/admin/site/settings");
+      settings = res.settings || {};
+    } catch {
+      settings = {};
+    }
+
     contentArea.innerHTML = `
-      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
-        <h3 style="margin-top: 0; margin-bottom: 16px;">⚙️ Системные Настройки Платформы</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 480px;">
+      <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border); max-width: 650px;">
+        <h3 style="margin-top: 0; margin-bottom: 8px;">⚙️ Настройки и Юридические реквизиты</h3>
+        <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+          Укажите ваши реквизиты ИП/Самозанятого/ООО и контакты поддержки. Они автоматически отобразятся в Оферте, Политике и Условиях возврата.
+        </p>
+
+        <form id="adminLegalSettingsForm" style="display: flex; flex-direction: column; gap: 16px;">
           <div>
-            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Название платформы</label>
-            <input type="text" class="search-input" value="ExamHub — Изолированная платформа подготовки к ЕГЭ и ОГЭ" style="width: 100%;" disabled />
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">ФИО / Наименование Исполнителя</label>
+            <input type="text" id="adminSettingLegalName" class="search-input" value="${settings.legal_name || ''}" placeholder="Например: ИП Иванов Иван Иванович" style="width: 100%; box-sizing: border-box;" required />
           </div>
+
           <div>
-            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">Режим изолированных экзаменов</label>
-            <input type="text" class="search-input" value="Включен (ЕГЭ / ОГЭ)" style="width: 100%;" disabled />
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Статус (Самозанятый / ИП / ООО)</label>
+            <input type="text" id="adminSettingLegalStatus" class="search-input" value="${settings.legal_status || ''}" placeholder="Индивидуальный предприниматель / Самозанятый" style="width: 100%; box-sizing: border-box;" required />
           </div>
-          <div style="margin-top: 8px;">
-            <span style="font-size: 0.85rem; color: #10b981; font-weight: 600;">✅ Серверное окружение активно, RBAC включен</span>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">ИНН</label>
+              <input type="text" id="adminSettingLegalInn" class="search-input" value="${settings.legal_inn || ''}" placeholder="12 цифр ИНН" style="width: 100%; box-sizing: border-box;" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">ОГРНИП / ОГРН</label>
+              <input type="text" id="adminSettingLegalOgrn" class="search-input" value="${settings.legal_ogrn || ''}" placeholder="15 цифр ОГРНИП" style="width: 100%; box-sizing: border-box;" />
+            </div>
           </div>
-        </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Email поддержки</label>
+              <input type="email" id="adminSettingSupportEmail" class="search-input" value="${settings.support_email || ''}" placeholder="support@examhub.ru" style="width: 100%; box-sizing: border-box;" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Телефон поддержки</label>
+              <input type="text" id="adminSettingSupportPhone" class="search-input" value="${settings.support_phone || ''}" placeholder="8 (800) 555-35-35" style="width: 100%; box-sizing: border-box;" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 8px; align-self: flex-start; padding: 10px 24px;">💾 Сохранить реквизиты</button>
+        </form>
       </div>
     `;
+
+    document.getElementById("adminLegalSettingsForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const legal_name = document.getElementById("adminSettingLegalName")?.value.trim();
+      const legal_status = document.getElementById("adminSettingLegalStatus")?.value.trim();
+      const legal_inn = document.getElementById("adminSettingLegalInn")?.value.trim();
+      const legal_ogrn = document.getElementById("adminSettingLegalOgrn")?.value.trim();
+      const support_email = document.getElementById("adminSettingSupportEmail")?.value.trim();
+      const support_phone = document.getElementById("adminSettingSupportPhone")?.value.trim();
+
+      try {
+        await api("/api/admin/site/settings", {
+          method: "PUT",
+          body: JSON.stringify({
+            settings: { legal_name, legal_status, legal_inn, legal_ogrn, support_email, support_phone }
+          })
+        });
+        showToast("✅ Реквизиты сохранены", "Юридические данные и контакты обновлены в оферте и документах.");
+      } catch (err) {
+        showToast("⚠️ Ошибка", err.message || "Не удалось сохранить реквизиты");
+      }
+    });
     return;
   }
 
