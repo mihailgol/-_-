@@ -25,6 +25,9 @@ export function switchView(viewName, { replace = false } = {}) {
   if (viewName === "profile") {
     import("./profile.js").then((m) => m.updateProfileUI());
   }
+  if (viewName === "analytics") {
+    import("./analytics.js").then((m) => m.updateAnalyticsUI());
+  }
   if (["offer", "privacy", "terms"].includes(viewName)) {
     api("/api/site/settings").then((res) => {
       const s = res.settings || {};
