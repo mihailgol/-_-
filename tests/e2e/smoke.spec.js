@@ -42,6 +42,7 @@ test.describe("ExamHub — smoke tests", () => {
   });
 
   test("работает глобальный поиск", async ({ page }) => {
+    await expect(page.locator(".subject-card").first()).toBeVisible();
     await page.locator("#globalSearch").fill("клет");
     await expect(page.locator("#searchDropdown .search-result-item").first()).toBeVisible();
   });
@@ -233,5 +234,20 @@ test.describe("ExamHub — smoke tests", () => {
 
     await expect(page.locator("#view-quiz-player")).toBeVisible({ timeout: 10000 });
     await expect(page.locator("#quizPlayerTitle")).toContainText("AI Тест:");
+  });
+
+  test("создание собственного пробника через модальное окно", async ({ page }) => {
+    await page.locator('.sidebar-nav .nav-item[data-view="mock-exam"]').click();
+    await expect(page.locator("#view-mock-exam")).toBeVisible();
+
+    await page.locator("#openCreateMockModalBtn").click();
+    await expect(page.locator("#createMockModal")).toHaveClass(/active/);
+
+    const mockTitle = `Авторский вариант ${Date.now()}`;
+    await page.locator("#createMockTitle").fill(mockTitle);
+    await page.locator("#createMockForm button[type='submit']").click();
+
+    await expect(page.locator("#createMockModal")).not.toHaveClass(/active/);
+    await expect(page.locator("#mockExamList")).toContainText(mockTitle);
   });
 });

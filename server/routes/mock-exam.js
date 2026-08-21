@@ -204,4 +204,107 @@ router.post("/:id/submit", optionalAuth, (req, res) => {
   });
 });
 
+router.post("/", optionalAuth, (req, res) => {
+  const { subjectId, title, examType, durationMinutes, totalQuestions, isPremium, questions } = req.body || {};
+
+  if (!title || typeof title !== "string" || !title.trim()) {
+    return res.status(400).json({ error: "Укажите название пробника" });
+  }
+
+  const subId = String(subjectId || "math");
+  const rawExamType = String(examType || "EGE").toUpperCase();
+  const type = ["EGE", "OGE"].includes(rawExamType) ? rawExamType : "EGE";
+  const duration = Math.max(10, Math.min(360, Number(durationMinutes) || (type === "EGE" ? 235 : 210)));
+  const count = Math.max(1, Math.min(50, Number(totalQuestions) || (Array.isArray(questions) ? questions.length : 5)));
+  const isPrem = isPremium ? 1 : 0;
+
+  let selectedQuestions = Array.isArray(questions) && questions.length > 0 ? questions : [];
+
+  if (selectedQuestions.length === 0) {
+    const dbQuestions = db
+      .prepare(
+        `SELECT q.id, q.question, q.type, q.options_json, q.correct_index, q.explanation, q.points
+         FROM questions q
+         JOIN topics t ON t.id = q.topic_id
+         WHERE t.subject_id = ?
+         ORDER BY RANDOM()
+         LIMIT ?`
+      )
+      .all(subId, count);
+
+    selectedQuestions = dbQuestions.map((q, idx) => {
+      let opts;
+      try {
+        opts = JSON.parse(q.options_json);
+      } catch {
+        opts = ["A", "B", "C", "D"];
+      }
+      return {
+        id: `q_${q.id}_${idx + 1}`,
+        question: q.question,
+        type: q.type || "single",
+        options: opts,
+        correctIndex: typeof q.correct_index === "number" ? q.correct_index : 0,
+        explanation: q.explanation || "",
+        points: q.points || 1,
+      };
+    });
+  }
+
+  if (selectedQuestions.length === 0) {
+    for (let i = 1; i <= count; i++) {
+      selectedQuestions.push({
+        id: `q_custom_${i}`,
+        question: `Задание №${i} для пробника "${title.trim()}"`,
+        type: "single",
+        options: ["Вариант A", "Вариант B", "Вариант C", "Вариант D"],
+        correctIndex: 0,
+        explanation: "Разбор решения для задания",
+        points: 1,
+      });
+    }
+  }
+
+  const mockId = `mock_${subId}_${type.toLowerCase()}_${Date.now()}`;
+  const conversionTableJson = JSON.stringify({});
+
+  db.prepare(
+    `INSERT INTO mock_exams (id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, questions_json, conversion_table_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    mockId,
+    subId,
+    title.trim(),
+    type,
+    duration,
+    selectedQuestions.length,
+    isPrem,
+    JSON.stringify(selectedQuestions),
+    conversionTableJson
+  );
+
+  res.status(201).json({
+    success: true,
+    mockExam: {
+      id: mockId,
+      subjectId: subId,
+      title: title.trim(),
+      examType: type,
+      durationMinutes: duration,
+      totalQuestions: selectedQuestions.length,
+      isPremium: Boolean(isPrem),
+    },
+  });
+});
+
+router.delete("/:id", optionalAuth, (req, res) => {
+  const exam = db.prepare("SELECT id FROM mock_exams WHERE id = ?").get(req.params.id);
+  if (!exam) {
+    return res.status(404).json({ error: "Пробный экзамен не найден" });
+  }
+
+  db.prepare("DELETE FROM mock_exams WHERE id = ?").run(req.params.id);
+  res.json({ success: true });
+});
+
 export default router;

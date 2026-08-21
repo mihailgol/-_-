@@ -1611,8 +1611,11 @@
 
           <section class="view-section" id="view-mock-exam">
             <div id="mockCatalogScreen">
-              <div class="section-title">
-                <span>Пробные экзамены (Пробники)</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+                <div class="section-title" style="margin-bottom: 0;">
+                  <span>Пробные экзамены (Пробники)</span>
+                </div>
+                <button class="btn-primary" id="openCreateMockModalBtn">➕ Создать пробник</button>
               </div>
               <p class="view-subtitle" style="margin-bottom: 20px; color: var(--color-text-secondary);">
                 Полноформатные варианты ОГЭ и ЕГЭ с таймером и автоматическим переводом баллов.
@@ -1973,6 +1976,61 @@
           </div>
           <button class="btn btn-primary" id="adminLoginSubmitBtn" style="width: 100%;">Авторизоваться</button>
 
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="createMockModal">
+      <div class="modal-card" style="max-width: 550px;">
+        <button class="modal-close-btn" data-close-modal="createMockModal">&times;</button>
+        <div style="padding: 24px;">
+          <h3 style="margin-top: 0; margin-bottom: 16px;">📝 Создание пробного экзамена</h3>
+          <form id="createMockForm">
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Название варианта</label>
+              <input type="text" id="createMockTitle" class="search-input" placeholder="Например: Вариант №1 от учителя" required style="width: 100%; box-sizing: border-box;" />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Предмет</label>
+                <select id="createMockSubject" class="search-input" style="width: 100%;">
+                  <option value="math">Математика</option>
+                  <option value="russian">Русский язык</option>
+                  <option value="biology">Биология</option>
+                  <option value="chemistry">Химия</option>
+                  <option value="physics">Физика</option>
+                  <option value="informatics">Информатика</option>
+                  <option value="social">Обществознание</option>
+                  <option value="history">История</option>
+                  <option value="literature">Литература</option>
+                  <option value="geography">География</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Тип экзамена</label>
+                <select id="createMockExamType" class="search-input" style="width: 100%;">
+                  <option value="EGE">ЕГЭ</option>
+                  <option value="OGE">ОГЭ</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Длительность (мин)</label>
+                <input type="number" id="createMockDuration" class="search-input" value="235" min="10" max="300" style="width: 100%; box-sizing: border-box;" />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Вопросов в варианте</label>
+                <input type="number" id="createMockQuestionCount" class="search-input" value="5" min="1" max="50" style="width: 100%; box-sizing: border-box;" />
+              </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="createMockIsPremium" /> 👑 Премиум-вариант (доступен только по подписке)
+              </label>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">💾 Сохранить и опубликовать пробник</button>
+          </form>
         </div>
       </div>
     </div>

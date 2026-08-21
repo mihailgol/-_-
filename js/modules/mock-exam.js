@@ -322,4 +322,63 @@ export function initMockExamEvents() {
       renderMockExamCatalog();
     });
   }
+
+  const openModalBtn = document.getElementById("openCreateMockModalBtn");
+  if (openModalBtn) {
+    openModalBtn.addEventListener("click", () => {
+      openModal("createMockModal");
+    });
+  }
+
+  const examTypeSelect = document.getElementById("createMockExamType");
+  const durationInput = document.getElementById("createMockDuration");
+  if (examTypeSelect && durationInput) {
+    examTypeSelect.addEventListener("change", () => {
+      if (examTypeSelect.value === "OGE") {
+        durationInput.value = "210";
+      } else {
+        durationInput.value = "235";
+      }
+    });
+  }
+
+  const createForm = document.getElementById("createMockForm");
+  if (createForm) {
+    createForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("createMockTitle")?.value.trim();
+      const subjectId = document.getElementById("createMockSubject")?.value || "math";
+      const examType = document.getElementById("createMockExamType")?.value || "EGE";
+      const durationMinutes = parseInt(document.getElementById("createMockDuration")?.value || "235", 10);
+      const totalQuestions = parseInt(document.getElementById("createMockQuestionCount")?.value || "5", 10);
+      const isPremium = Boolean(document.getElementById("createMockIsPremium")?.checked);
+
+      if (!title) {
+        showToast("⚠️ Ошибка", "Заполните название пробника");
+        return;
+      }
+
+      try {
+        await api("/api/mock-exams", {
+          method: "POST",
+          body: JSON.stringify({
+            title,
+            subjectId,
+            examType,
+            durationMinutes,
+            totalQuestions,
+            isPremium,
+          }),
+        });
+
+        const { closeModal } = await import("./ui.js");
+        closeModal("createMockModal");
+        createForm.reset();
+        showToast("✅ Успешно!", "Новый пробный экзамен создан.");
+        renderMockExamCatalog();
+      } catch (err) {
+        showToast("⚠️ Ошибка создания", err.message || "Не удалось создать пробник");
+      }
+    });
+  }
 }
