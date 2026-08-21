@@ -4,6 +4,8 @@ import { switchView, pushSubView } from "./navigation.js";
 import { startQuiz } from "./quiz.js";
 import { openVideoPlayer } from "./video.js";
 import { updateUIFromState } from "./render.js";
+import { getExamType, setExamType } from "./exam-type.js";
+import { examEngine } from "./exam-engine.js";
 
 let subjectTabsInitDone = false;
 
@@ -342,141 +344,327 @@ export function loadNoteReader(subjectId, noteId, { replace = false } = {}) {
   }
 }
 
-export function renderGeneralNotes() {
+export function renderSubjectCardsGrid(container, onSelectSubject, ctaText = "Перейти →") {
+  if (!container) return;
+  container.className = "subject-grid";
+  container.style.cssText = "display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; width: 100%;";
+  container.innerHTML = "";
+
+  const allSubjects = Object.values(window.EXAM_DATA?.subjects || {});
+  allSubjects.forEach((sub) => {
+    const card = document.createElement("div");
+    card.className = "subject-card active-subject";
+    card.style.setProperty("--theme-color", sub.color || "var(--color-purple)");
+    card.style.background = sub.bgGradient || "var(--color-surface)";
+    card.style.cursor = "pointer";
+
+    const topicCount = sub.topics?.length || 0;
+    card.innerHTML = `
+      <div class="subject-icon-box" style="background-color: var(--color-surface); box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: ${sub.color || "var(--color-purple)"}; font-size: 22px;">
+        ${sub.icon || "📚"}
+      </div>
+      <div class="subject-details">
+        <span class="subject-title" style="font-size: 16px; font-weight: 800;">${sub.title}</span>
+        <span class="subject-status" style="font-size: 12px; color: var(--color-text-secondary); margin-top: 2px;">${topicCount} тем • ${ctaText}</span>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      onSelectSubject(sub.id);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+export function populateSubjectFilterSelect(selectId, placeholderText = "Выберите предмет...") {
+  const filterSelect = document.getElementById(selectId);
+  if (!filterSelect) return;
+
+  const currentVal = filterSelect.value;
+  filterSelect.innerHTML = "";
+
+  const phOpt = document.createElement("option");
+  phOpt.value = "";
+  phOpt.textContent = `🔍 ${placeholderText}`;
+  filterSelect.appendChild(phOpt);
+
+  const allSubjects = Object.values(window.EXAM_DATA?.subjects || {});
+  allSubjects.forEach((sub) => {
+    const opt = document.createElement("option");
+    opt.value = sub.id;
+    opt.textContent = `${sub.icon || "📚"} ${sub.title}`;
+    filterSelect.appendChild(opt);
+  });
+
+  if (currentVal && Array.from(filterSelect.options).some((o) => o.value === currentVal)) {
+    filterSelect.value = currentVal;
+  } else {
+    filterSelect.value = "";
+  }
+}
+
+export function renderGeneralNotes(selectedSubjectId = null) {
   const container = document.getElementById("generalNotesGrid");
   if (!container) return;
+
+  populateSubjectFilterSelect("generalNotesSubjectFilter", "Выберите предмет для конспектов...");
+
+  const filterSelect = document.getElementById("generalNotesSubjectFilter");
+  const subId = selectedSubjectId !== null && selectedSubjectId !== undefined ? selectedSubjectId : (filterSelect?.value || "");
+
+  if (!subId || !window.EXAM_DATA?.subjects?.[subId]) {
+    renderSubjectCardsGrid(container, (id) => {
+      if (filterSelect) filterSelect.value = id;
+      renderGeneralNotes(id);
+    }, "Конспекты");
+    return;
+  }
+
+  container.className = "notes-list";
+  container.style.cssText = "";
   container.innerHTML = "";
 
-  Object.values(window.EXAM_DATA.subjects).forEach((subject) => {
-    subject.topics.forEach((topic) => {
-      const card = document.createElement("div");
-      card.className = "note-item-card";
-      card.innerHTML = `
-        <div class="note-item-header">
-          <span class="note-item-tag ${topic.isPremium ? "premium" : ""}" style="color: ${subject.color};">
-            ${subject.title} • ${topic.isPremium ? "👑 Premium" : "Теория"}
-          </span>
-          <span class="note-item-meta">${topic.duration}</span>
-        </div>
-        <h4 class="note-item-title">${topic.title}</h4>
-        <div class="note-item-footer">
-          <span class="note-item-meta">${isTopicRead(subject.id, topic.id) ? "Изучено" : "Не изучено"}</span>
-          <button class="note-item-btn" style="color: ${subject.color}">Читать →</button>
-        </div>
-      `;
-      card.addEventListener("click", () => {
-        loadNoteReader(subject.id, topic.id);
-      });
-      container.appendChild(card);
+  const subject = window.EXAM_DATA.subjects[subId];
+  (subject.topics || []).forEach((topic) => {
+    const card = document.createElement("div");
+    card.className = "note-item-card";
+    card.innerHTML = `
+      <div class="note-item-header">
+        <span class="note-item-tag ${topic.isPremium ? "premium" : ""}" style="color: ${subject.color};">
+          ${subject.title} • ${topic.isPremium ? "👑 Premium" : "Теория"}
+        </span>
+        <span class="note-item-meta">${topic.duration}</span>
+      </div>
+      <h4 class="note-item-title">${topic.title}</h4>
+      <div class="note-item-footer">
+        <span class="note-item-meta">${isTopicRead(subject.id, topic.id) ? "Изучено" : "Не изучено"}</span>
+        <button class="note-item-btn" style="color: ${subject.color}">Читать →</button>
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      loadNoteReader(subject.id, topic.id);
     });
+    container.appendChild(card);
   });
 }
 
-export function renderGeneralVideos() {
+export function renderGeneralVideos(selectedSubjectId = null) {
   const container = document.getElementById("generalVideosGrid");
   if (!container) return;
+
+  populateSubjectFilterSelect("generalVideosSubjectFilter", "Выберите предмет для видеолекций...");
+
+  const filterSelect = document.getElementById("generalVideosSubjectFilter");
+  const subId = selectedSubjectId !== null && selectedSubjectId !== undefined ? selectedSubjectId : (filterSelect?.value || "");
+
+  if (!subId || !window.EXAM_DATA?.subjects?.[subId]) {
+    renderSubjectCardsGrid(container, (id) => {
+      if (filterSelect) filterSelect.value = id;
+      renderGeneralVideos(id);
+    }, "Видеоуроки");
+    return;
+  }
+
+  container.className = "video-grid";
+  container.style.cssText = "";
   container.innerHTML = "";
 
-  Object.values(window.EXAM_DATA.subjects).forEach((subject) => {
-    subject.topics.forEach((topic) => {
-      if (!topic.video) return;
-      const v = topic.video;
+  const subject = window.EXAM_DATA.subjects[subId];
+  (subject.topics || []).forEach((topic) => {
+    if (!topic.video) return;
+    const v = topic.video;
 
-      const card = document.createElement("div");
-      card.className = "video-card";
-      card.innerHTML = `
-        <div class="video-thumbnail" style="background-image: url('${v.thumbnail}'); background-size: cover; background-position: center;">
-          <div class="video-thumbnail-overlay">
-            <button class="video-play-btn" style="--btn-color: ${subject.color}">▶</button>
-          </div>
-          <span class="video-duration">${v.duration}</span>
+    const card = document.createElement("div");
+    card.className = "video-card";
+    card.innerHTML = `
+      <div class="video-thumbnail" style="background-image: url('${v.thumbnail}'); background-size: cover; background-position: center;">
+        <div class="video-thumbnail-overlay">
+          <button class="video-play-btn" style="--btn-color: ${subject.color}">▶</button>
         </div>
-        <div class="video-info-box">
-          <span style="font-size: 11px; font-weight: 700; color: ${subject.color}; display: block; margin-bottom: 6px;">${subject.title}</span>
-          <h4 class="video-card-title">${v.title}</h4>
-          <p class="video-card-instructor">${v.instructor}</p>
-          <div class="video-card-footer">
-            <span>Просмотры: ${v.views}</span>
-            <span>
-              ${topic.isPremium ? '<span style="color: var(--color-orange); font-weight:700">👑 Premium</span>' : "Бесплатно"}
-            </span>
-          </div>
+        <span class="video-duration">${v.duration}</span>
+      </div>
+      <div class="video-info-box">
+        <span style="font-size: 11px; font-weight: 700; color: ${subject.color}; display: block; margin-bottom: 6px;">${subject.title}</span>
+        <h4 class="video-card-title">${v.title}</h4>
+        <p class="video-card-instructor">${v.instructor}</p>
+        <div class="video-card-footer">
+          <span>Просмотры: ${v.views}</span>
+          <span>
+            ${topic.isPremium ? '<span style="color: var(--color-orange); font-weight:700">👑 Premium</span>' : "Бесплатно"}
+          </span>
         </div>
-      `;
-      card.addEventListener("click", () => {
-        if (topic.isPremium && !appState.user.isPremium) {
-          openModal("premiumModal");
-          showToast("🔒 Доступ ограничен", "Эта лекция входит в Premium программу обучения.");
-        } else {
-          openVideoPlayer(v);
-        }
-      });
-      container.appendChild(card);
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      if (topic.isPremium && !appState.user.isPremium) {
+        openModal("premiumModal");
+        showToast("🔒 Доступ ограничен", "Эта лекция входит в Premium программу обучения.");
+      } else {
+        openVideoPlayer(v);
+      }
     });
+    container.appendChild(card);
   });
 }
 
-export function renderGeneralQuizzes() {
+export function populateGeneralQuizzesSubjectFilter() {
+  populateSubjectFilterSelect("generalQuizzesSubjectFilter", "Выберите предмет для тестов по темам...");
+}
+
+export function renderGeneralQuizzes(selectedSubjectId = null) {
   const container = document.getElementById("allGeneralQuizzesGrid");
   if (!container) return;
+
+  const globalType = getExamType();
+  const activeExam = globalType === "OGE" ? "ОГЭ" : (globalType === "EGE" ? "ЕГЭ" : "ЕГЭ/ОГЭ");
+
+  const quizExamLabel = document.getElementById("generalQuizzesExamLabel");
+  if (quizExamLabel) {
+    quizExamLabel.textContent = activeExam;
+  }
+
+  populateGeneralQuizzesSubjectFilter();
+
+  const filterSelect = document.getElementById("generalQuizzesSubjectFilter");
+  const subId = selectedSubjectId !== null && selectedSubjectId !== undefined ? selectedSubjectId : (filterSelect?.value || "");
+
+  if (!subId || !window.EXAM_DATA?.subjects?.[subId]) {
+    renderSubjectCardsGrid(container, (id) => {
+      if (filterSelect) filterSelect.value = id;
+      renderGeneralQuizzes(id);
+    }, `Тесты (${activeExam})`);
+    return;
+  }
+
+  container.className = "quiz-list";
+  container.style.cssText = "";
   container.innerHTML = "";
 
-  Object.values(window.EXAM_DATA.subjects || {}).forEach((subject) => {
-    (subject.topics || []).forEach((topic) => {
-      if (!topic.questions || topic.questions.length === 0) return;
+  const subject = window.EXAM_DATA.subjects[subId];
+  (subject.topics || []).forEach((topic) => {
+    if (!topic.questions || topic.questions.length === 0) return;
 
-      const card = document.createElement("div");
-      card.className = "quiz-list-item";
-      card.innerHTML = `
-        <div class="quiz-item-left">
-          <span class="quiz-item-badge">📋</span>
-          <div class="quiz-item-details">
-            <span style="font-size: 11px; font-weight: 700; color: ${subject.color || "var(--color-purple)"};">${subject.title}</span>
-            <h4>${topic.title}</h4>
-            <p>${topic.questions.length} вопросов • Формат ЕГЭ/ОГЭ</p>
-          </div>
+    const card = document.createElement("div");
+    card.className = "quiz-list-item";
+    card.innerHTML = `
+      <div class="quiz-item-left">
+        <span class="quiz-item-badge">📋</span>
+        <div class="quiz-item-details">
+          <span style="font-size: 11px; font-weight: 700; color: ${subject.color || "var(--color-purple)"};">${subject.title} • Формат ${activeExam}</span>
+          <h4>${topic.title}</h4>
+          <p>${topic.questions.length} вопросов • Формат ${activeExam}</p>
         </div>
-        <div class="quiz-item-actions">
-          <span class="note-item-tag ${topic.isPremium ? "premium" : ""}" style="margin-right: 8px;">
-            ${topic.isPremium ? "👑 Premium" : "Базовый"}
-          </span>
-          <button class="btn-primary" style="padding: 8px 16px; font-size: 12px; background-color: ${topic.isPremium ? "var(--color-orange)" : "var(--color-green)"}">Начать тест</button>
-        </div>
-      `;
+      </div>
+      <div class="quiz-item-actions">
+        <span class="note-item-tag ${topic.isPremium ? "premium" : ""}" style="margin-right: 8px;">
+          ${topic.isPremium ? "👑 Premium" : "Базовый"}
+        </span>
+        <button class="btn-primary" style="padding: 8px 16px; font-size: 12px; background-color: ${topic.isPremium ? "var(--color-orange)" : "var(--color-green)"}">Начать тест</button>
+      </div>
+    `;
 
-      card.addEventListener("click", () => {
-        if (topic.isPremium && !appState.user.isPremium) {
-          openModal("premiumModal");
-          showToast("🔒 Доступ ограничен", "Сложные тематические тесты доступны только в Premium.");
-        } else {
-          import("./quiz.js").then((m) => m.startQuiz(topic.questions, `Тест: ${topic.title}`, "tests"));
-        }
-      });
-      container.appendChild(card);
+    card.addEventListener("click", () => {
+      if (topic.isPremium && !appState.user.isPremium) {
+        openModal("premiumModal");
+        showToast("🔒 Доступ ограничен", "Сложные тематические тесты доступны только в Premium.");
+      } else {
+        import("./quiz.js").then((m) => m.startQuiz(topic.questions, `Тест (${activeExam}): ${topic.title}`, "tests"));
+      }
     });
+    container.appendChild(card);
   });
 }
 
 const TASK_COUNT_PER_SUBJECT = {
-  biology: 28,
-  math: 19,
-  russian: 27,
-  chemistry: 34,
-  physics: 26,
-  informatics: 27,
-  social: 25,
-  history: 21,
-  literature: 12,
-  geography: 29,
+  EGE: {
+    biology: 28,
+    math: 19,
+    russian: 27,
+    chemistry: 34,
+    physics: 26,
+    informatics: 27,
+    social: 25,
+    history: 21,
+    literature: 12,
+    geography: 29,
+  },
+  OGE: {
+    biology: 26,
+    math: 25,
+    russian: 13,
+    chemistry: 24,
+    physics: 25,
+    informatics: 15,
+    social: 24,
+    history: 24,
+    literature: 12,
+    geography: 30,
+  },
 };
 
-export function renderTaskNumbersGrid(subjectId = "biology") {
+export function populateTasksSubjectFilter(activeExam = "EGE") {
+  const filterSelect = document.getElementById("tasksSubjectFilter");
+  if (!filterSelect) return;
+
+  const currentVal = filterSelect.value;
+  filterSelect.innerHTML = "";
+
+  const phOpt = document.createElement("option");
+  phOpt.value = "";
+  phOpt.textContent = "🔍 Выберите предмет...";
+  filterSelect.appendChild(phOpt);
+
+  const allSubjects = Object.values(window.EXAM_DATA?.subjects || {});
+  const provider = examEngine.getProvider(activeExam);
+
+  const filteredSubjects = allSubjects.filter((s) => provider.filterSubject(s));
+  const subjectsToDisplay = filteredSubjects.length > 0 ? filteredSubjects : allSubjects;
+
+  subjectsToDisplay.forEach((sub) => {
+    const opt = document.createElement("option");
+    opt.value = sub.id;
+    opt.textContent = `${sub.icon || "📚"} ${sub.title}`;
+    filterSelect.appendChild(opt);
+  });
+
+  if (currentVal && Array.from(filterSelect.options).some((o) => o.value === currentVal)) {
+    filterSelect.value = currentVal;
+  } else {
+    filterSelect.value = "";
+  }
+}
+
+export function renderTaskNumbersGrid(subjectId = "", examType = null) {
   const container = document.getElementById("taskNumbersGrid");
   if (!container) return;
+
+  const globalType = getExamType();
+  const activeExam = examType || (globalType === "OGE" ? "OGE" : "EGE");
+
+  const examLabel = document.getElementById("tasksExamLabel");
+  if (examLabel) {
+    examLabel.textContent = activeExam;
+  }
+
+  const filterSelect = document.getElementById("tasksSubjectFilter");
+  const subId = subjectId !== null && subjectId !== undefined ? subjectId : (filterSelect?.value || "");
+
+  if (!subId || !window.EXAM_DATA?.subjects?.[subId]) {
+    renderSubjectCardsGrid(container, (id) => {
+      if (filterSelect) filterSelect.value = id;
+      renderTaskNumbersGrid(id, activeExam);
+    }, `Задания (${activeExam})`);
+    return;
+  }
+
+  container.className = "";
+  container.style.cssText = "display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; width: 100%;";
   container.innerHTML = "";
 
-  const subject = window.EXAM_DATA?.subjects?.[subjectId] || { title: "Биология", color: "var(--color-purple)" };
-  const totalTasks = TASK_COUNT_PER_SUBJECT[subjectId] || 20;
+  const subject = window.EXAM_DATA.subjects[subId];
+  const subjectTaskCounts = TASK_COUNT_PER_SUBJECT[activeExam] || TASK_COUNT_PER_SUBJECT.EGE;
+  const totalTasks = subjectTaskCounts[subId] || 20;
 
   const questionsByTask = {};
   if (subject.topics) {
@@ -491,10 +679,11 @@ export function renderTaskNumbersGrid(subjectId = "biology") {
 
   for (let taskNum = 1; taskNum <= totalTasks; taskNum++) {
     const existingQuestions = questionsByTask[taskNum] || [];
-    const countText = existingQuestions.length > 0 ? `${existingQuestions.length} вопросов` : "Типовое задание";
+    const countText = existingQuestions.length > 0 ? `${existingQuestions.length} вопросов` : `Типовое задание (${activeExam})`;
 
     const card = document.createElement("div");
     card.className = "task-number-card";
+    card.setAttribute("data-task-num", taskNum);
     card.style.cssText = `
       background: var(--color-surface);
       border: 1px solid var(--color-border);
@@ -509,7 +698,7 @@ export function renderTaskNumbersGrid(subjectId = "biology") {
     card.innerHTML = `
       <div>
         <div style="font-size: 11px; font-weight: 700; color: ${subject.colorHex || "var(--color-purple)"}; text-transform: uppercase; margin-bottom: 4px;">
-          ${subject.title}
+          ${subject.title} • ${activeExam}
         </div>
         <div style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">
           Задание №${taskNum}
@@ -538,24 +727,43 @@ export function renderTaskNumbersGrid(subjectId = "biology") {
       if (questionsToPlay.length === 0) {
         questionsToPlay = [
           {
-            id: `gen_task_${subjectId}_${taskNum}_1`,
+            id: `gen_task_${subId}_${activeExam}_${taskNum}_1`,
             type: "single",
-            question: `[Задание №${taskNum}] Вопрос по теме «Задание №${taskNum}» (${subject.title})`,
+            question: `[${activeExam} • Задание №${taskNum}] Вопрос по теме «Задание №${taskNum}» (${subject.title})`,
             options: ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"],
             correctIndex: 0,
-            explanation: `Подробный разбор алгоритма решения Задания №${taskNum} по предмету ${subject.title}.`,
+            explanation: `Подробный разбор алгоритма решения Задания №${taskNum} (${activeExam}) по предмету ${subject.title}.`,
             taskNumber: taskNum,
           },
         ];
       }
 
       import("./quiz.js").then((m) =>
-        m.startQuiz(questionsToPlay, `Тренировка: Задание №${taskNum} (${subject.title})`, "tests")
+        m.startQuiz(questionsToPlay, `Тренировка (${activeExam}): Задание №${taskNum} (${subject.title})`, "tests")
       );
     });
 
     container.appendChild(card);
   }
+}
+
+export function syncTestsExamSelection() {
+  const globalType = getExamType();
+  const activeExam = globalType === "OGE" ? "OGE" : "EGE";
+
+  const examBtns = document.querySelectorAll("#tasksExamTypeToggle .tasks-exam-btn");
+  examBtns.forEach((btn) => {
+    if (btn.getAttribute("data-exam") === activeExam) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  populateTasksSubjectFilter(activeExam);
+
+  const filterSelect = document.getElementById("tasksSubjectFilter");
+  renderTaskNumbersGrid(filterSelect?.value || "", activeExam);
 }
 
 export function initTestTabs() {
@@ -574,12 +782,13 @@ export function initTestTabs() {
       if (targetTab === "tasks") {
         const p = document.getElementById("testTabTasksContent");
         if (p) p.style.display = "block";
-        const filterSelect = document.getElementById("tasksSubjectFilter");
-        renderTaskNumbersGrid(filterSelect?.value || "biology");
+        syncTestsExamSelection();
       } else if (targetTab === "subjects") {
         const p = document.getElementById("testTabSubjectsContent");
         if (p) p.style.display = "block";
-        renderGeneralQuizzes();
+        populateGeneralQuizzesSubjectFilter();
+        const generalFilterSelect = document.getElementById("generalQuizzesSubjectFilter");
+        renderGeneralQuizzes(generalFilterSelect?.value || "");
       } else if (targetTab === "ai") {
         const p = document.getElementById("testTabAIContent");
         if (p) p.style.display = "block";
@@ -587,10 +796,45 @@ export function initTestTabs() {
     });
   });
 
-  const filterSelect = document.getElementById("tasksSubjectFilter");
-  filterSelect?.addEventListener("change", (e) => {
-    renderTaskNumbersGrid(e.target.value);
+  const notesFilter = document.getElementById("generalNotesSubjectFilter");
+  notesFilter?.addEventListener("change", (e) => {
+    renderGeneralNotes(e.target.value);
   });
 
-  renderTaskNumbersGrid(filterSelect?.value || "biology");
+  const videosFilter = document.getElementById("generalVideosSubjectFilter");
+  videosFilter?.addEventListener("change", (e) => {
+    renderGeneralVideos(e.target.value);
+  });
+
+  const generalFilterSelect = document.getElementById("generalQuizzesSubjectFilter");
+  generalFilterSelect?.addEventListener("change", (e) => {
+    renderGeneralQuizzes(e.target.value);
+  });
+
+  const examBtns = document.querySelectorAll("#tasksExamTypeToggle .tasks-exam-btn");
+  examBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetExam = btn.getAttribute("data-exam");
+      if (!targetExam) return;
+
+      setExamType(targetExam, true);
+    });
+  });
+
+  const filterSelect = document.getElementById("tasksSubjectFilter");
+  filterSelect?.addEventListener("change", (e) => {
+    const globalType = getExamType();
+    const activeExam = globalType === "OGE" ? "OGE" : "EGE";
+    renderTaskNumbersGrid(e.target.value, activeExam);
+  });
+
+  window.addEventListener("examTypeChanged", () => {
+    syncTestsExamSelection();
+    renderGeneralQuizzes();
+    renderGeneralNotes();
+    renderGeneralVideos();
+  });
+
+  syncTestsExamSelection();
+  populateGeneralQuizzesSubjectFilter();
 }

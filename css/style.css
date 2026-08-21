@@ -3578,4 +3578,138 @@ button:disabled, .btn:disabled {
   }
 }
 
+/* Select Option Dark Theme Fix & Contrast Enhancements */
+select,
+select option {
+  background-color: var(--color-surface, #1e293b);
+  color: var(--color-text-primary, #f8fafc);
+}
 
+.tasks-exam-btn {
+  background: transparent;
+  color: var(--color-text-secondary, #94a3b8);
+  border: none;
+  transition: all 0.2s ease;
+  font-weight: 700;
+}
+
+.tasks-exam-btn:hover {
+  color: var(--color-text-primary, #f8fafc);
+}
+
+.tasks-exam-btn.active {
+  background: var(--color-purple, #6366f1) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="dark"] select,
+[data-theme="dark"] select option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .tasks-exam-btn {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .tasks-exam-btn.active {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+}
+
+/* High Contrast Dark Mode for Quiz & Mock Exam Player */
+.mock-option-item {
+  text-align: left;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  transition: var(--transition-fast);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.mock-option-item.selected {
+  border-color: var(--color-purple) !important;
+  background-color: rgba(99, 102, 241, 0.12) !important;
+}
+
+.mock-nav-item {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.mock-nav-item.active {
+  border-color: var(--color-purple) !important;
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mock-nav-item.answered {
+  background-color: rgba(99, 102, 241, 0.12);
+}
+
+[data-theme="dark"] .quiz-option-btn,
+[data-theme="dark"] .mock-option-item,
+[data-theme="dark"] .mock-nav-item,
+[data-theme="dark"] .btn-secondary {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .quiz-option-btn span,
+[data-theme="dark"] .mock-option-item span,
+[data-theme="dark"] .mock-nav-item {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .option-badge-circle,
+[data-theme="dark"] .mock-option-item span:first-child {
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+  background-color: #0f172a !important;
+}
+
+[data-theme="dark"] .quiz-option-btn:hover:not(.checked),
+[data-theme="dark"] .mock-option-item:hover:not(.selected) {
+  background-color: #334155 !important;
+  border-color: #6366f1 !important;
+}
+
+[data-theme="dark"] .quiz-option-btn.selected,
+[data-theme="dark"] .mock-option-item.selected {
+  border-color: #818cf8 !important;
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .mock-nav-item.active {
+  border-color: #38bdf8 !important;
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .mock-nav-item.answered:not(.active) {
+  border-color: #6366f1 !important;
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: #334155 !important;
+  border-color: #64748b !important;
+}

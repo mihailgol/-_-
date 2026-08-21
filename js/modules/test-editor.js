@@ -110,17 +110,42 @@ export function initTestEditor() {
   const optionsArea = document.getElementById("dynamicOptionsArea");
   const previewArea = document.getElementById("qLivePreview");
 
+  const triggerLiveUpdate = () => {
+    updateTestPreview(typeSelect?.value || "single", previewArea);
+  };
+
   typeSelect?.addEventListener("change", () => {
     renderOptionsInputs(typeSelect.value, optionsArea);
-    updateTestPreview(typeSelect.value, previewArea);
+    triggerLiveUpdate();
   });
 
   renderOptionsInputs("single", optionsArea);
+
+  [
+    "qSubjectSelect",
+    "qTaskNumberInput",
+    "qTopicTitleInput",
+    "qDifficultySelect",
+    "qTextarea",
+    "qExplanationTextarea",
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", triggerLiveUpdate);
+      el.addEventListener("change", triggerLiveUpdate);
+    }
+  });
+
+  optionsArea?.addEventListener("input", triggerLiveUpdate);
+  optionsArea?.addEventListener("change", triggerLiveUpdate);
+
+  triggerLiveUpdate();
 
   document.getElementById("clearQuestionBtn")?.addEventListener("click", () => {
     document.getElementById("qTextarea").value = "";
     document.getElementById("qTopicTitleInput").value = "";
     document.getElementById("qExplanationTextarea").value = "";
+    triggerLiveUpdate();
     showToast("🗑️ Форма очищена", "Все поля формы сброшены");
   });
 
@@ -191,7 +216,6 @@ export function initTestEditor() {
   });
 }
 
-
 function renderOptionsInputs(type, container) {
   if (!container) return;
 
@@ -243,17 +267,95 @@ function renderOptionsInputs(type, container) {
 
 function updateTestPreview(type, container) {
   if (!container) return;
-  const qText = document.getElementById("qTextarea")?.value || "Текст вопроса появится здесь...";
+
+  const subjectId = document.getElementById("qSubjectSelect")?.value || "math";
+  const taskNumber = document.getElementById("qTaskNumberInput")?.value || "1";
+  const topicTitle = document.getElementById("qTopicTitleInput")?.value.trim() || `Задание №${taskNumber}`;
+  const difficulty = document.getElementById("qDifficultySelect")?.value || "1";
+  const qText = document.getElementById("qTextarea")?.value.trim();
+  const explanation = document.getElementById("qExplanationTextarea")?.value.trim();
+
+  const subjects = window.EXAM_DATA?.subjects || {};
+  const subjectObj = subjects[subjectId] || { title: "Предмет", colorHex: "#6366f1" };
+
+  if (!qText) {
+    container.innerHTML = `<div style="color: var(--color-text-secondary); text-align: center; margin-top: 60px;">Заполните форму слева для предпросмотра вопроса...</div>`;
+    return;
+  }
+
+  let optionsPreviewHtml;
+  if (type === "single" || type === "multiple") {
+    const optionInputs = Array.from(document.querySelectorAll(".option-input")).map((inp) => inp.value.trim());
+    const correctVal = parseInt(document.getElementById("correctIndexInput")?.value || "1", 10);
+
+    const opts = optionInputs.length > 0 ? optionInputs : ["Вариант A", "Вариант B", "Вариант C", "Вариант D"];
+    optionsPreviewHtml = `
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
+        ${opts
+          .map((opt, idx) => {
+            const isCorrect = idx + 1 === correctVal;
+            const inputType = type === "single" ? "radio" : "checkbox";
+            return `
+              <div style="padding: 10px 14px; background: ${isCorrect ? "rgba(34, 197, 94, 0.1)" : "var(--color-surface)"}; border-radius: 8px; border: 1px solid ${isCorrect ? "#22c55e" : "var(--color-border)"}; display: flex; align-items: center; justify-content: space-between;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%;">
+                  <input type="${inputType}" name="prevOpt" ${isCorrect ? "checked" : ""} disabled />
+                  <span style="font-weight: 500; font-size: 13px; color: var(--color-text-primary);">${opt || `Вариант ${idx + 1}`}</span>
+                </label>
+                ${isCorrect ? `<span style="font-size: 11px; background: #22c55e; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Верный ответ</span>` : ""}
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  } else if (type === "text") {
+    const correctAns = document.getElementById("textCorrectAnswerInput")?.value.trim() || "Ответ";
+    optionsPreviewHtml = `
+      <div style="margin-top: 14px; padding: 12px 14px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border);">
+        <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">Поле ввода ответа учеником:</div>
+        <input type="text" class="search-input" placeholder="Введите ответ..." disabled style="width: 100%;" />
+        <div style="font-size: 11px; color: #22c55e; margin-top: 8px; font-weight: 600;">Ключ правильного ответа: ${correctAns}</div>
+      </div>
+    `;
+  } else {
+    optionsPreviewHtml = `
+      <div style="margin-top: 14px; padding: 12px 14px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border); font-size: 13px; color: var(--color-text-secondary);">
+        🔄 Интерактивный предпросмотр для формата ${type.toUpperCase()}
+      </div>
+    `;
+  }
+
+  let explanationHtml = "";
+  if (explanation) {
+    explanationHtml = `
+      <div style="margin-top: 16px; padding: 12px; background: rgba(99, 102, 241, 0.08); border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2);">
+        <div style="font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; margin-bottom: 4px;">💡 Пояснение / Разбор решения:</div>
+        <div style="font-size: 12px; color: var(--color-text-primary); line-height: 1.5;">${explanation}</div>
+      </div>
+    `;
+  }
 
   container.innerHTML = `
-    <div style="background: var(--color-card-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--color-border);">
-      <div style="font-size: 0.8rem; color: #6366f1; font-weight: 700; margin-bottom: 6px;">[ТИП: ${type.toUpperCase()}]</div>
-      <h3 style="margin: 0 0 16px 0;">${qText}</h3>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="padding: 10px 14px; background: var(--color-bg-secondary); border-radius: 8px; border: 1px solid var(--color-border); font-size: 0.9rem;">
-          🔘 Демонстрационный вариант ответа
-        </div>
+    <div style="background: var(--color-card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--color-border); box-shadow: var(--box-shadow-sm);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 700; color: ${subjectObj.colorHex || "var(--color-purple)"}; text-transform: uppercase;">
+          ${subjectObj.title || "Предмет"} • Задание №${taskNumber}
+        </span>
+        <span style="font-size: 11px; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 2px 8px; border-radius: 8px; font-weight: 600;">
+          Сложность ${difficulty}/5
+        </span>
       </div>
+      
+      <div style="font-weight: 700; font-size: 14px; color: var(--color-text-primary); margin-bottom: 8px;">
+        ${topicTitle}
+      </div>
+
+      <div style="font-size: 14px; color: var(--color-text-primary); line-height: 1.5; margin-bottom: 12px;">
+        ${qText.replace(/\n/g, "<br/>")}
+      </div>
+
+      ${optionsPreviewHtml}
+      ${explanationHtml}
     </div>
   `;
 }

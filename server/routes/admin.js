@@ -223,13 +223,43 @@ router.post("/theory", (req, res) => {
     return res.status(400).json({ error: "Необходимы subjectId и title" });
   }
 
-  const topicId = `top_${Date.now()}_${randomBytes(2).toString("hex")}`;
-  db.prepare(
-    "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(topicId, subjectId, title, isPremium ? 1 : 0, duration || "45 мин", theory || "");
+  const subjectMap = {
+    bio: "biology",
+    rus: "russian",
+    chem: "chemistry",
+    inf: "informatics",
+    his: "history",
+    soc: "social",
+  };
 
-  logAdminActivity(req.user.id, "CREATE_THEORY", { topicId, title }, req.ip);
-  res.status(201).json({ id: topicId, ok: true });
+  const finalSubjectId = subjectMap[subjectId] || subjectId;
+
+  // Check if subject exists in subjects table, auto-create if missing to preserve DB integrity
+  let sub = db.prepare("SELECT id FROM subjects WHERE id = ?").get(finalSubjectId);
+  if (!sub) {
+    try {
+      db.prepare("INSERT OR IGNORE INTO subjects (id, title, icon, color) VALUES (?, ?, '📚', '#6366f1')").run(
+        finalSubjectId,
+        title || finalSubjectId
+      );
+    } catch (e) {
+      console.error("Failed to auto-create subject:", e);
+    }
+  }
+
+  const topicId = `top_${Date.now()}_${randomBytes(2).toString("hex")}`;
+
+  try {
+    db.prepare(
+      "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, ?, ?, ?)"
+    ).run(topicId, finalSubjectId, title, isPremium ? 1 : 0, duration || "45 мин", theory || "");
+
+    logAdminActivity(req.user.id, "CREATE_THEORY", { topicId, title }, req.ip);
+    res.status(201).json({ id: topicId, ok: true });
+  } catch (err) {
+    console.error("Error creating theory topic:", err);
+    res.status(400).json({ error: err.message || "Не удалось сохранить теорию в БД" });
+  }
 });
 
 router.delete("/theory/:id", (req, res) => {

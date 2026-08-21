@@ -69,11 +69,9 @@ export function renderQuizQuestion() {
       }
 
       document.querySelectorAll(".quiz-option-btn").forEach((b) => {
-        b.style.borderColor = "var(--color-border)";
-        b.style.background = "var(--color-surface)";
+        b.classList.remove("selected");
       });
-      btn.style.borderColor = "var(--color-green)";
-      btn.style.background = "var(--color-green-light)";
+      btn.classList.add("selected");
 
       appState.activeSelectedOptionIndex = idx;
 

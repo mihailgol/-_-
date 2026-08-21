@@ -25,14 +25,16 @@ export function initTheoryEditor() {
           <div>
             <label style="display: block; font-weight: 600; margin-bottom: 6px;">Предмет</label>
             <select id="theorySubjectSelect" class="search-input" style="width: 100%;">
-              <option value="math">Математика</option>
-              <option value="rus">Русский язык</option>
-              <option value="physics">Физика</option>
-              <option value="inf">Информатика</option>
-              <option value="bio">Биология</option>
-              <option value="chem">Химия</option>
-              <option value="his">История</option>
-              <option value="soc">Обществознание</option>
+              <option value="biology">🧬 Биология</option>
+              <option value="math">📐 Математика</option>
+              <option value="russian">📚 Русский язык</option>
+              <option value="chemistry">🧪 Химия</option>
+              <option value="physics">⚡ Физика</option>
+              <option value="informatics">💻 Информатика</option>
+              <option value="social">👥 Обществознание</option>
+              <option value="history">🏛️ История</option>
+              <option value="literature">📖 Литература</option>
+              <option value="geography">🌍 География</option>
             </select>
           </div>
 

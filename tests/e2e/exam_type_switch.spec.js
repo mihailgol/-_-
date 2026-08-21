@@ -35,4 +35,27 @@ test.describe("ExamType Switcher — EGE / OGE filtering", () => {
       await expect(badges.nth(i)).toContainText("ОГЭ");
     }
   });
+
+  test("пошаговый выбор на странице тестов (ОГЭ/ЕГЭ -> Предмет -> Задание)", async ({ page }) => {
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+
+    const ogeTaskBtn = page.locator('#tasksExamTypeToggle .tasks-exam-btn[data-exam="OGE"]');
+    await ogeTaskBtn.click();
+
+    await expect(page.locator("#tasksExamLabel")).toHaveText("OGE");
+
+    const subjectSelect = page.locator("#tasksSubjectFilter");
+    await expect(subjectSelect).toBeVisible();
+
+    // Сначала в сетке отображаются плашки предметов (.subject-card)
+    await expect(page.locator("#taskNumbersGrid .subject-card").first()).toBeVisible();
+
+    // Выбираем предмет или кликаем по плашке
+    await subjectSelect.selectOption("biology");
+
+    const taskCards = page.locator("#taskNumbersGrid .task-number-card");
+    await expect(taskCards.first()).toBeVisible();
+    await expect(taskCards.first()).toContainText("OGE");
+  });
 });

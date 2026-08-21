@@ -97,6 +97,9 @@ test.describe("Admin Panel & Editor Systems — QA E2E Tests", () => {
     await expect(page.locator("#btnTestTabAI")).toBeVisible();
     await expect(page.locator("#btnTestTabAI")).toContainText("В разработке");
 
+    // Выбор предмета в банке заданий
+    await page.locator("#tasksSubjectFilter").selectOption("biology");
+
     // Проверка наличия карточек заданий в банке
     await expect(page.locator("#taskNumbersGrid .task-number-card").first()).toBeVisible();
 

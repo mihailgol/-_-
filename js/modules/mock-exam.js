@@ -164,11 +164,11 @@ function renderCurrentQuestion() {
       ${q.options
         .map(
           (opt, idx) => `
-        <button class="mock-option-item ${selectedIdx === idx ? "selected" : ""}" data-idx="${idx}" style="display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; border: 2px solid ${selectedIdx === idx ? "var(--color-purple)" : "var(--color-border)"}; background: ${selectedIdx === idx ? "var(--color-purple-light, rgba(114,46,209,0.1))" : "var(--color-bg-secondary)"}; text-align: left; font-size: 1rem; cursor: pointer;">
-          <span style="display: inline-flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--color-border); font-weight: 600;">
+        <button class="mock-option-item ${selectedIdx === idx ? "selected" : ""}" data-idx="${idx}">
+          <span class="option-badge-circle" style="display: inline-flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 600; flex-shrink: 0;">
             ${String.fromCharCode(65 + idx)}
           </span>
-          <span>${opt}</span>
+          <span style="font-size: 1rem; font-weight: 500;">${opt}</span>
         </button>
       `
         )
@@ -199,18 +199,9 @@ function renderNavGrid() {
     .map((q, idx) => {
       const isAnswered = userAnswers[q.id] !== undefined;
       const isActive = idx === currentQuestionIndex;
-      let bg = "var(--color-bg-secondary)";
-      let borderColor = "var(--color-border)";
-
-      if (isActive) {
-        borderColor = "var(--color-purple)";
-      }
-      if (isAnswered) {
-        bg = "var(--color-purple-light, rgba(114,46,209,0.15))";
-      }
 
       return `
-        <button class="mock-nav-item ${isActive ? "active" : ""} ${isAnswered ? "answered" : ""}" data-idx="${idx}" style="padding: 10px; border-radius: 8px; border: 2px solid ${borderColor}; background: ${bg}; font-weight: 600; cursor: pointer;">
+        <button class="mock-nav-item ${isActive ? "active" : ""} ${isAnswered ? "answered" : ""}" data-idx="${idx}">
           ${idx + 1}
         </button>
       `;
