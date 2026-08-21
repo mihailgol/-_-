@@ -5,10 +5,19 @@ export function initTestEditor() {
   const container = document.getElementById("testEditorContainer");
   if (!container) return;
 
+  const subjects = window.EXAM_DATA?.subjects || {};
+  let subjectOptionsHtml = `<option value="math">Математика</option><option value="russian">Русский язык</option><option value="biology">Биология</option><option value="chemistry">Химия</option><option value="physics">Физика</option><option value="informatics">Информатика</option><option value="social">Обществознание</option><option value="history">История</option><option value="literature">Литература</option><option value="geography">География</option>`;
+
+  if (Object.keys(subjects).length > 0) {
+    subjectOptionsHtml = Object.values(subjects)
+      .map((s) => `<option value="${s.id}">${s.title}</option>`)
+      .join("");
+  }
+
   container.innerHTML = `
     <div class="test-editor-wrap" style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <h2 style="margin: 0;">📝 Конструктор Тестов (5 типов вопросов & Банк Вопросов)</h2>
+        <h2 style="margin: 0;">📝 Конструктор Тестов (Выбор предмета, Номер задания & БД)</h2>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <button class="btn btn-outline" id="clearQuestionBtn" style="color: #ef4444; border-color: #fca5a5;">🗑️ Очистить форму</button>
           <button class="btn btn-outline" id="loadQuestionBankBtn">🏦 Банк вопросов</button>
@@ -20,8 +29,21 @@ export function initTestEditor() {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <!-- Left Column: Form Controls -->
         <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Предмет</label>
+              <select id="qSubjectSelect" class="search-input" style="width: 100%;">
+                ${subjectOptionsHtml}
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Номер задания (1–27)</label>
+              <input type="number" id="qTaskNumberInput" class="search-input" min="1" max="50" value="1" style="width: 100%; box-sizing: border-box;" />
+            </div>
+          </div>
+
           <div>
-            <label style="display: block; font-weight: 600; margin-bottom: 6px;">Тема теста</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 6px;">Тема / Название задания</label>
             <input type="text" id="qTopicTitleInput" class="search-input" placeholder="Например: Задание 1. Преобразование выражений" style="width: 100%; box-sizing: border-box;" />
           </div>
 
@@ -131,22 +153,36 @@ export function initTestEditor() {
       return;
     }
 
+    const subjectId = document.getElementById("qSubjectSelect")?.value || "math";
+    const taskNumber = parseInt(document.getElementById("qTaskNumberInput")?.value || "1", 10);
     const type = document.getElementById("qTypeSelect")?.value || "single";
     const explanation = document.getElementById("qExplanationTextarea")?.value.trim() || "";
+
+    const optionInputs = Array.from(document.querySelectorAll(".option-input")).map((inp) => inp.value.trim());
+    const options = optionInputs.length > 0 ? optionInputs : ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"];
+    const correctIndexVal = parseInt(document.getElementById("correctIndexInput")?.value || "1", 10) - 1;
 
     try {
       await api("/api/admin/tests/questions", {
         method: "POST",
         body: JSON.stringify({
-          topicId: "top_math_1",
+          subjectId,
+          taskNumber,
           type,
           question: questionText,
+          options,
+          correctIndex: Math.max(0, correctIndexVal),
           explanation,
         }),
       });
-      showToast("✅ Сохранено в БД!", "Вопрос успешно сохранен на сервере в SQLite.");
-    } catch {
-      showToast("✅ Сохранено!", "Вопрос успешно добавлен на платформу.");
+
+      showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} сохранен в базу данных SQLite.`);
+
+      if (window.loadAppData) {
+        window.loadAppData();
+      }
+    } catch (err) {
+      showToast("⚠️ Ошибка сохранения", err.message || "Не удалось сохранить вопрос.");
     }
   });
 

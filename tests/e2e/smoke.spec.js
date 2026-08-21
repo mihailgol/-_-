@@ -225,6 +225,7 @@ test.describe("ExamHub — smoke tests", () => {
 
     await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
     await expect(page.locator("#view-tests")).toBeVisible();
+    await page.locator("#btnTestTabAI").click();
     await expect(page.locator("#aiLimitBadge")).toBeVisible();
 
     await page.locator("#aiPromptInput").fill("Строение митохондрий");

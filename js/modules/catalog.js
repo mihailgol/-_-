@@ -415,3 +415,182 @@ export function renderGeneralVideos() {
     });
   });
 }
+
+export function renderGeneralQuizzes() {
+  const container = document.getElementById("allGeneralQuizzesGrid");
+  if (!container) return;
+  container.innerHTML = "";
+
+  Object.values(window.EXAM_DATA.subjects || {}).forEach((subject) => {
+    (subject.topics || []).forEach((topic) => {
+      if (!topic.questions || topic.questions.length === 0) return;
+
+      const card = document.createElement("div");
+      card.className = "quiz-list-item";
+      card.innerHTML = `
+        <div class="quiz-item-left">
+          <span class="quiz-item-badge">📋</span>
+          <div class="quiz-item-details">
+            <span style="font-size: 11px; font-weight: 700; color: ${subject.color || "var(--color-purple)"};">${subject.title}</span>
+            <h4>${topic.title}</h4>
+            <p>${topic.questions.length} вопросов • Формат ЕГЭ/ОГЭ</p>
+          </div>
+        </div>
+        <div class="quiz-item-actions">
+          <span class="note-item-tag ${topic.isPremium ? "premium" : ""}" style="margin-right: 8px;">
+            ${topic.isPremium ? "👑 Premium" : "Базовый"}
+          </span>
+          <button class="btn-primary" style="padding: 8px 16px; font-size: 12px; background-color: ${topic.isPremium ? "var(--color-orange)" : "var(--color-green)"}">Начать тест</button>
+        </div>
+      `;
+
+      card.addEventListener("click", () => {
+        if (topic.isPremium && !appState.user.isPremium) {
+          openModal("premiumModal");
+          showToast("🔒 Доступ ограничен", "Сложные тематические тесты доступны только в Premium.");
+        } else {
+          import("./quiz.js").then((m) => m.startQuiz(topic.questions, `Тест: ${topic.title}`, "tests"));
+        }
+      });
+      container.appendChild(card);
+    });
+  });
+}
+
+const TASK_COUNT_PER_SUBJECT = {
+  biology: 28,
+  math: 19,
+  russian: 27,
+  chemistry: 34,
+  physics: 26,
+  informatics: 27,
+  social: 25,
+  history: 21,
+  literature: 12,
+  geography: 29,
+};
+
+export function renderTaskNumbersGrid(subjectId = "biology") {
+  const container = document.getElementById("taskNumbersGrid");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const subject = window.EXAM_DATA?.subjects?.[subjectId] || { title: "Биология", color: "var(--color-purple)" };
+  const totalTasks = TASK_COUNT_PER_SUBJECT[subjectId] || 20;
+
+  const questionsByTask = {};
+  if (subject.topics) {
+    subject.topics.forEach((t) => {
+      (t.questions || []).forEach((q) => {
+        const tn = q.taskNumber || q.task_number || 1;
+        questionsByTask[tn] = questionsByTask[tn] || [];
+        questionsByTask[tn].push(q);
+      });
+    });
+  }
+
+  for (let taskNum = 1; taskNum <= totalTasks; taskNum++) {
+    const existingQuestions = questionsByTask[taskNum] || [];
+    const countText = existingQuestions.length > 0 ? `${existingQuestions.length} вопросов` : "Типовое задание";
+
+    const card = document.createElement("div");
+    card.className = "task-number-card";
+    card.style.cssText = `
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    `;
+    card.innerHTML = `
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: ${subject.colorHex || "var(--color-purple)"}; text-transform: uppercase; margin-bottom: 4px;">
+          ${subject.title}
+        </div>
+        <div style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">
+          Задание №${taskNum}
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.4;">
+          ${countText}
+        </div>
+      </div>
+      <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--color-purple);">Решать задание →</span>
+        <span style="font-size: 10px; background: rgba(99, 102, 241, 0.1); color: var(--color-purple); padding: 2px 8px; border-radius: 10px; font-weight: 700;">№${taskNum}</span>
+      </div>
+    `;
+
+    card.addEventListener("mouseenter", () => {
+      card.style.borderColor = "var(--color-purple)";
+      card.style.transform = "translateY(-2px)";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.borderColor = "var(--color-border)";
+      card.style.transform = "translateY(0)";
+    });
+
+    card.addEventListener("click", () => {
+      let questionsToPlay = existingQuestions;
+      if (questionsToPlay.length === 0) {
+        questionsToPlay = [
+          {
+            id: `gen_task_${subjectId}_${taskNum}_1`,
+            type: "single",
+            question: `[Задание №${taskNum}] Вопрос по теме «Задание №${taskNum}» (${subject.title})`,
+            options: ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"],
+            correctIndex: 0,
+            explanation: `Подробный разбор алгоритма решения Задания №${taskNum} по предмету ${subject.title}.`,
+            taskNumber: taskNum,
+          },
+        ];
+      }
+
+      import("./quiz.js").then((m) =>
+        m.startQuiz(questionsToPlay, `Тренировка: Задание №${taskNum} (${subject.title})`, "tests")
+      );
+    });
+
+    container.appendChild(card);
+  }
+}
+
+export function initTestTabs() {
+  const tabBtns = document.querySelectorAll(".tests-subnav .btn-tab");
+  const panels = document.querySelectorAll(".test-tab-panel");
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetTab = btn.getAttribute("data-test-tab");
+
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      panels.forEach((p) => (p.style.display = "none"));
+
+      if (targetTab === "tasks") {
+        const p = document.getElementById("testTabTasksContent");
+        if (p) p.style.display = "block";
+        const filterSelect = document.getElementById("tasksSubjectFilter");
+        renderTaskNumbersGrid(filterSelect?.value || "biology");
+      } else if (targetTab === "subjects") {
+        const p = document.getElementById("testTabSubjectsContent");
+        if (p) p.style.display = "block";
+        renderGeneralQuizzes();
+      } else if (targetTab === "ai") {
+        const p = document.getElementById("testTabAIContent");
+        if (p) p.style.display = "block";
+      }
+    });
+  });
+
+  const filterSelect = document.getElementById("tasksSubjectFilter");
+  filterSelect?.addEventListener("change", (e) => {
+    renderTaskNumbersGrid(e.target.value);
+  });
+
+  renderTaskNumbersGrid(filterSelect?.value || "biology");
+}

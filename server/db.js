@@ -117,6 +117,7 @@ export function initSchema() {
       explanation TEXT NOT NULL,
       points INTEGER NOT NULL DEFAULT 1,
       correct_answer_json TEXT,
+      task_number INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0
     );
 
@@ -263,6 +264,7 @@ export function initSchema() {
 
     CREATE INDEX IF NOT EXISTS idx_topics_subject_id ON topics(subject_id);
     CREATE INDEX IF NOT EXISTS idx_questions_topic_id ON questions(topic_id);
+    CREATE INDEX IF NOT EXISTS idx_questions_task_number ON questions(task_number);
     CREATE INDEX IF NOT EXISTS idx_videos_topic_id ON videos(topic_id);
     CREATE INDEX IF NOT EXISTS idx_attempts_user_id ON attempts(user_id);
     CREATE INDEX IF NOT EXISTS idx_mock_exams_subject_id ON mock_exams(subject_id);
@@ -290,6 +292,11 @@ export function initSchema() {
   }
   try {
     db.exec("ALTER TABLE questions ADD COLUMN correct_answer_json TEXT;");
+  } catch (err) {
+    void err;
+  }
+  try {
+    db.exec("ALTER TABLE questions ADD COLUMN task_number INTEGER NOT NULL DEFAULT 0;");
   } catch (err) {
     void err;
   }

@@ -3,7 +3,7 @@ import { api } from "./modules/utils.js";
 import { showToast, initGlobalUIEvents, closeModal } from "./modules/ui.js";
 
 import { switchView, initRouter } from "./modules/navigation.js";
-import { renderSubjects, renderGeneralNotes, renderGeneralVideos } from "./modules/catalog.js";
+import { renderSubjects, renderGeneralNotes, renderGeneralVideos, initTestTabs } from "./modules/catalog.js";
 import { updateUIFromState } from "./modules/render.js";
 import { initAuthEvents } from "./modules/auth.js";
 import { initPremiumEvents } from "./modules/premium.js";
@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMockExamEvents();
   initTheoryEditor();
   initTestEditor();
+  initTestTabs();
   initAnalyticsTracker();
   initProfileView();
 

@@ -241,43 +241,159 @@ router.delete("/theory/:id", (req, res) => {
 router.get("/tests", (req, res) => {
   const questions = db
     .prepare(
-      `SELECT q.*, t.title as topic_title, s.title as subject_title 
+      `SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
        FROM questions q 
        JOIN topics t ON t.id = q.topic_id 
        JOIN subjects s ON s.id = t.subject_id 
-       ORDER BY q.sort_order ASC`
+       ORDER BY q.task_number ASC, q.sort_order ASC`
     )
     .all();
   res.json({ questions });
 });
 
 router.post("/tests/questions", (req, res) => {
-  const { topicId, type, question, options, correctIndex, correctAnswer, explanation, points } = req.body || {};
-  if (!topicId || !question) {
-    return res.status(400).json({ error: "Укажите тему и текст вопроса" });
+  let { subjectId, topicId, taskNumber, task_number, type, question, options, correctIndex, correctAnswer, explanation, points } = req.body || {};
+  if (!question || (!topicId && !subjectId)) {
+    return res.status(400).json({ error: "Укажите предмет/тему и текст вопроса" });
   }
 
+  let finalTopicId = topicId;
+
+  if (finalTopicId) {
+    const existingTopic = db.prepare("SELECT id FROM topics WHERE id = ?").get(finalTopicId);
+    if (!existingTopic && subjectId) {
+      finalTopicId = null;
+    }
+  }
+
+  if (!finalTopicId && subjectId) {
+    const firstTopic = db.prepare("SELECT id FROM topics WHERE subject_id = ? ORDER BY sort_order ASC").get(subjectId);
+    if (firstTopic) {
+      finalTopicId = firstTopic.id;
+    } else {
+      finalTopicId = `top_${subjectId}_gen_${Date.now()}`;
+      db.prepare(
+        "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, 0, '45 мин', '')"
+      ).run(finalTopicId, subjectId, "Общие задания");
+    }
+  }
+
+  if (!finalTopicId) {
+    return res.status(400).json({ error: "Не найдена тема для указанного вопроса" });
+  }
+
+  const qTaskNum = Number(taskNumber ?? task_number ?? 0);
   const qId = `q_${Date.now()}_${randomBytes(2).toString("hex")}`;
+
   db.prepare(
-    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     qId,
-    topicId,
+    finalTopicId,
     type || "single",
     question,
     JSON.stringify(options || []),
     typeof correctIndex === "number" ? correctIndex : 0,
     JSON.stringify(correctAnswer || null),
     explanation || "",
-    points || 1
+    points || 1,
+    qTaskNum
   );
+
+  logAdminActivity(req.user.id, "CREATE_QUESTION", { qId, topicId: finalTopicId, taskNumber: qTaskNum }, req.ip);
 
   res.status(201).json({ id: qId, ok: true });
 });
 
 router.delete("/tests/questions/:id", (req, res) => {
   db.prepare("DELETE FROM questions WHERE id = ?").run(req.params.id);
+  logAdminActivity(req.user.id, "DELETE_QUESTION", { id: req.params.id }, req.ip);
+  res.json({ ok: true });
+});
+
+router.get("/videos", (req, res) => {
+  const videos = db
+    .prepare(
+      `SELECT v.*, t.title as topic_title, s.title as subject_title 
+       FROM videos v 
+       JOIN topics t ON t.id = v.topic_id 
+       JOIN subjects s ON s.id = t.subject_id`
+    )
+    .all();
+  res.json({ videos });
+});
+
+router.post("/videos", (req, res) => {
+  const { topicId, subjectId, title, instructor, duration, youtubeId, thumbnail, description } = req.body || {};
+  if (!title || (!topicId && !subjectId)) {
+    return res.status(400).json({ error: "Укажите тему и название видео" });
+  }
+
+  let finalTopicId = topicId;
+  if (!finalTopicId && subjectId) {
+    const firstTopic = db.prepare("SELECT id FROM topics WHERE subject_id = ?").get(subjectId);
+    if (firstTopic) {
+      finalTopicId = firstTopic.id;
+    } else {
+      finalTopicId = `top_${subjectId}_gen_${Date.now()}`;
+      db.prepare(
+        "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, 0, '45 мин', '')"
+      ).run(finalTopicId, subjectId, "Общая тема");
+    }
+  }
+
+  const videoId = `vid_${Date.now()}_${randomBytes(2).toString("hex")}`;
+  db.prepare(
+    `INSERT INTO videos (id, topic_id, title, instructor, duration, youtube_id, views, thumbnail, description)
+     VALUES (?, ?, ?, ?, ?, ?, '0', ?, ?)`
+  ).run(
+    videoId,
+    finalTopicId,
+    title,
+    instructor || "Преподаватель ExamHub",
+    duration || "20:00",
+    youtubeId || "dQw4w9WgXcQ",
+    thumbnail || "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?auto=format&fit=crop&q=80&w=400",
+    description || ""
+  );
+
+  logAdminActivity(req.user.id, "CREATE_VIDEO", { videoId, title }, req.ip);
+  res.status(201).json({ id: videoId, ok: true });
+});
+
+router.delete("/videos/:id", (req, res) => {
+  db.prepare("DELETE FROM videos WHERE id = ?").run(req.params.id);
+  logAdminActivity(req.user.id, "DELETE_VIDEO", { id: req.params.id }, req.ip);
+  res.json({ ok: true });
+});
+
+router.post("/subjects", (req, res) => {
+  const { id, title, icon, color, colorHex, bgGradient } = req.body || {};
+  if (!title) {
+    return res.status(400).json({ error: "Укажите название предмета" });
+  }
+
+  const subId = id || `sub_${Date.now()}`;
+  db.prepare(
+    `INSERT INTO subjects (id, title, icon, color, color_hex, bg_gradient, is_active, is_other)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 0)`
+  ).run(
+    subId,
+    title,
+    icon || "📚",
+    color || "blue",
+    colorHex || "#3b82f6",
+    bgGradient || "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
+  );
+
+  logAdminActivity(req.user.id, "CREATE_SUBJECT", { subId, title }, req.ip);
+  res.status(201).json({ id: subId, ok: true });
+});
+
+router.delete("/subjects/:id", (req, res) => {
+  db.prepare("DELETE FROM subjects WHERE id = ?").run(req.params.id);
+  logAdminActivity(req.user.id, "DELETE_SUBJECT", { id: req.params.id }, req.ip);
   res.json({ ok: true });
 });
 

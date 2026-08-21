@@ -30,6 +30,8 @@ export function initAIEvents() {
     triggerBtn.addEventListener("click", () => {
       const tabNav = document.querySelector(".sidebar-nav .nav-item[data-view='tests']");
       if (tabNav) tabNav.click();
+      const aiTabBtn = document.getElementById("btnTestTabAI");
+      if (aiTabBtn) aiTabBtn.click();
     });
   }
 

@@ -433,95 +433,150 @@
           </section>
 
           <section class="view-section" id="view-tests">
-            <div class="ai-view-container">
-              <div class="ai-header-card">
-                <span class="premium-modal-badge" style="margin-bottom: 12px; display: inline-block"
-                  >AI ГЕНЕРАТОР ТЕСТОВ</span
-                >
-                <h2 class="ai-header-title">Создай индивидуальный тест с ИИ</h2>
-                <p class="ai-header-descr">
-                  Укажи любую тему по биологии или химии, и нейросеть мгновенно сформирует подборку вопросов уровня ЕГЭ
-                  или ОГЭ с подробным разбором ответов.
-                </p>
-              </div>
+            <div class="section-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <span>Тесты и Задания</span>
+            </div>
 
-              <div class="ai-input-card" id="aiInputBlock">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
-                  <label class="ai-label" for="aiPromptInput" style="margin-bottom: 0">Какую тему хотите протестировать?</label>
-                  <span class="ai-limit-badge" id="aiLimitBadge" style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.1); color: var(--color-purple); font-weight: 600">Осталось 3 генерации сегодня</span>
-                </div>
+            <!-- Sub-tabs nav inside Tests view -->
+            <div class="tests-subnav" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+              <button class="btn btn-tab active" id="btnTestTabTasks" data-test-tab="tasks" style="padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 13px;">🎯 Банк типовых заданий (по номерам)</button>
+              <button class="btn btn-tab" id="btnTestTabSubjects" data-test-tab="subjects" style="padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 13px;">📚 По предметам и темам</button>
+              <button class="btn btn-tab" id="btnTestTabAI" data-test-tab="ai" style="padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 13px;">🤖 ИИ тесты <span style="background: rgba(245, 158, 11, 0.2); color: #d97706; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 700; margin-left: 4px; border: 1px solid rgba(245, 158, 11, 0.4);">В разработке</span></button>
+            </div>
 
-                <div style="margin-bottom: 12px">
-                  <label class="ai-label" for="aiSubjectSelect" style="font-size: 13px; margin-bottom: 6px; display: block">Предмет:</label>
-                  <select id="aiSubjectSelect" class="ai-select" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 14px; background: var(--color-surface); color: var(--color-text-primary); font-family: inherit">
-                    <option value="biology">🧬 Биология</option>
+            <!-- Tab 1: Tasks by Number (1-27) -->
+            <div id="testTabTasksContent" class="test-tab-panel">
+              <div style="background: var(--color-surface); padding: 16px 20px; border-radius: var(--border-radius-lg); border: 1px solid var(--color-border); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                  <label style="font-weight: 600; font-size: 14px; color: var(--color-text-primary);" for="tasksSubjectFilter">Выберите предмет:</label>
+                  <select id="tasksSubjectFilter" class="search-input" style="padding: 8px 14px; min-width: 200px;">
+                    <option value="biology" selected>🧬 Биология</option>
+                    <option value="math">📐 Математика</option>
+                    <option value="russian">📚 Русский язык</option>
                     <option value="chemistry">🧪 Химия</option>
                     <option value="physics">⚡ Физика</option>
-                    <option value="math">📐 Математика</option>
-                    <option value="rus">📚 Русский язык</option>
+                    <option value="informatics">💻 Информатика</option>
+                    <option value="social">👥 Обществознание</option>
+                    <option value="history">🏛️ История</option>
+                    <option value="literature">📖 Литература</option>
+                    <option value="geography">🌍 География</option>
                   </select>
                 </div>
+                <div style="font-size: 12px; color: var(--color-text-secondary);">Каждый номер задания типовой и содержит соответствующий формат ЕГЭ/ОГЭ</div>
+              </div>
 
-                <textarea
-                  class="ai-textarea"
-                  id="aiPromptInput"
-                  placeholder="Например: Фотосинтез, световая фаза, хлоропласты, EГЭ уровень..."
-                ></textarea>
+              <div id="taskNumbersGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
 
-                <span class="ai-suggestions-title">Популярные запросы:</span>
-                <div class="ai-chips-list">
-                  <button class="ai-chip" data-subject="chemistry" data-prompt="Химические свойства алкенов, гидратация и окисление">
-                    🧪 Свойства алкенов
-                  </button>
-                  <button class="ai-chip" data-subject="biology" data-prompt="Строение ядра клетки, ядрышко, хроматин, ДНК">
-                    🧬 Строение ядра
-                  </button>
-                  <button
-                    class="ai-chip"
-                    data-subject="chemistry"
-                    data-prompt="Периодические свойства химических элементов, электроотрицательность"
+            <!-- Tab 2: Quizzes by Subject -->
+            <div id="testTabSubjectsContent" class="test-tab-panel" style="display: none;">
+              <div class="quiz-list" id="allGeneralQuizzesGrid">
+                <!-- General quizzes list -->
+              </div>
+            </div>
+
+            <!-- Tab 3: AI Tests Generator -->
+            <div id="testTabAIContent" class="test-tab-panel" style="display: none;">
+              <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px;">
+                <span style="font-size: 24px;">🚧</span>
+                <div>
+                  <div style="font-weight: 700; font-size: 14px; color: #d97706; margin-bottom: 2px;">Вкладка ИИ-тестов — В разработке</div>
+                  <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.4;">ИИ-генератор находится в процессе обучения. Бета-версия доступна для генерации 3 тестовых вариантов в день.</div>
+                </div>
+              </div>
+
+              <div class="ai-view-container">
+                <div class="ai-header-card">
+                  <span class="premium-modal-badge" style="margin-bottom: 12px; display: inline-block"
+                    >AI ГЕНЕРАТОР ТЕСТОВ (В разработке)</span
                   >
-                    🧪 Периодический закон
-                  </button>
-                  <button class="ai-chip" data-subject="biology" data-prompt="Мейоз: фазы деления клетки, кроссинговер и расхождение хромосом">
-                    🧬 Фазы мейоза
+                  <h2 class="ai-header-title">Создай индивидуальный тест с ИИ</h2>
+                  <p class="ai-header-descr">
+                    Укажи любую тему по биологии или химии, и нейросеть мгновенно сформирует подборку вопросов уровня ЕГЭ
+                    или ОГЭ с подробным разбором ответов.
+                  </p>
+                </div>
+
+                <div class="ai-input-card" id="aiInputBlock">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
+                    <label class="ai-label" for="aiPromptInput" style="margin-bottom: 0">Какую тему хотите протестировать?</label>
+                    <span class="ai-limit-badge" id="aiLimitBadge" style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.1); color: var(--color-purple); font-weight: 600">Осталось 3 генерации сегодня</span>
+                  </div>
+
+                  <div style="margin-bottom: 12px">
+                    <label class="ai-label" for="aiSubjectSelect" style="font-size: 13px; margin-bottom: 6px; display: block">Предмет:</label>
+                    <select id="aiSubjectSelect" class="ai-select" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 14px; background: var(--color-surface); color: var(--color-text-primary); font-family: inherit">
+                      <option value="biology">🧬 Биология</option>
+                      <option value="chemistry">🧪 Химия</option>
+                      <option value="physics">⚡ Физика</option>
+                      <option value="math">📐 Математика</option>
+                      <option value="rus">📚 Русский язык</option>
+                    </select>
+                  </div>
+
+                  <textarea
+                    class="ai-textarea"
+                    id="aiPromptInput"
+                    placeholder="Например: Фотосинтез, световая фаза, хлоропласты, EГЭ уровень..."
+                  ></textarea>
+
+                  <span class="ai-suggestions-title">Популярные запросы:</span>
+                  <div class="ai-chips-list">
+                    <button class="ai-chip" data-subject="chemistry" data-prompt="Химические свойства алкенов, гидратация и окисление">
+                      🧪 Свойства алкенов
+                    </button>
+                    <button class="ai-chip" data-subject="biology" data-prompt="Строение ядра клетки, ядрышко, хроматин, ДНК">
+                      🧬 Строение ядра
+                    </button>
+                    <button
+                      class="ai-chip"
+                      data-subject="chemistry"
+                      data-prompt="Периодические свойства химических элементов, электроотрицательность"
+                    >
+                      🧪 Периодический закон
+                    </button>
+                    <button class="ai-chip" data-subject="biology" data-prompt="Мейоз: фазы деления клетки, кроссинговер и расхождение хромосом">
+                      🧬 Фазы мейоза
+                    </button>
+                  </div>
+
+                  <button class="ai-generate-btn" id="generateAITestBtn">
+                    <i data-lucide="sparkles" style="width: 18px; height: 18px"></i>
+                    <span>Сгенерировать тест с ИИ</span>
                   </button>
                 </div>
 
-                <button class="ai-generate-btn" id="generateAITestBtn">
-                  <i data-lucide="sparkles" style="width: 18px; height: 18px"></i>
-                  <span>Сгенерировать тест с ИИ</span>
-                </button>
-              </div>
+                <div class="ai-loading-card" id="aiLoadingBlock">
+                  <div class="ai-shimmer-ring"></div>
+                  <h3 class="ai-loading-title">ИИ генерирует ваш тест</h3>
 
-              <div class="ai-loading-card" id="aiLoadingBlock">
-                <div class="ai-shimmer-ring"></div>
-                <h3 class="ai-loading-title">ИИ генерирует ваш тест</h3>
-
-                <div class="ai-loading-checklist">
-                  <div class="ai-checklist-item active" id="ai-step-1">
-                    <span class="ai-check-icon" id="ai-check-1"
-                      ><i data-lucide="loader" style="width: 14px; height: 14px; animation: spin 1s linear infinite"></i
-                    ></span>
-                    <span>Анализ программы ЕГЭ/ОГЭ</span>
-                  </div>
-                  <div class="ai-checklist-item pending" id="ai-step-2">
-                    <span class="ai-check-icon" id="ai-check-2"
-                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
-                    ></span>
-                    <span>Разработка вопросов и дистракторов</span>
-                  </div>
-                  <div class="ai-checklist-item pending" id="ai-step-3">
-                    <span class="ai-check-icon" id="ai-check-3"
-                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
-                    ></span>
-                    <span>Формирование пояснений ответов</span>
-                  </div>
-                  <div class="ai-checklist-item pending" id="ai-step-4">
-                    <span class="ai-check-icon" id="ai-check-4"
-                      ><i data-lucide="circle" style="width: 14px; height: 14px"></i
-                    ></span>
-                    <span>Финальная сборка модуля теста</span>
+                  <div class="ai-loading-checklist">
+                    <div class="ai-checklist-item active" id="ai-step-1">
+                      <span class="ai-check-icon" id="ai-check-1"
+                        ><i data-lucide="loader" style="width: 14px; height: 14px; animation: spin 1s linear infinite"></i
+                      ></span>
+                      <span>Анализ программы ЕГЭ/ОГЭ</span>
+                    </div>
+                    <div class="ai-checklist-item pending" id="ai-step-2">
+                      <span class="ai-check-icon" id="ai-check-2"
+                        ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                      ></span>
+                      <span>Разработка вопросов и дистракторов</span>
+                    </div>
+                    <div class="ai-checklist-item pending" id="ai-step-3">
+                      <span class="ai-check-icon" id="ai-check-3"
+                        ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                      ></span>
+                      <span>Формирование пояснений ответов</span>
+                    </div>
+                    <div class="ai-checklist-item pending" id="ai-step-4">
+                      <span class="ai-check-icon" id="ai-check-4"
+                        ><i data-lucide="circle" style="width: 14px; height: 14px"></i
+                      ></span>
+                      <span>Финальная сборка модуля теста</span>
+                    </div>
                   </div>
                 </div>
               </div>

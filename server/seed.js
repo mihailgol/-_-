@@ -50,8 +50,8 @@ export function seedContent() {
        description = excluded.description`
   );
   const insQuestion = db.prepare(
-    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order, points, correct_answer_json)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order, points, correct_answer_json, task_number)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        topic_id = excluded.topic_id,
        type = excluded.type,
@@ -61,7 +61,8 @@ export function seedContent() {
        explanation = excluded.explanation,
        sort_order = excluded.sort_order,
        points = excluded.points,
-       correct_answer_json = excluded.correct_answer_json`
+       correct_answer_json = excluded.correct_answer_json,
+       task_number = excluded.task_number`
   );
   const insMockExam = db.prepare(
     `INSERT INTO mock_exams (id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, questions_json, conversion_table_json)
@@ -109,6 +110,8 @@ export function seedContent() {
                   : JSON.stringify(q.correct_answer_json)
                 : null;
 
+          const taskNumber = q.taskNumber ?? q.task_number ?? (qi + 1);
+
           insQuestion.run(
             q.id,
             topic.id,
@@ -119,7 +122,8 @@ export function seedContent() {
             q.explanation || "",
             qi,
             q.points ?? 1,
-            correctAnswerJson
+            correctAnswerJson,
+            taskNumber
           );
         });
       });

@@ -67,4 +67,42 @@ test.describe("Admin Panel & Editor Systems — QA E2E Tests", () => {
     await page.locator("#clearQuestionBtn").click();
     await expect(page.locator("#qTextarea")).toHaveValue("");
   });
+
+  test("конструктор тестов — выбор предмета, номера задания и вкладки раздела тестов", async ({ page }) => {
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestEditor } = await import("/js/modules/test-editor.js");
+      switchView("test-editor");
+      initTestEditor();
+    });
+
+    await expect(page.locator("#qSubjectSelect")).toBeVisible();
+    await expect(page.locator("#qTaskNumberInput")).toBeVisible();
+
+    await page.locator("#qSubjectSelect").selectOption("biology");
+    await page.locator("#qTaskNumberInput").fill("3");
+    await page.locator("#qTextarea").fill("Какая структура клетки содержит ДНК?");
+    await page.locator("#saveQuestionBtn").click();
+
+    // Переход в раздел тестов и проверка вкладок
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestTabs } = await import("/js/modules/catalog.js");
+      switchView("tests");
+      initTestTabs();
+    });
+
+    await expect(page.locator("#btnTestTabTasks")).toBeVisible();
+    await expect(page.locator("#btnTestTabSubjects")).toBeVisible();
+    await expect(page.locator("#btnTestTabAI")).toBeVisible();
+    await expect(page.locator("#btnTestTabAI")).toContainText("В разработке");
+
+    // Проверка наличия карточек заданий в банке
+    await expect(page.locator("#taskNumbersGrid .task-number-card").first()).toBeVisible();
+
+    // Клик по вкладке ИИ тесты
+    await page.locator("#btnTestTabAI").click();
+    await expect(page.locator("#testTabAIContent")).toBeVisible();
+    await expect(page.locator("#testTabAIContent")).toContainText("В разработке");
+  });
 });

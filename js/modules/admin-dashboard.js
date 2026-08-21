@@ -422,7 +422,7 @@ async function loadAdminTabContent(tabName) {
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--color-bg-secondary); border-radius: 10px; border: 1px solid var(--color-border);">
                   <div>
                     <div style="font-weight: 600;">${q.question}</div>
-                    <div style="font-size: 0.8rem; color: var(--color-text-secondary);">${q.subject_title || "Предмет"} • ${q.topic_title || "Тема"} • Тип: ${q.type}</div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-secondary);">${q.subject_title || "Предмет"} • Задание №${q.task_number || 0} • ${q.topic_title || "Тема"} • Тип: ${q.type}</div>
                   </div>
                   <button class="btn btn-outline delete-question-btn" data-id="${q.id}" style="color: #ef4444; border-color: #fca5a5; padding: 4px 10px; font-size: 0.8rem;">🗑️ Удалить</button>
                 </div>
