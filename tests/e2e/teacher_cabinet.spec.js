@@ -88,15 +88,16 @@ test.describe("Teacher Cabinet — Groups & Assignments", () => {
     await startBtn.click();
     await expect(studentPage.locator("#mockPlayerScreen")).toBeVisible();
 
-    // Заполняем развернутый ответ на вопрос Части 2
+    // Заполняем развернутые ответы на вопросы Части 2
     const navItems = studentPage.locator(".mock-nav-item");
-    const count = await navItems.count();
-    // Переходим к вопросу с Частью 2 (последний вопрос)
-    await navItems.nth(count - 1).click();
-
-    const textarea = studentPage.locator("#mockExtendedInput");
-    await expect(textarea).toBeVisible();
-    await textarea.fill("Устьица обеспечивают газообмен и транспирацию. Замыкающие клетки регулируют открытие щели.");
+    const totalQuestions = await navItems.count();
+    for (let i = 0; i < totalQuestions; i++) {
+      await navItems.nth(i).click();
+      const textarea = studentPage.locator("#mockExtendedInput");
+      if (await textarea.isVisible()) {
+        await textarea.fill("Устьица обеспечивают газообмен и транспирацию. Замыкающие клетки регулируют открытие щели.");
+      }
+    }
 
     // Завершаем экзамен
     studentPage.on("dialog", (d) => d.accept());
@@ -110,10 +111,11 @@ test.describe("Teacher Cabinet — Groups & Assignments", () => {
     await expect(studentPage.locator("#selfAssessmentModal")).toHaveClass(/active/);
     await expect(studentPage.locator("#selfAssessmentBody")).toContainText("Задание №");
 
-    // Выбираем балл самооценки 2 б.
-    const radio2 = studentPage.locator('input[name^="self_score_"][value="2"]');
-    if (await radio2.isVisible()) {
-      await radio2.check();
+    // Выбираем балл самооценки 2 б. для вопросов Части 2
+    const radios = studentPage.locator('input[name^="self_score_"][value="2"]');
+    const radioCount = await radios.count();
+    for (let i = 0; i < radioCount; i++) {
+      await radios.nth(i).check();
     }
     await studentPage.locator("#saveSelfAssessmentBtn").click();
     await expect(studentPage.locator("#selfAssessmentModal")).not.toHaveClass(/active/);
