@@ -62,4 +62,21 @@ test.describe("ExamType Switcher — EGE / OGE filtering", () => {
     await expect(taskCards.first()).toBeVisible();
     await expect(taskCards.first()).toContainText("OGE");
   });
+
+  test("проверка доступности заданий по всем ключевым предметам (Математика, Русский, Биология, Химия, Физика) для ОГЭ", async ({ page }) => {
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+
+    const ogeTaskBtn = page.locator('#tasksExamTypeToggle .tasks-exam-btn[data-exam="OGE"]');
+    await ogeTaskBtn.click();
+    await expect(page.locator("#taskNumbersGrid .subject-card").first()).toBeVisible();
+
+    const subjectSelect = page.locator("#tasksSubjectFilter");
+    const subjects = ["math", "russian", "biology", "chemistry", "physics"];
+
+    for (const s of subjects) {
+      await subjectSelect.selectOption(s);
+      await expect(page.locator("#taskNumbersGrid .task-number-card").first()).toBeVisible();
+    }
+  });
 });
