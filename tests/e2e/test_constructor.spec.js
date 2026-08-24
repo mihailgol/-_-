@@ -59,4 +59,34 @@ test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", (
     await page.locator("#saveQuestionBtn").click();
     await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
   });
+
+  test("автоматический выбор типа вопроса (Часть 1 / Часть 2 ФИПИ) при изменении номера задания", async ({ page }) => {
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestEditor } = await import("/js/modules/test-editor.js");
+      switchView("test-editor");
+      initTestEditor();
+    });
+
+    await expect(page.locator("#view-test-editor")).toBeVisible();
+
+    // 1. При выборе Задания №1 по Математике выставляется 'single'
+    await page.locator("#qSubjectSelect").selectOption("math");
+    await page.locator("#qTaskNumberInput").fill("1");
+    await expect(page.locator("#qTypeSelect")).toHaveValue("single");
+
+    // 2. При вводе Задания №13 по Математике (Часть 2) автоматически выбирается 'extended'
+    await page.locator("#qTaskNumberInput").fill("13");
+    await expect(page.locator("#qTypeSelect")).toHaveValue("extended");
+    await expect(page.locator("#extSolutionKeyInput")).toBeVisible();
+
+    // 3. При вводе Задания №27 по Русскому языку (Сочинение Части 2) выставляется 'extended'
+    await page.locator("#qSubjectSelect").selectOption("russian");
+    await page.locator("#qTaskNumberInput").fill("27");
+    await expect(page.locator("#qTypeSelect")).toHaveValue("extended");
+
+    // 4. При переключении на Задание №2 по Русскому языку возвращается 'single'
+    await page.locator("#qTaskNumberInput").fill("2");
+    await expect(page.locator("#qTypeSelect")).toHaveValue("single");
+  });
 });

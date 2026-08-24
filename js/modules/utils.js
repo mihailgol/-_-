@@ -34,3 +34,34 @@ export function pluralDays(n) {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} дня`;
   return `${n} дней`;
 }
+
+export function getRecommendedTaskType(subjectId, taskNumber, examType = "EGE") {
+  const num = parseInt(taskNumber, 10) || 1;
+  const isOge = String(examType).toUpperCase() === "OGE";
+
+  if (isOge) {
+    if (subjectId === "russian" && (num === 1 || num === 13)) return "extended";
+    if (subjectId === "math" && num >= 20) return "extended";
+    if (subjectId === "biology" && num >= 22) return "extended";
+    if (subjectId === "chemistry" && num >= 20) return "extended";
+    if (subjectId === "physics" && num >= 20) return "extended";
+    if (subjectId === "informatics" && num >= 11) return "extended";
+    if (subjectId === "social" && (num === 1 || num === 5 || num === 12 || num >= 21)) return "extended";
+    if (subjectId === "history" && num >= 18) return "extended";
+    if (subjectId === "literature") return "extended";
+    if (subjectId === "geography" && num >= 28) return "extended";
+  } else {
+    // EGE
+    if (subjectId === "russian" && num >= 27) return "extended";
+    if (subjectId === "math" && num >= 13) return "extended";
+    if (subjectId === "biology" && num >= 22) return "extended";
+    if (subjectId === "chemistry" && num >= 29) return "extended";
+    if (subjectId === "physics" && num >= 21) return "extended";
+    if (subjectId === "social" && num >= 17) return "extended";
+    if (subjectId === "history" && num >= 13) return "extended";
+    if (subjectId === "literature" && (num === 4 || num === 5 || num >= 9)) return "extended";
+    if (subjectId === "geography" && num >= 22) return "extended";
+  }
+
+  return "single";
+}

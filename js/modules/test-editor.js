@@ -1,5 +1,5 @@
 import { showToast } from "./ui.js";
-import { api } from "./utils.js";
+import { api, getRecommendedTaskType } from "./utils.js";
 
 export function initTestEditor() {
   const container = document.getElementById("testEditorContainer");
@@ -120,7 +120,28 @@ export function initTestEditor() {
     triggerLiveUpdate();
   });
 
-  renderOptionsInputs("single", optionsArea);
+  const autoSelectTypeByTaskNumber = () => {
+    const subId = document.getElementById("qSubjectSelect")?.value || "math";
+    const taskNum = document.getElementById("qTaskNumberInput")?.value || "1";
+    const activeExam = localStorage.getItem("examhub_exam_type") || "EGE";
+    const recommendedType = getRecommendedTaskType(subId, taskNum, activeExam);
+    if (typeSelect) {
+      typeSelect.value = recommendedType;
+      renderOptionsInputs(recommendedType, optionsArea);
+      triggerLiveUpdate();
+    }
+  };
+
+  const initialTaskNum = document.getElementById("qTaskNumberInput")?.value || "1";
+  const initialSubId = document.getElementById("qSubjectSelect")?.value || "math";
+  const initialActiveExam = localStorage.getItem("examhub_exam_type") || "EGE";
+  const initialType = getRecommendedTaskType(initialSubId, initialTaskNum, initialActiveExam);
+  if (typeSelect) typeSelect.value = initialType;
+  renderOptionsInputs(initialType, optionsArea);
+
+  document.getElementById("qTaskNumberInput")?.addEventListener("input", autoSelectTypeByTaskNumber);
+  document.getElementById("qTaskNumberInput")?.addEventListener("change", autoSelectTypeByTaskNumber);
+  document.getElementById("qSubjectSelect")?.addEventListener("change", autoSelectTypeByTaskNumber);
 
   [
     "qSubjectSelect",

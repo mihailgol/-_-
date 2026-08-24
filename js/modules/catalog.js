@@ -6,6 +6,7 @@ import { openVideoPlayer } from "./video.js";
 import { updateUIFromState } from "./render.js";
 import { getExamType, setExamType } from "./exam-type.js";
 import { examEngine } from "./exam-engine.js";
+import { getRecommendedTaskType } from "./utils.js";
 
 let subjectTabsInitDone = false;
 
@@ -725,13 +726,20 @@ export function renderTaskNumbersGrid(subjectId = "", examType = null) {
     card.addEventListener("click", () => {
       let questionsToPlay = existingQuestions;
       if (questionsToPlay.length === 0) {
+        const recType = getRecommendedTaskType(subId, taskNum, activeExam);
         questionsToPlay = [
           {
             id: `gen_task_${subId}_${activeExam}_${taskNum}_1`,
-            type: "single",
+            type: recType,
             question: `[${activeExam} • Задание №${taskNum}] Вопрос по теме «Задание №${taskNum}» (${subject.title})`,
-            options: ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"],
-            correctIndex: 0,
+            options: recType === "extended" ? undefined : ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"],
+            correctIndex: recType === "extended" ? undefined : 0,
+            solutionKey: recType === "extended" ? `Официальный эталонный ключ решения ФИПИ к Заданию №${taskNum}` : undefined,
+            maxPoints: recType === "extended" ? 3 : 1,
+            criteria: recType === "extended" ? [
+              { code: "K1", title: "Приведена верная логика и решение", maxPoints: 2 },
+              { code: "K2", title: "Отсутствуют вычислительные ошибки", maxPoints: 1 }
+            ] : undefined,
             explanation: `Подробный разбор алгоритма решения Задания №${taskNum} (${activeExam}) по предмету ${subject.title}.`,
             taskNumber: taskNum,
           },
