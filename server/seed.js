@@ -257,10 +257,10 @@ export function seedContent() {
       }
     ];
 
-    insMockExam.run("mock_bio_oge_1", "biology", "ОГЭ по биологии — Вариант 1", "OGE", 210, 6, 0, JSON.stringify(bioOgeQuestions), ogeConversion);
-    insMockExam.run("mock_bio_ege_1", "biology", "ЕГЭ по биологии — Вариант 1 (Premium)", "EGE", 235, 6, 1, JSON.stringify(bioEgeQuestions), egeConversion);
-    insMockExam.run("mock_chem_oge_1", "chemistry", "ОГЭ по химии — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(chemOgeQuestions), ogeConversion);
-    insMockExam.run("mock_chem_ege_1", "chemistry", "ЕГЭ по химии — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(chemEgeQuestions), egeConversion);
+    insMockExam.run("mock_bio_oge_1", "biology", "ОГЭ по биологии — Вариант 1", "OGE", 210, bioOgeQuestions.length, 0, JSON.stringify(bioOgeQuestions), ogeConversion);
+    insMockExam.run("mock_bio_ege_1", "biology", "ЕГЭ по биологии — Вариант 1 (Premium)", "EGE", 235, bioEgeQuestions.length, 1, JSON.stringify(bioEgeQuestions), egeConversion);
+    insMockExam.run("mock_chem_oge_1", "chemistry", "ОГЭ по химии — Вариант 1", "OGE", 210, chemOgeQuestions.length, 0, JSON.stringify(chemOgeQuestions), ogeConversion);
+    insMockExam.run("mock_chem_ege_1", "chemistry", "ЕГЭ по химии — Вариант 1 (Premium)", "EGE", 235, chemEgeQuestions.length, 1, JSON.stringify(chemEgeQuestions), egeConversion);
 
     const rusOgeQuestions = [
       { id: "roq1", question: "В каком слове допущена ошибка в постановке ударения: НЕВЕРНО выделена буква, обозначающая ударный гласный звук?", type: "single", options: ["кра́лась", "торты́", "доне́льзя", "опломбирова́ть"], correctIndex: 1, explanation: "В существительном 'торты' ударение неподвижное и падает на первый слог: то́рты, то́ртов.", points: 1 },
@@ -552,19 +552,19 @@ export function seedContent() {
       { id: "gmoq5", question: "В каких единицах обычно измеряется естественный прирост населения?", type: "single", options: ["В промилле (‰)", "В процентах (%)", "В тоннах", "В километрах"], correctIndex: 0, explanation: "Показатели рождаемости, смертности и естественного прироста измеряются в промилле (число человек на 1000 жителей в год).", points: 1 }
     ];
 
-    insMockExam.run("mock_rus_oge_1", "russian", "ОГЭ по русскому языку — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(rusOgeQuestions), ogeConversion);
-    insMockExam.run("mock_rus_ege_1", "russian", "ЕГЭ по русскому языку — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(rusEgeQuestions), egeConversion);
-    insMockExam.run("mock_math_oge_1", "math", "ОГЭ по математике — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(mathOgeQuestions), ogeConversion);
-    insMockExam.run("mock_math_ege_1", "math", "ЕГЭ по математике (Профиль) — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(mathEgeQuestions), egeConversion);
-    insMockExam.run("mock_soc_oge_1", "social", "ОГЭ по обществознанию — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(socOgeQuestions), ogeConversion);
-    insMockExam.run("mock_soc_ege_1", "social", "ЕГЭ по обществознанию — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(socEgeQuestions), egeConversion);
-    insMockExam.run("mock_hist_oge_1", "history", "ОГЭ по истории — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(histOgeQuestions), ogeConversion);
-    insMockExam.run("mock_hist_ege_1", "history", "ЕГЭ по истории — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(histEgeQuestions), egeConversion);
-    insMockExam.run("mock_phys_oge_1", "physics", "ОГЭ по физике — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(physOgeQuestions), ogeConversion);
-    insMockExam.run("mock_phys_ege_1", "physics", "ЕГЭ по физике — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(physEgeQuestions), egeConversion);
-    insMockExam.run("mock_inf_oge_1", "informatics", "ОГЭ по информатике — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(infOgeQuestions), ogeConversion);
-    insMockExam.run("mock_inf_ege_1", "informatics", "ЕГЭ по информатике — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(infEgeQuestions), egeConversion);
-    insMockExam.run("mock_geo_oge_1", "geography", "ОГЭ по географии — Вариант 1", "OGE", 150, 5, 0, JSON.stringify(geoOgeQuestions), ogeConversion);
+    insMockExam.run("mock_rus_oge_1", "russian", "ОГЭ по русскому языку — Вариант 1", "OGE", 210, rusOgeQuestions.length, 0, JSON.stringify(rusOgeQuestions), ogeConversion);
+    insMockExam.run("mock_rus_ege_1", "russian", "ЕГЭ по русскому языку — Вариант 1 (Premium)", "EGE", 235, rusEgeQuestions.length, 1, JSON.stringify(rusEgeQuestions), egeConversion);
+    insMockExam.run("mock_math_oge_1", "math", "ОГЭ по математике — Вариант 1", "OGE", 210, mathOgeQuestions.length, 0, JSON.stringify(mathOgeQuestions), ogeConversion);
+    insMockExam.run("mock_math_ege_1", "math", "ЕГЭ по математике (Профиль) — Вариант 1 (Premium)", "EGE", 235, mathEgeQuestions.length, 1, JSON.stringify(mathEgeQuestions), egeConversion);
+    insMockExam.run("mock_soc_oge_1", "social", "ОГЭ по обществознанию — Вариант 1", "OGE", 210, socOgeQuestions.length, 0, JSON.stringify(socOgeQuestions), ogeConversion);
+    insMockExam.run("mock_soc_ege_1", "social", "ЕГЭ по обществознанию — Вариант 1 (Premium)", "EGE", 235, socEgeQuestions.length, 1, JSON.stringify(socEgeQuestions), egeConversion);
+    insMockExam.run("mock_hist_oge_1", "history", "ОГЭ по истории — Вариант 1", "OGE", 210, histOgeQuestions.length, 0, JSON.stringify(histOgeQuestions), ogeConversion);
+    insMockExam.run("mock_hist_ege_1", "history", "ЕГЭ по истории — Вариант 1 (Premium)", "EGE", 235, histEgeQuestions.length, 1, JSON.stringify(histEgeQuestions), egeConversion);
+    insMockExam.run("mock_phys_oge_1", "physics", "ОГЭ по физике — Вариант 1", "OGE", 210, physOgeQuestions.length, 0, JSON.stringify(physOgeQuestions), ogeConversion);
+    insMockExam.run("mock_phys_ege_1", "physics", "ЕГЭ по физике — Вариант 1 (Premium)", "EGE", 235, physEgeQuestions.length, 1, JSON.stringify(physEgeQuestions), egeConversion);
+    insMockExam.run("mock_inf_oge_1", "informatics", "ОГЭ по информатике — Вариант 1", "OGE", 210, infOgeQuestions.length, 0, JSON.stringify(infOgeQuestions), ogeConversion);
+    insMockExam.run("mock_inf_ege_1", "informatics", "ЕГЭ по информатике — Вариант 1 (Premium)", "EGE", 235, infEgeQuestions.length, 1, JSON.stringify(infEgeQuestions), egeConversion);
+    insMockExam.run("mock_geo_oge_1", "geography", "ОГЭ по географии — Вариант 1", "OGE", 150, geoOgeQuestions.length, 0, JSON.stringify(geoOgeQuestions), ogeConversion);
   });
 }
 
