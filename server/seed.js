@@ -5,12 +5,17 @@ import { fileURLToPath } from "node:url";
 import { config } from "./config.js";
 import { db, transaction, initSchema } from "./db.js";
 
-export function seedContent() {
-  const src = readFileSync(resolve(config.root, "js/data.js"), "utf8");
-  const sandbox = { window: {} };
-  vm.runInNewContext(src, sandbox, { filename: "data.js" });
+let cachedExamData = null;
 
-  const data = sandbox.window.EXAM_DATA;
+export function seedContent() {
+  if (!cachedExamData) {
+    const src = readFileSync(resolve(config.root, "js/data.js"), "utf8");
+    const sandbox = { window: {} };
+    vm.runInNewContext(src, sandbox, { filename: "data.js" });
+    cachedExamData = sandbox.window.EXAM_DATA;
+  }
+
+  const data = cachedExamData;
   if (!data?.subjects) return;
 
   const insSubject = db.prepare(
