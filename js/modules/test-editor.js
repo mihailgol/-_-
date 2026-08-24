@@ -54,6 +54,7 @@ export function initTestEditor() {
                 <option value="single">1️⃣ Одиночный выбор</option>
                 <option value="multiple">☑️ Множественный выбор</option>
                 <option value="text">✍️ Ввод текстового ответа</option>
+                <option value="extended">📝 Задание с развернутым ответом (Часть 2, ФИПИ)</option>
                 <option value="matching">🔄 Установление соответствия</option>
                 <option value="sequence">🔢 Последовательность</option>
               </select>
@@ -188,20 +189,48 @@ export function initTestEditor() {
     const correctIndexVal = parseInt(document.getElementById("correctIndexInput")?.value || "1", 10) - 1;
 
     try {
+      const payload = {
+        subjectId,
+        taskNumber,
+        type,
+        question: questionText,
+        options,
+        correctIndex: Math.max(0, correctIndexVal),
+        explanation,
+      };
+
+      if (type === "extended") {
+        const solutionKey = document.getElementById("extSolutionKeyInput")?.value.trim() || "";
+        const maxPoints = parseInt(document.getElementById("extMaxPointsInput")?.value || "3", 10);
+        const criteriaRaw = document.getElementById("extCriteriaInput")?.value.trim() || "";
+        
+        const criteria = criteriaRaw
+          ? criteriaRaw.split("\n").filter(Boolean).map((line, idx) => {
+              const matchPoints = line.match(/\((\d+)\s*б/i);
+              const pts = matchPoints ? parseInt(matchPoints[1], 10) : 1;
+              return {
+                code: `K${idx + 1}`,
+                title: line.replace(/^K\d+:\s*/i, "").trim(),
+                maxPoints: pts
+              };
+            })
+          : [
+              { code: "K1", title: "Соответствие ответа эталонным элементам ФИПИ", maxPoints: maxPoints > 1 ? maxPoints - 1 : 1 },
+              { code: "K2", title: "Логичность и полнота обоснования", maxPoints: 1 }
+            ];
+
+        payload.solutionKey = solutionKey;
+        payload.maxPoints = maxPoints;
+        payload.points = maxPoints;
+        payload.criteria = criteria;
+      }
+
       await api("/api/admin/tests/questions", {
         method: "POST",
-        body: JSON.stringify({
-          subjectId,
-          taskNumber,
-          type,
-          question: questionText,
-          options,
-          correctIndex: Math.max(0, correctIndexVal),
-          explanation,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} сохранен в базу данных SQLite.`);
+      showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} (${type === "extended" ? "Часть 2 ФИПИ" : type}) сохранен в базу данных SQLite.`);
 
       if (window.loadAppData) {
         window.loadAppData();
@@ -237,6 +266,19 @@ function renderOptionsInputs(type, container) {
     container.innerHTML = `
       <div style="font-weight: 600; margin-bottom: 8px;">Правильный текстовый ответ / Число:</div>
       <input type="text" id="textCorrectAnswerInput" class="search-input" placeholder="Например: 42 или 'фотосинтез'" style="width: 100%; box-sizing: border-box;" />
+    `;
+  } else if (type === "extended") {
+    container.innerHTML = `
+      <div style="font-weight: 600; margin-bottom: 8px; color: #6366f1;">🔑 Ключ эталонного решения ФИПИ:</div>
+      <textarea id="extSolutionKeyInput" class="search-input" style="width: 100%; height: 75px; box-sizing: border-box; margin-bottom: 10px;" placeholder="Элементы ответа:&#10;1) ...&#10;2) ..."></textarea>
+      
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+        <label style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-primary);">Максимальный балл (1-10):</label>
+        <input type="number" id="extMaxPointsInput" class="search-input" value="3" min="1" max="10" style="width: 80px;" />
+      </div>
+
+      <div style="font-weight: 600; margin-bottom: 8px; color: var(--color-text-primary);">📋 Критерии оценивания ФИПИ (каждый с новой строки):</div>
+      <textarea id="extCriteriaInput" class="search-input" style="width: 100%; height: 65px; box-sizing: border-box;" placeholder="K1: Описание критерия 1 (2 б.)&#10;K2: Описание критерия 2 (1 б.)"></textarea>
     `;
   } else if (type === "matching") {
     container.innerHTML = `
@@ -315,6 +357,17 @@ function updateTestPreview(type, container) {
         <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">Поле ввода ответа учеником:</div>
         <input type="text" class="search-input" placeholder="Введите ответ..." disabled style="width: 100%;" />
         <div style="font-size: 11px; color: #22c55e; margin-top: 8px; font-weight: 600;">Ключ правильного ответа: ${correctAns}</div>
+      </div>
+    `;
+  } else if (type === "extended") {
+    const keyVal = document.getElementById("extSolutionKeyInput")?.value.trim() || "1) Элемент ответа 1\n2) Элемент ответа 2";
+    const maxPts = document.getElementById("extMaxPointsInput")?.value || "3";
+    optionsPreviewHtml = `
+      <div style="margin-top: 14px; padding: 12px 14px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border);">
+        <div style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 6px;">✍️ Развернутый ответ ученика (Часть 2, макс. ${maxPts} б.):</div>
+        <textarea class="search-input" placeholder="Развернутый разбор ответа учеником..." disabled style="width: 100%; height: 50px; box-sizing: border-box;"></textarea>
+        <div style="font-size: 11px; color: #6366f1; margin-top: 8px; font-weight: 700;">🔑 Эталонный ключ решения ФИПИ:</div>
+        <div style="font-size: 12px; white-space: pre-line; color: var(--color-text-primary); margin-top: 2px;">${keyVal}</div>
       </div>
     `;
   } else {

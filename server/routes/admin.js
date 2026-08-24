@@ -282,7 +282,7 @@ router.get("/tests", (req, res) => {
 });
 
 router.post("/tests/questions", (req, res) => {
-  let { subjectId, topicId, taskNumber, task_number, type, question, options, correctIndex, correctAnswer, explanation, points } = req.body || {};
+  let { subjectId, topicId, taskNumber, task_number, type, question, options, correctIndex, correctAnswer, solutionKey, maxPoints, criteria, explanation, points } = req.body || {};
   if (!question || (!topicId && !subjectId)) {
     return res.status(400).json({ error: "Укажите предмет/тему и текст вопроса" });
   }
@@ -314,6 +314,10 @@ router.post("/tests/questions", (req, res) => {
 
   const qTaskNum = Number(taskNumber ?? task_number ?? 0);
   const qId = `q_${Date.now()}_${randomBytes(2).toString("hex")}`;
+  const finalPoints = type === "extended" ? Number(maxPoints || points || 3) : Number(points || 1);
+  const finalCorrectAnswer = type === "extended" 
+    ? { solutionKey: solutionKey || "", maxPoints: finalPoints, criteria: Array.isArray(criteria) ? criteria : [] }
+    : (correctAnswer || null);
 
   db.prepare(
     `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number)
@@ -325,9 +329,9 @@ router.post("/tests/questions", (req, res) => {
     question,
     JSON.stringify(options || []),
     typeof correctIndex === "number" ? correctIndex : 0,
-    JSON.stringify(correctAnswer || null),
+    JSON.stringify(finalCorrectAnswer),
     explanation || "",
-    points || 1,
+    finalPoints,
     qTaskNum
   );
 
