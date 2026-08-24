@@ -187,4 +187,44 @@ describe("Extended Response Questions (Part 2) & Teacher Review System", () => {
     expect(notifData.notifications[0].title).toContain("Учитель проверил");
     expect(notifData.notifications[0].message).toContain("Оценка: 3 б.");
   });
+
+  it("allows admin to create an extended Part 2 question via POST /api/admin/tests/questions", async () => {
+    // 1. Admin login
+    const loginRes = await globalThis.fetch(`${baseUrl}/api/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "admin@examhub.ru", password: "admin123" }),
+    });
+
+    expect(loginRes.status).toBe(200);
+    const adminCookie = getCookieValue(loginRes, "examhub_session");
+
+    // 2. Create extended Part 2 question
+    const createRes = await globalThis.fetch(`${baseUrl}/api/admin/tests/questions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: adminCookie },
+      body: JSON.stringify({
+        subjectId: "math",
+        taskNumber: 13,
+        type: "extended",
+        question: "Решите тригонометрическое уравнение 2sin²x + 3cosx = 0.",
+        solutionKey: "а) x = ±2π/3 + 2πk; б) 7π/3, 8π/3.",
+        maxPoints: 2,
+        criteria: [{ code: "K1", title: "Обоснованно получены ответы", maxPoints: 2 }],
+        explanation: "Подстановка cosx = t.",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+
+    // 3. Verify in SQLite database
+    const savedQ = db.prepare("SELECT * FROM questions WHERE task_number = 13 AND type = 'extended' ORDER BY id DESC LIMIT 1").get();
+    expect(savedQ).toBeDefined();
+    expect(savedQ.type).toBe("extended");
+    expect(savedQ.points).toBe(2);
+
+    const parsedAnswer = JSON.parse(savedQ.correct_answer_json);
+    expect(parsedAnswer.solutionKey).toContain("±2π/3");
+    expect(parsedAnswer.maxPoints).toBe(2);
+  });
 });

@@ -1,0 +1,62 @@
+import { test, expect } from "@playwright/test";
+
+test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+  });
+
+  test("сквозной цикл: вход админа -> создание вопроса Части 2 с критериями ФИПИ -> предпросмотр -> сохранение в БД", async ({ page }) => {
+    // 1. Авторизация под аккаунтом Главного Администратора
+    await page.locator("#loginBtn").click();
+    await expect(page.locator("#authModal")).toHaveClass(/active/);
+
+    await page.locator("#manualEmail").fill("admin@examhub.ru");
+    await page.locator("#manualPass").fill("admin123");
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    // 2. Переход в Конструктор тестов
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestEditor } = await import("/js/modules/test-editor.js");
+      switchView("test-editor");
+      initTestEditor();
+    });
+
+    await expect(page.locator("#view-test-editor")).toBeVisible();
+    await page.locator("#qTextarea").waitFor({ state: "visible" });
+
+    // 3. Заполнение формы для вопроса Части 2 (ФИПИ)
+    await page.locator("#qSubjectSelect").selectOption("biology");
+    await page.locator("#qTaskNumberInput").fill("22");
+    await page.locator("#qTopicTitleInput").fill("Задание 22 (Часть 2). Анализ эксперимента по биохимии");
+    await page.locator("#qTypeSelect").selectOption("extended");
+
+    const qText = "Экспериментатор изучил влияние температуры на активность фермента каталазы в клетках картофеля. Объясните результат.";
+    await page.locator("#qTextarea").fill(qText);
+
+    // Ключ ответа и критерии ФИПИ
+    const solutionKey = "Элементы ответа:\n1) При температуре 37°C скорость реакции максимальна.\n2) При 70°C происходит денатурация белка каталазы.\n3) Денатурация приводит к потере активности фермента.";
+    await page.locator("#extSolutionKeyInput").fill(solutionKey);
+    await page.locator("#extMaxPointsInput").fill("3");
+    await page.locator("#extCriteriaInput").fill("K1: Описана зависимость скорости реакции (2 б.)\nK2: Объяснена денатурация белка (1 б.)");
+    await page.locator("#qExplanationTextarea").fill("Каталаза - фермент, расщепляющий пероксид водорода.");
+
+    // 4. Проверка интерактивного предпросмотра
+    const previewArea = page.locator("#qLivePreview");
+    await expect(previewArea).toContainText("Биология • Задание №22");
+    await expect(previewArea).toContainText("🔑 Эталонный ключ решения ФИПИ:");
+    await expect(previewArea).toContainText("Денатурация приводит к потере активности");
+
+    // 5. Модальное окно предпросмотра глазами ученика
+    await page.locator("#previewStudentTestBtn").click();
+    await expect(page.locator("#adminModal")).toHaveClass(/active/);
+    await expect(page.locator("#adminModalBody")).toContainText(qText);
+    await page.locator("#adminModal .modal-close-btn").click();
+    await expect(page.locator("#adminModal")).not.toHaveClass(/active/);
+
+    // 6. Сохранение вопроса в базу данных SQLite
+    await page.locator("#saveQuestionBtn").click();
+    await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
+  });
+});
