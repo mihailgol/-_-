@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { app } from "../../server/index.js";
+import { resetDb, initDb } from "../../server/db.js";
 
 describe("Support Tickets API Verification", () => {
   let server;
@@ -17,6 +18,11 @@ describe("Support Tickets API Verification", () => {
 
   afterAll(async () => {
     if (server) server.close();
+  });
+
+  beforeEach(() => {
+    resetDb();
+    initDb();
   });
 
   it("should create a support ticket and return ticketId", async () => {

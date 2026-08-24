@@ -20,6 +20,7 @@ import { initTheoryEditor } from "./modules/theory-editor.js";
 import { initTestEditor } from "./modules/test-editor.js";
 import { initAnalyticsTracker } from "./modules/analytics-engine.js";
 import { initProfileView } from "./modules/profile.js";
+import { initNotificationEvents, loadNotifications } from "./modules/notifications.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTestTabs();
   initAnalyticsTracker();
   initProfileView();
+  initNotificationEvents();
 
   document.getElementById("adminLoginSubmitBtn")?.addEventListener("click", async () => {
     const email = document.getElementById("adminLoginEmail")?.value.trim();
@@ -119,12 +121,14 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSubjects();
       renderGeneralNotes();
       renderGeneralVideos();
+      renderMockExamCatalog();
       renderTeacherCabinet();
       renderStudentAssignments();
       renderAdminDashboard();
       initTheoryEditor();
       initTestEditor();
       updateUIFromState();
+      loadNotifications();
 
 
       const initialView = (location.hash || "#subjects").replace("#", "");

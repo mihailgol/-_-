@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { app } from "../../server/index.js";
+import { resetDb, initDb } from "../../server/db.js";
 
 describe("Release Features Verification (Profile & Geography OGE)", () => {
   let server;
@@ -17,6 +18,11 @@ describe("Release Features Verification (Profile & Geography OGE)", () => {
 
   afterAll(async () => {
     if (server) server.close();
+  });
+
+  beforeEach(() => {
+    resetDb();
+    initDb();
   });
 
   it("should list geography in active catalog subjects", async () => {

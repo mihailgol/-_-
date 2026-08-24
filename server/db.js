@@ -263,16 +263,35 @@ export function initSchema() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_topics_subject_id ON topics(subject_id);
-    CREATE INDEX IF NOT EXISTS idx_questions_topic_id ON questions(topic_id);
-    CREATE INDEX IF NOT EXISTS idx_questions_task_number ON questions(task_number);
-    CREATE INDEX IF NOT EXISTS idx_videos_topic_id ON videos(topic_id);
-    CREATE INDEX IF NOT EXISTS idx_attempts_user_id ON attempts(user_id);
-    CREATE INDEX IF NOT EXISTS idx_mock_exams_subject_id ON mock_exams(subject_id);
-    CREATE INDEX IF NOT EXISTS idx_mock_exam_attempts_user_id ON mock_exam_attempts(user_id);
-    CREATE INDEX IF NOT EXISTS idx_groups_teacher_id ON groups(teacher_id);
-    CREATE INDEX IF NOT EXISTS idx_group_members_student_id ON group_members(student_id);
-    CREATE INDEX IF NOT EXISTS idx_assignments_group_id ON assignments(group_id);
-    CREATE INDEX IF NOT EXISTS idx_assignment_submissions_assignment_student ON assignment_submissions(assignment_id, student_id);
+    CREATE TABLE IF NOT EXISTS extended_submissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      group_id INTEGER REFERENCES groups(id) ON DELETE SET NULL,
+      context_type TEXT NOT NULL,
+      context_id TEXT NOT NULL,
+      question_id TEXT NOT NULL,
+      student_answer TEXT NOT NULL,
+      self_score INTEGER,
+      self_breakdown_json TEXT,
+      teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      teacher_score INTEGER,
+      teacher_breakdown_json TEXT,
+      teacher_comment TEXT,
+      status TEXT NOT NULL DEFAULT 'self_assessed',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL DEFAULT 'teacher_review',
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      link TEXT,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   try {
@@ -301,6 +320,26 @@ export function initSchema() {
     void err;
   }
   try {
+    db.exec("ALTER TABLE questions ADD COLUMN solution_key TEXT;");
+  } catch (err) {
+    void err;
+  }
+  try {
+    db.exec("ALTER TABLE questions ADD COLUMN criteria_json TEXT;");
+  } catch (err) {
+    void err;
+  }
+  try {
+    db.exec("ALTER TABLE questions ADD COLUMN max_points INTEGER NOT NULL DEFAULT 1;");
+  } catch (err) {
+    void err;
+  }
+  try {
+    db.exec("ALTER TABLE mock_exam_attempts ADD COLUMN self_assessed INTEGER NOT NULL DEFAULT 0;");
+  } catch (err) {
+    void err;
+  }
+  try {
     db.exec("ALTER TABLE attempts ADD COLUMN answers_json TEXT;");
   } catch (err) {
     void err;
@@ -315,6 +354,22 @@ export function initSchema() {
   } catch (err) {
     void err;
   }
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_questions_topic_id ON questions(topic_id);
+    CREATE INDEX IF NOT EXISTS idx_questions_task_number ON questions(task_number);
+    CREATE INDEX IF NOT EXISTS idx_videos_topic_id ON videos(topic_id);
+    CREATE INDEX IF NOT EXISTS idx_attempts_user_id ON attempts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_mock_exams_subject_id ON mock_exams(subject_id);
+    CREATE INDEX IF NOT EXISTS idx_mock_exam_attempts_user_id ON mock_exam_attempts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_groups_teacher_id ON groups(teacher_id);
+    CREATE INDEX IF NOT EXISTS idx_group_members_student_id ON group_members(student_id);
+    CREATE INDEX IF NOT EXISTS idx_assignments_group_id ON assignments(group_id);
+    CREATE INDEX IF NOT EXISTS idx_assignment_submissions_assignment_student ON assignment_submissions(assignment_id, student_id);
+    CREATE INDEX IF NOT EXISTS idx_extended_submissions_user ON extended_submissions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_extended_submissions_teacher ON extended_submissions(teacher_id);
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+  `);
 }
 
 export function seedAdminUser() {
@@ -354,7 +409,10 @@ export function transaction(fn) {
 }
 
 export function resetDb() {
+  db.exec("PRAGMA foreign_keys = OFF;");
   db.exec(`
+    DROP TABLE IF EXISTS notifications;
+    DROP TABLE IF EXISTS extended_submissions;
     DROP TABLE IF EXISTS activity_logs;
     DROP TABLE IF EXISTS theory;
     DROP TABLE IF EXISTS tests;
@@ -374,6 +432,8 @@ export function resetDb() {
     DROP TABLE IF EXISTS sessions;
     DROP TABLE IF EXISTS users;
   `);
+  initSchema();
+  db.exec("PRAGMA foreign_keys = ON;");
 }
 
 export function seedSiteSettings() {
@@ -393,7 +453,9 @@ export function seedSiteSettings() {
 }
 
 export function initDb() {
+  db.exec("PRAGMA foreign_keys = OFF;");
   initSchema();
+  db.exec("PRAGMA foreign_keys = ON;");
   seedContent();
   seedAdminUser();
   seedSiteSettings();

@@ -257,4 +257,148 @@ router.get("/my-assignments", requireAuth, (req, res) => {
   });
 });
 
+router.get("/submissions", requireAuth, (req, res) => {
+  const submissions = db.prepare(`
+    SELECT es.*, u.name as student_name, u.email as student_email, u.avatar as student_avatar, u.avatar_url as student_avatar_url
+    FROM extended_submissions es
+    JOIN users u ON u.id = es.user_id
+    LEFT JOIN group_members gm ON gm.student_id = es.user_id
+    LEFT JOIN groups g ON g.id = gm.group_id
+    WHERE g.teacher_id = ? OR es.group_id IN (SELECT id FROM groups WHERE teacher_id = ?)
+    ORDER BY es.created_at DESC
+  `).all(req.user.id, req.user.id);
+
+  // Deduplicate by submission id
+  const uniqueMap = new Map();
+  submissions.forEach((s) => {
+    if (!uniqueMap.has(s.id)) {
+      let questionInfo = null;
+      let contextTitle = "Пробный экзамен / Задание";
+
+      if (s.context_type === "mock_exam") {
+        const attempt = db.prepare(`SELECT mock_exam_id FROM mock_exam_attempts WHERE id = ?`).get(Number(s.context_id) || s.context_id);
+        if (attempt) {
+          const exam = db.prepare(`SELECT title, questions_json FROM mock_exams WHERE id = ?`).get(attempt.mock_exam_id);
+          if (exam) {
+            contextTitle = exam.title;
+            try {
+              const questions = JSON.parse(exam.questions_json);
+              const q = questions.find((qItem) => String(qItem.id) === String(s.question_id));
+              if (q) {
+                questionInfo = {
+                  id: q.id,
+                  question: q.question,
+                  maxPoints: q.maxPoints || q.points || 3,
+                  solutionKey: q.solutionKey || q.explanation || "",
+                  criteria: q.criteria || [],
+                };
+              }
+            } catch {
+              questionInfo = null;
+            }
+          }
+        }
+      }
+
+      uniqueMap.set(s.id, {
+        id: s.id,
+        userId: s.user_id,
+        studentName: s.student_name,
+        studentEmail: s.student_email,
+        studentAvatar: s.student_avatar || s.student_avatar_url,
+        contextType: s.context_type,
+        contextId: s.context_id,
+        contextTitle,
+        questionId: s.question_id,
+        questionInfo,
+        studentAnswer: s.student_answer,
+        selfScore: s.self_score,
+        selfBreakdown: s.self_breakdown_json ? JSON.parse(s.self_breakdown_json) : null,
+        teacherId: s.teacher_id,
+        teacherScore: s.teacher_score,
+        teacherBreakdown: s.teacher_breakdown_json ? JSON.parse(s.teacher_breakdown_json) : null,
+        teacherComment: s.teacher_comment,
+        status: s.status,
+        createdAt: s.created_at,
+        updatedAt: s.updated_at,
+      });
+    }
+  });
+
+  res.json({ submissions: Array.from(uniqueMap.values()) });
+});
+
+router.post("/submissions/:id/review", requireAuth, (req, res) => {
+  const { teacherScore, teacherComment, teacherBreakdown = {} } = req.body || {};
+
+  const sub = db.prepare(`SELECT * FROM extended_submissions WHERE id = ?`).get(req.params.id);
+  if (!sub) {
+    return res.status(404).json({ error: "Ответ не найден" });
+  }
+
+  // Check that current user is teacher of student's group
+  const isTeacher = db.prepare(`
+    SELECT g.id FROM groups g
+    JOIN group_members gm ON gm.group_id = g.id
+    WHERE g.teacher_id = ? AND gm.student_id = ?
+  `).get(req.user.id, sub.user_id);
+
+  if (!isTeacher && req.user.role !== "ADMIN") {
+    return res.status(403).json({ error: "Доступ запрещен" });
+  }
+
+  const finalScore = Math.max(0, Number(teacherScore) || 0);
+
+  db.prepare(`
+    UPDATE extended_submissions
+    SET teacher_id = ?, teacher_score = ?, teacher_comment = ?, teacher_breakdown_json = ?, status = 'reviewed_by_teacher', updated_at = datetime('now')
+    WHERE id = ?
+  `).run(
+    req.user.id,
+    finalScore,
+    String(teacherComment || "").trim(),
+    JSON.stringify(teacherBreakdown),
+    sub.id
+  );
+
+  // Recalculate mock exam score if applicable
+  if (sub.context_type === "mock_exam") {
+    const attempt = db.prepare(`SELECT * FROM mock_exam_attempts WHERE id = ?`).get(sub.context_id);
+    if (attempt) {
+      const exam = db.prepare(`SELECT * FROM mock_exams WHERE id = ?`).get(attempt.mock_exam_id);
+      if (exam) {
+        // Calculate difference between old self_score and teacher_score
+        const scoreDiff = finalScore - (sub.self_score || 0);
+        const newPrimary = Math.max(0, attempt.primary_score + scoreDiff);
+
+        import("../utils/score-converter.js").then(({ convertScore }) => {
+          const newSecondary = convertScore({
+            examType: exam.exam_type,
+            primaryScore: newPrimary,
+            maxPrimaryScore: attempt.max_primary_score,
+            conversionTable: exam.conversion_table_json,
+          });
+
+          db.prepare(`UPDATE mock_exam_attempts SET primary_score = ?, secondary_score = ? WHERE id = ?`).run(
+            newPrimary,
+            newSecondary,
+            attempt.id
+          );
+        });
+      }
+    }
+  }
+
+  // Send notification to student
+  db.prepare(`
+    INSERT INTO notifications (user_id, type, title, message, link)
+    VALUES (?, 'teacher_review', 'Учитель проверил вашу работу', ?, '#profile')
+  `).run(
+    sub.user_id,
+    `Учитель ${req.user.name} проверил ваше задание. Оценка: ${finalScore} б. ${teacherComment ? `Комментарий: "${teacherComment}"` : ""}`
+  );
+
+  res.json({ success: true, teacherScore: finalScore });
+});
+
 export default router;

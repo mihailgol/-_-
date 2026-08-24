@@ -124,7 +124,18 @@
 - **Решение:** В [css/style.css](file:///C:/Users/мишка/.gemini/antigravity/worktrees/сайтик_бахчасарай/update_exam_selection_logic/css/style.css) добавлены явные стили высокой контрастности (`#f8fafc` текст, `#1e293b` фон, `#38bdf8` синяя подсвеченная обводка для активного вопроса) и убраны перекрывающие инлайн-стили в JS-модулях.
 - **Статус:** исправлено, подтверждено E2E-тестами.
 
+### 23. Проверка заданий с развернутым ответом (Часть 2) и уведомления от репетитора
+- **Симптом:** Ранее отсутствовала поддержка заданий с развернутым текстовым ответом, самооценки ученика по критериям ФИПИ и перепроверки репетитором.
+- **Причина:** Таблицы `extended_submissions` и `notifications` отсутствовали в схеме БД.
+- **Решение:** В [server/db.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/db.js) добавлены таблицы `extended_submissions` и `notifications`. Добавлены API эндпоинты в [server/routes/mock-exam.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/routes/mock-exam.js), [server/routes/teacher.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/routes/teacher.js) и [server/routes/notifications.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/routes/notifications.js). Добавлено модальное окно `selfAssessmentModal`, `teacherReviewModal` и кабинет учителя для проверки.
+### 24. Изоляция базы данных в юнит-тестах (release_features, site_settings, support_tickets)
+- **Симптом:** При последовательном выполнении полного набора юнит-тестов Vitest (`npm run test`) тесты `release_features.test.mjs`, `site_settings.test.mjs`, `support_tickets.test.mjs` падали с ошибками 401/500 или `FOREIGN KEY constraint failed`.
+- **Причина:** В данных файлах отсутствовал хук `beforeEach(() => { resetDb(); initDb(); })`, из-за чего состояние базы данных после предыдущих тестов (изменение хеша пароля админа, сброс таблиц) протекало в последующие тесты.
+- **Решение:** В [tests/unit/release_features.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/release_features.test.mjs), [tests/unit/site_settings.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/site_settings.test.mjs) и [tests/unit/support_tickets.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/support_tickets.test.mjs) добавлены хуки `beforeEach(() => { resetDb(); initDb(); })`.
+- **Статус:** исправлено, подтверждено 100% прохождением всех 21 юнит-файлов (145/145 тестов).
+
 ## Открытые вопросы
 - Содержимое конспектов/вопросов — учебный контент, динамически пополняется.
 - Платежи Premium — mock-заглушка для тестирования без внешнего эквайринга.
+
 

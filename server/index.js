@@ -12,6 +12,7 @@ import mockExamRoutes from "./routes/mock-exam.js";
 import teacherRoutes from "./routes/teacher.js";
 import adminRoutes from "./routes/admin.js";
 import supportRoutes from "./routes/support.js";
+import notificationsRoutes from "./routes/notifications.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/teacher", teacherRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/site", catalogRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 
 const FRONTEND_ASSETS = ["/js", "/css", "/index.html"];
@@ -51,6 +53,14 @@ app.use(express.static(config.root));
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: "Внутренняя ошибка сервера" });
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception in server process:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection in server process:", reason);
 });
 
 if (config.isTest) {

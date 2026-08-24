@@ -4,18 +4,29 @@ import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
   {
-    ignores: ["node_modules/", "test-results/", "playwright-report/", "js/lucide.min.js", "coverage/", ".serena/", ".agents/"],
+    ignores: [
+      "node_modules/",
+      "test-results/",
+      "playwright-report/",
+      "js/lucide.min.js",
+      "coverage/",
+      ".serena/",
+      ".agents/",
+      ".agent/",
+      "data/",
+    ],
   },
 
   js.configs.recommended,
 
   {
-    files: ["**/*.js"],
+    files: ["**/*.{js,mjs,cjs}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
       globals: {
         ...globals.browser,
+        ...globals.node,
         ...globals.es2022,
       },
     },
@@ -31,6 +42,7 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node,
+        ...globals.es2022,
       },
     },
   },
@@ -40,24 +52,19 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node,
+        ...globals.browser,
+        ...globals.es2022,
       },
     },
   },
 
   {
-    files: ["tests/unit/**/*.test.js", "tests/unit/**/*.test.mjs"],
+    files: ["tests/**/*.{js,mjs}", "playwright.config.js"],
     languageOptions: {
       globals: {
         ...globals.node,
-      },
-    },
-  },
-
-  {
-    files: ["tests/e2e/**/*.spec.js", "playwright.config.js"],
-    languageOptions: {
-      globals: {
-        ...globals.node,
+        ...globals.browser,
+        ...globals.es2022,
       },
     },
   },

@@ -25,12 +25,16 @@ test.describe("ExamType Switcher — EGE / OGE filtering", () => {
   test("фильтрует список пробных экзаменов при переключении на ОГЭ", async ({ page }) => {
     await page.locator('.sidebar-nav .nav-item[data-view="mock-exam"]').click();
     await expect(page.locator("#view-mock-exam")).toBeVisible();
+    await expect(page.locator("#mockExamList .mock-exam-card").first()).toBeVisible();
 
     const ogeBtn = page.locator('#examTypeToggle .exam-type-btn[data-exam-type="OGE"]');
     await ogeBtn.click();
 
+    await expect(page.locator("#mockExamList .exam-type-badge", { hasText: "ЕГЭ" })).toHaveCount(0);
+
     const badges = page.locator("#mockExamList .exam-type-badge");
     const count = await badges.count();
+    expect(count).toBeGreaterThan(0);
     for (let i = 0; i < count; i++) {
       await expect(badges.nth(i)).toContainText("ОГЭ");
     }

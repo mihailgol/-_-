@@ -137,7 +137,18 @@ export function seedContent() {
       { id: "bq2", question: "Какая органелла является силовой станцией клетки?", type: "single", options: ["Ядро", "Митохондрия", "Рибосома", "Лизосома"], correctIndex: 1, explanation: "Митохондрии синтезируют АТФ.", points: 1 },
       { id: "bq3", question: "Сколько камер в сердце человека?", type: "single", options: ["2", "3", "4", "5"], correctIndex: 2, explanation: "У человека четырехкамерное сердце.", points: 1 },
       { id: "bq4", question: "Какая ткань осуществляет покровную функцию?", type: "single", options: ["Эпителиальная", "Соединительная", "Мышечная", "Нервная"], correctIndex: 0, explanation: "Эпителиальная ткань покрывает тело и выстилает полости.", points: 1 },
-      { id: "bq5", question: "Что переносят эритроциты?", type: "single", options: ["Кислород", "Белки", "Гормоны", "Жиры"], correctIndex: 0, explanation: "Эритроциты содержат гемоглобин и переносят кислород.", points: 1 }
+      { id: "bq5", question: "Что переносят эритроциты?", type: "single", options: ["Кислород", "Белки", "Гормоны", "Жиры"], correctIndex: 0, explanation: "Эритроциты содержат гемоглобин и переносят кислород.", points: 1 },
+      {
+        id: "bq_ext1",
+        question: "Задание 22 (Часть 2). Объясните, какую функцию выполняют устьица на листьях растений и как они регулируют испарение воды.",
+        type: "extended",
+        maxPoints: 3,
+        solutionKey: "Элементы ответа:\n1) Устьица обеспечивают транспирацию (испарение воды) и газообмен (поглощение CO2, выделение O2).\n2) Замыкающие клетки устьиц при изменении тургорного давления открывают или закрывают устьичную щель.\n3) В жаркую сухую погоду устьица закрываются для предотвращения обезвоживания растения.",
+        criteria: [
+          { code: "K1", title: "Описаны функции транспирации и газообмена", maxPoints: 2 },
+          { code: "K2", title: "Объяснен механизм регуляции устьиц", maxPoints: 1 }
+        ]
+      }
     ];
 
     const bioEgeQuestions = [
@@ -145,7 +156,18 @@ export function seedContent() {
       { id: "beq2", question: "Мономер ДНК включает в себя:", type: "single", options: ["Аминокислоту", "Нуклеотид", "Глюкозу", "Жирную кислоту"], correctIndex: 1, explanation: "Нуклеотиды - мономеры нуклеиновых кислот.", points: 1 },
       { id: "beq3", question: "Какой процесс происходит в световой фазе фотосинтеза?", type: "single", options: ["Синтез глюкозы", "Фотолиз воды", "Фиксация CO2", "Образование крахмала"], correctIndex: 1, explanation: "Фотолиз воды происходит под действием света.", points: 1 },
       { id: "beq4", question: "К какому типу относится нервная система гидры?", type: "single", options: ["Диффузный", "Узловой", "Трубчатый", "Сетчатый"], correctIndex: 0, explanation: "У кишечнополостных диффузная нервная система.", points: 1 },
-      { id: "beq5", question: "Какой гормон понижает уровень сахара в крови?", type: "single", options: ["Глюкагон", "Инсулин", "Адреналин", "Тироксин"], correctIndex: 1, explanation: "Инсулин способствует усвоению глюкозы клетками.", points: 1 }
+      { id: "beq5", question: "Какой гормон понижает уровень сахара в крови?", type: "single", options: ["Глюкагон", "Инсулин", "Адреналин", "Тироксин"], correctIndex: 1, explanation: "Инсулин способствует усвоению глюкозы клетками.", points: 1 },
+      {
+        id: "beq_ext1",
+        question: "Задание 22 (Часть 2). Объясните, какие изменения происходят в клетке во время профазы и метафазы митоза. Какое биологическое значение имеет равномерное распределение хромосом?",
+        type: "extended",
+        maxPoints: 3,
+        solutionKey: "Элементы ответа:\n1) В профазе: спирализация хромосом, растворение ядерной оболочки и ядрышка, формирование веретена деления.\n2) В метафазе: хромосомы выстраиваются по экватору клетки (метафазная пластинка), нити веретена деления прикрепляются к центромерам.\n3) Значение: обеспечивается сохранение постоянства числа хромосом и генетическая идентичность дочерних клеток.",
+        criteria: [
+          { code: "K1", title: "Описаны процессы профазы и метафазы митоза", maxPoints: 2 },
+          { code: "K2", title: "Указано биологическое значение деления", maxPoints: 1 }
+        ]
+      }
     ];
 
     const chemOgeQuestions = [
@@ -164,8 +186,8 @@ export function seedContent() {
       { id: "ceq5", question: "При сгорании метана образуются:", type: "single", options: ["CO2 и H2O", "CO и H2", "C и H2O", "CH3OH"], correctIndex: 0, explanation: "Полное сгорание углеводородов дает углекислый газ и воду.", points: 1 }
     ];
 
-    insMockExam.run("mock_bio_oge_1", "biology", "ОГЭ по биологии — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(bioOgeQuestions), ogeConversion);
-    insMockExam.run("mock_bio_ege_1", "biology", "ЕГЭ по биологии — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(bioEgeQuestions), egeConversion);
+    insMockExam.run("mock_bio_oge_1", "biology", "ОГЭ по биологии — Вариант 1", "OGE", 210, 6, 0, JSON.stringify(bioOgeQuestions), ogeConversion);
+    insMockExam.run("mock_bio_ege_1", "biology", "ЕГЭ по биологии — Вариант 1 (Premium)", "EGE", 235, 6, 1, JSON.stringify(bioEgeQuestions), egeConversion);
     insMockExam.run("mock_chem_oge_1", "chemistry", "ОГЭ по химии — Вариант 1", "OGE", 210, 5, 0, JSON.stringify(chemOgeQuestions), ogeConversion);
     insMockExam.run("mock_chem_ege_1", "chemistry", "ЕГЭ по химии — Вариант 1 (Premium)", "EGE", 235, 5, 1, JSON.stringify(chemEgeQuestions), egeConversion);
 

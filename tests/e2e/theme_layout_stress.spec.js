@@ -74,7 +74,7 @@ test.describe("Theme & Layout Stress Tests — Requirement R1", () => {
       localStorage.setItem("examhub_theme", "corrupted_invalid_theme_value");
     });
 
-    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     // Verify html falls back to auto and app loads cleanly without crashing
     await expect(page.locator("html")).toHaveAttribute("data-theme-setting", "auto");

@@ -28,6 +28,15 @@ export function switchView(viewName, { replace = false } = {}) {
   if (viewName === "analytics") {
     import("./analytics.js").then((m) => m.updateAnalyticsUI());
   }
+  if (viewName === "mock-exam") {
+    import("./mock-exam.js").then((m) => m.renderMockExamCatalog());
+  }
+  if (viewName === "teacher") {
+    import("./teacher.js").then((m) => {
+      m.renderTeacherCabinet();
+      m.renderTeacherSubmissions();
+    });
+  }
   if (["offer", "privacy", "terms"].includes(viewName)) {
     api("/api/site/settings").then((res) => {
       const s = res.settings || {};
@@ -227,8 +236,9 @@ export function initRouter() {
       }
 
       let results = [];
-      Object.values(window.EXAM_DATA.subjects).forEach((subject) => {
-        subject.topics.forEach((topic) => {
+      const subjects = Object.values(window.EXAM_DATA?.subjects || {});
+      subjects.forEach((subject) => {
+        (subject.topics || []).forEach((topic) => {
           if (topic.title.toLowerCase().includes(query)) {
             results.push({
               type: "note",

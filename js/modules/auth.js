@@ -44,7 +44,10 @@ export function renderAuthHeader() {
     loginBtn.className = "auth-btn";
     loginBtn.id = "loginBtn";
     loginBtn.textContent = "Войти";
-    loginBtn.addEventListener("click", () => openModal("authModal"));
+    loginBtn.addEventListener("click", () => {
+      setAuthMode("login");
+      openModal("authModal");
+    });
     authArea.appendChild(loginBtn);
   }
 }
@@ -75,8 +78,9 @@ export function initAuthEvents() {
     window.history.replaceState({}, "", newUrl);
   }
 }
-export function toggleAuthMode() {
-  authMode = authMode === "login" ? "register" : "login";
+
+export function setAuthMode(mode) {
+  authMode = mode;
   const titleEl = document.getElementById("authModalTitle");
   const toggleLink = document.getElementById("authToggleLink");
   const submitBtn = document.getElementById("authSubmitManual");
@@ -87,6 +91,10 @@ export function toggleAuthMode() {
     toggleLink.textContent = authMode === "register" ? "У меня уже есть аккаунт" : "Нет аккаунта? Зарегистрироваться";
   if (submitBtn) submitBtn.textContent = authMode === "register" ? "Создать аккаунт" : "Войти в систему";
   if (examTypeGroup) examTypeGroup.style.display = authMode === "register" ? "block" : "none";
+}
+
+export function toggleAuthMode() {
+  setAuthMode(authMode === "login" ? "register" : "login");
 }
 
 export function handleSocialLogin(provider) {

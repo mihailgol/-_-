@@ -1696,6 +1696,11 @@
               <h3 style="margin-bottom: 16px;">Мои задания (для учеников)</h3>
               <div id="studentAssignmentsList"></div>
             </div>
+
+            <div style="margin-top: 32px;" id="teacherSubmissionsSection">
+              <h3 style="margin-bottom: 16px;">Проверка работ с развернутым ответом (Часть 2) 📝</h3>
+              <div id="teacherSubmissionsList"></div>
+            </div>
           </section>
 
           <section class="view-section" id="view-admin">
@@ -2031,6 +2036,32 @@
             </div>
             <button type="submit" class="btn-primary" style="width: 100%;">💾 Сохранить и опубликовать пробник</button>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="selfAssessmentModal">
+      <div class="modal-card" style="max-width: 750px;">
+        <button class="modal-close-btn" data-close-modal="selfAssessmentModal">&times;</button>
+        <div style="padding: 24px;">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">⚖️ Самооценка заданий с развернутым ответом (Часть 2)</h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+            Сравните ваш ответ с официальным ключом решений и выставьте первичные баллы по критериям ФИПИ.
+          </p>
+          <div id="selfAssessmentBody" style="max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; padding-right: 8px;"></div>
+          <button class="btn-primary" id="saveSelfAssessmentBtn" style="margin-top: 24px; width: 100%;">
+            💾 Сохранить самооценку и обновить результат
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="teacherReviewModal">
+      <div class="modal-card" style="max-width: 700px;">
+        <button class="modal-close-btn" data-close-modal="teacherReviewModal">&times;</button>
+        <div style="padding: 24px;">
+          <h3 style="margin-top: 0; margin-bottom: 16px;">📝 Проверка задания учителем</h3>
+          <div id="teacherReviewBody"></div>
         </div>
       </div>
     </div>

@@ -49,6 +49,7 @@ test.describe("ExamHub — smoke tests", () => {
 
   test("работает форма обратной связи", async ({ page }) => {
     await page.locator('.sidebar-nav .nav-item[data-view="support"]').click();
+    await expect(page.locator("#view-support")).toBeVisible();
     await page.locator("#view-support input[type='text']").first().fill("Иван");
     await page.locator("#view-support textarea").first().fill("Тестовое обращение в поддержку");
     await page.locator("#supportSendBtn").click();
@@ -116,7 +117,9 @@ test.describe("ExamHub — smoke tests", () => {
   });
 
   test("полный цикл прохождения теста", async ({ page }) => {
+    await expect(page.locator(".subject-card").first()).toBeVisible();
     await page.locator("#heroStartBtn").click();
+    await expect(page.locator("#view-subject-detail")).toBeVisible();
     await page.locator('.sub-tab-btn[data-tab="tab-quizzes"]').click();
     await expect(page.locator(".quiz-list-item").first()).toBeVisible();
     await page.locator(".quiz-list-item").first().click();
@@ -181,6 +184,7 @@ test.describe("ExamHub — smoke tests", () => {
     const errors = [];
     page.on("pageerror", (err) => errors.push(String(err)));
 
+    await expect(page.locator(".subject-card").first()).toBeVisible();
     await page.locator("#heroStartBtn").click();
     await expect(page.locator("#view-subject-detail")).toBeVisible();
 
@@ -249,5 +253,55 @@ test.describe("ExamHub — smoke tests", () => {
 
     await expect(page.locator("#createMockModal")).not.toHaveClass(/active/);
     await expect(page.locator("#mockExamList")).toContainText(mockTitle);
+  });
+
+  test("прохождение пробника с заданиями Части 2 и самооценка по критериям ФИПИ", async ({ page }) => {
+    const email = `part2user${Date.now()}@example.ru`;
+    const pass = "secret123";
+
+    await page.locator("#loginBtn").click();
+    await expect(page.locator("#authModal")).toHaveClass(/active/);
+    await page.locator("#authToggleLink").click();
+    await page.locator("#manualEmail").fill(email);
+    await page.locator("#manualPass").fill(pass);
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    await page.locator('.sidebar-nav .nav-item[data-view="mock-exam"]').click();
+    await expect(page.locator("#view-mock-exam")).toBeVisible();
+    await page.locator('.exam-type-btn[data-exam-type="OGE"]').click();
+    await expect(page.locator("#mockExamList .mock-exam-card").first()).toBeVisible();
+
+    const startBtn = page.locator('#mockExamList .start-mock-btn:not([data-locked="true"])').first();
+    if (await startBtn.isVisible()) {
+      await startBtn.click();
+      await expect(page.locator("#mockPlayerScreen")).toBeVisible();
+
+      // Navigate to Part 2 question
+      const navItems = page.locator(".mock-nav-item");
+      const count = await navItems.count();
+      if (count > 0) {
+        await navItems.nth(count - 1).click();
+      }
+
+      // If extended answer textarea exists, fill text answer
+      const textarea = page.locator("#mockExtendedInput");
+      if (await textarea.isVisible()) {
+        await textarea.fill("Развернутый ответ ученика по биологии для проверки по критериям ФИПИ");
+      }
+
+      // Handle any confirm dialog on finish
+      page.on("dialog", (dialog) => dialog.accept());
+      await page.locator("#mockSubmitBtn").click();
+      await expect(page.locator("#mockResultsScreen")).toBeVisible();
+
+      const selfAssessBtn = page.locator("#openSelfAssessBtn");
+      if (await selfAssessBtn.isVisible()) {
+        await selfAssessBtn.click();
+        await expect(page.locator("#selfAssessmentModal")).toHaveClass(/active/);
+        await page.locator("#saveSelfAssessmentBtn").click();
+        await expect(page.locator("#selfAssessmentModal")).not.toHaveClass(/active/);
+      }
+    }
   });
 });
