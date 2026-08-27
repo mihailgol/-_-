@@ -7,6 +7,7 @@ import { updateUIFromState } from "./render.js";
 import { getExamType, setExamType } from "./exam-type.js";
 import { examEngine } from "./exam-engine.js";
 import { getRecommendedTaskType } from "./utils.js";
+import { getDefaultFIPITemplate } from "./test-editor.js";
 
 let subjectTabsInitDone = false;
 
@@ -727,20 +728,21 @@ export function renderTaskNumbersGrid(subjectId = "", examType = null) {
       let questionsToPlay = existingQuestions;
       if (questionsToPlay.length === 0) {
         const recType = getRecommendedTaskType(subId, taskNum, activeExam);
+        const tpl = getDefaultFIPITemplate(subId, taskNum, activeExam);
         questionsToPlay = [
           {
             id: `gen_task_${subId}_${activeExam}_${taskNum}_1`,
             type: recType,
-            question: `[${activeExam} • Задание №${taskNum}] Вопрос по теме «Задание №${taskNum}» (${subject.title})`,
+            question: `[${activeExam} • Задание №${taskNum}] ${tpl.topicTitle || `Задание №${taskNum}`} (${subject.title})`,
             options: recType === "extended" ? undefined : ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"],
             correctIndex: recType === "extended" ? undefined : 0,
-            solutionKey: recType === "extended" ? `Официальный эталонный ключ решения ФИПИ к Заданию №${taskNum}` : undefined,
-            maxPoints: recType === "extended" ? 3 : 1,
+            solutionKey: tpl.solutionKey,
+            maxPoints: tpl.maxPoints,
             criteria: recType === "extended" ? [
-              { code: "K1", title: "Приведена верная логика и решение", maxPoints: 2 },
-              { code: "K2", title: "Отсутствуют вычислительные ошибки", maxPoints: 1 }
+              { code: "K1", title: "Приведена верная логика и решение", maxPoints: Math.max(1, (tpl.maxPoints || 3) - 1) },
+              { code: "K2", title: "Отсутствуют фактические и вычислительные ошибки", maxPoints: 1 }
             ] : undefined,
-            explanation: `Подробный разбор алгоритма решения Задания №${taskNum} (${activeExam}) по предмету ${subject.title}.`,
+            explanation: tpl.solutionKey || `Подробный разбор алгоритма решения Задания №${taskNum} (${activeExam}) по предмету ${subject.title}.`,
             taskNumber: taskNum,
           },
         ];

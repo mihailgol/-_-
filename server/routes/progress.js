@@ -1,29 +1,35 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, optionalAuth } from "../middleware/auth.js";
 
 const router = Router();
 
 function computeStats(userId) {
+  if (!userId) {
+    return { testsSolved: 0, avgPercent: 0, bestScore: 0 };
+  }
   const agg = db
     .prepare(
       `SELECT COUNT(*) AS tests_solved, AVG(percent) AS avg_percent, MAX(score) AS best_score
        FROM attempts WHERE user_id = ?`
     )
     .get(userId);
-  const testsSolved = agg.tests_solved || 0;
+  const testsSolved = agg?.tests_solved || 0;
   return {
     testsSolved,
     avgPercent: testsSolved ? Math.round(agg.avg_percent) : 0,
-    bestScore: agg.best_score ?? 0,
+    bestScore: agg?.best_score ?? 0,
   };
 }
 
-router.get("/stats", requireAuth, (req, res) => {
-  res.json(computeStats(req.user.id));
+router.get("/stats", optionalAuth, (req, res) => {
+  res.json(computeStats(req.user?.id));
 });
 
-router.get("/attempts", requireAuth, (req, res) => {
+router.get("/attempts", optionalAuth, (req, res) => {
+  if (!req.user) {
+    return res.json({ attempts: [] });
+  }
   const attempts = db
     .prepare(
       `SELECT id, topic_id, title, score, total, percent, created_at

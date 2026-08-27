@@ -13,6 +13,8 @@
     "test": "vitest run --fileParallelism=false --maxWorkers=1",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "audit:ux": "node scripts/run-audit.js",
+    "audit:report": "playwright show-report audit-report",
     "build": "echo Build OK",
     "tunnel": "npx -y localtunnel --port 8000",
     "check": "npm run lint && npm run build && npm run test && npm run test:e2e"

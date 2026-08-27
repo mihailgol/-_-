@@ -3,7 +3,7 @@ import { api } from "./modules/utils.js";
 import { showToast, initGlobalUIEvents, closeModal } from "./modules/ui.js";
 
 import { switchView, initRouter } from "./modules/navigation.js";
-import { renderSubjects, renderGeneralNotes, renderGeneralVideos, initTestTabs } from "./modules/catalog.js";
+import { renderSubjects, renderGeneralNotes, renderGeneralVideos, initTestTabs, syncTestsExamSelection } from "./modules/catalog.js";
 import { updateUIFromState } from "./modules/render.js";
 import { initAuthEvents } from "./modules/auth.js";
 import { initPremiumEvents } from "./modules/premium.js";
@@ -21,6 +21,7 @@ import { initTestEditor } from "./modules/test-editor.js";
 import { initAnalyticsTracker } from "./modules/analytics-engine.js";
 import { initProfileView } from "./modules/profile.js";
 import { initNotificationEvents, loadNotifications } from "./modules/notifications.js";
+import { initQuizEvents } from "./modules/quiz.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAnalyticsTracker();
   initProfileView();
   initNotificationEvents();
+  initQuizEvents();
 
   document.getElementById("adminLoginSubmitBtn")?.addEventListener("click", async () => {
     const email = document.getElementById("adminLoginEmail")?.value.trim();
@@ -129,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       initTestEditor();
       updateUIFromState();
       loadNotifications();
+      syncTestsExamSelection();
 
 
       const initialView = (location.hash || "#subjects").replace("#", "");

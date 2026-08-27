@@ -57,6 +57,7 @@ export function getRecommendedTaskType(subjectId, taskNumber, examType = "EGE") 
     if (subjectId === "biology" && num >= 22) return "extended";
     if (subjectId === "chemistry" && num >= 29) return "extended";
     if (subjectId === "physics" && num >= 21) return "extended";
+    if (subjectId === "informatics" && num >= 27) return "extended";
     if (subjectId === "social" && num >= 17) return "extended";
     if (subjectId === "history" && num >= 13) return "extended";
     if (subjectId === "literature" && (num === 4 || num === 5 || num >= 9)) return "extended";

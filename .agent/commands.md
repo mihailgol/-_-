@@ -25,13 +25,16 @@ npm run format:check  # Prettier --check (проверка форматиров�
 npm run build         # node scripts/validate-project.mjs — валидатор целостности проекта
 ```
 
-## Тесты
+## Тесты и UX-аудит
 ```
 npm run test          # Vitest: unit-тесты (tests/unit)
 npm run test:e2e      # Playwright: E2E (tests/e2e)
+npm run audit:ux      # Автономный UX-бот: сквозной обход всех 10 разделов с видео, трейсами и Zero-Error Guard
+npm run audit:report  # Открыть интерактивный визуальный HTML-отчет аудита в браузере
 npm run check         # Всё сразу: lint → build → unit → e2e
 ```
 
 ## Прочее
+- `npm run audit:ux` — интеллектуальный бот, эмулирующий реального пользователя (клики, ввод, решение Части 1 и 2, прикрепление фото, проверка репетитором, админка, проверка контраста и адаптивности) с жестким отловом любых консольных и сетевых ошибок.
 - `npm run build` — валидатор проекта (scripts/validate-project.mjs): проверяет целостность структуры, синтаксис JS и контента.
 - E2E (`playwright.config.js`) поднимает сервер `node server/index.js` с `NODE_ENV=test` (чистая БД на каждый запуск), `workers: 3` (ограничено из-за памяти машины).

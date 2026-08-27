@@ -12,7 +12,10 @@ test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", (
 
     await page.locator("#manualEmail").fill("admin@examhub.ru");
     await page.locator("#manualPass").fill("admin123");
-    await page.locator("#authSubmitManual").click();
+    await Promise.all([
+      page.waitForResponse((res) => res.url().includes("/api/auth/login") && res.status() === 200),
+      page.locator("#authSubmitManual").click(),
+    ]);
     await expect(page.locator("#authModal")).not.toHaveClass(/active/);
 
     // 2. Переход в Конструктор тестов
@@ -88,5 +91,52 @@ test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", (
     // 4. При переключении на Задание №2 по Русскому языку возвращается 'single'
     await page.locator("#qTaskNumberInput").fill("2");
     await expect(page.locator("#qTypeSelect")).toHaveValue("single");
+  });
+
+  test("кнопка «✨ Заполнить критерии по умолчанию» автоматически подставляет эталонные критерии ФИПИ и ключ решения", async ({ page }) => {
+    // 1. Авторизация под аккаунтом Главного Администратора
+    await page.locator("#loginBtn").click();
+    await expect(page.locator("#authModal")).toHaveClass(/active/);
+    await page.locator("#manualEmail").fill("admin@examhub.ru");
+    await page.locator("#manualPass").fill("admin123");
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    // 2. Переход в Конструктор тестов
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestEditor } = await import("/js/modules/test-editor.js");
+      switchView("test-editor");
+      initTestEditor();
+    });
+
+    await expect(page.locator("#view-test-editor")).toBeVisible();
+    await expect(page.locator("#fillDefaultCriteriaBtn")).toBeVisible();
+
+    // 3. Выбор предмета Обществознание и Задания №24 (План)
+    await page.locator("#qSubjectSelect").selectOption("social");
+    await page.locator("#qTaskNumberInput").fill("24");
+    await page.locator("#qTextarea").fill("Используя обществоведческие знания, составьте сложный план по теме «Политические партии».");
+
+    // 4. Клик по кнопке «✨ Заполнить критерии по умолчанию»
+    await page.locator("#fillDefaultCriteriaBtn").click();
+
+    // 5. Проверка автоматического переключения и заполнения формы
+    await expect(page.locator("#qTypeSelect")).toHaveValue("extended");
+    await expect(page.locator("#extMaxPointsInput")).toHaveValue("4");
+    await expect(page.locator("#extSolutionKeyInput")).toHaveValue(/План содержит не менее 3 пунктов/);
+    await expect(page.locator("#extCriteriaInput")).toHaveValue(/K1: Раскрытие темы по существу в подпунктах \(3 б\.\)/);
+    await expect(page.locator("#extCriteriaInput")).toHaveValue(/K2: Корректность формулировок пунктов и подпунктов \(1 б\.\)/);
+
+    // 6. Проверка живого предпросмотра
+    const previewArea = page.locator("#qLivePreview");
+    await expect(previewArea).toContainText("Обществознание • Задание №24");
+    await expect(previewArea).toContainText("🔑 Эталонный ключ решения ФИПИ:");
+    await expect(previewArea).toContainText("📋 Критерии оценивания:");
+    await expect(previewArea).toContainText("K1: Раскрытие темы по существу");
+
+    // 7. Сохранение в базу данных SQLite
+    await page.locator("#saveQuestionBtn").click();
+    await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
   });
 });

@@ -312,6 +312,7 @@ router.get("/submissions", requireAuth, (req, res) => {
         questionId: s.question_id,
         questionInfo,
         studentAnswer: s.student_answer,
+        attachedPhotos: s.attached_photos_json ? JSON.parse(s.attached_photos_json) : [],
         selfScore: s.self_score,
         selfBreakdown: s.self_breakdown_json ? JSON.parse(s.self_breakdown_json) : null,
         teacherId: s.teacher_id,

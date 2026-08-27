@@ -65,6 +65,15 @@ function formatTopic(t, user) {
             }
           }
 
+          let criteria;
+          if (q.criteria_json) {
+            try {
+              criteria = JSON.parse(q.criteria_json);
+            } catch {
+              criteria = undefined;
+            }
+          }
+
           return {
             id: q.id,
             type: q.type,
@@ -72,9 +81,12 @@ function formatTopic(t, user) {
             options,
             correctIndex: q.correct_index,
             explanation: q.explanation,
+            solutionKey: q.solution_key || q.explanation || "",
+            maxPoints: q.max_points || q.points || 1,
             points: q.points || 1,
             taskNumber: q.task_number || 0,
             ...(correctAnswer !== undefined ? { correctAnswer } : {}),
+            ...(criteria !== undefined ? { criteria } : {}),
           };
         }),
   };
@@ -160,6 +172,14 @@ router.get("/questions", optionalAuth, (req, res) => {
         correctAnswer = undefined;
       }
     }
+    let criteria;
+    if (q.criteria_json) {
+      try {
+        criteria = JSON.parse(q.criteria_json);
+      } catch {
+        criteria = undefined;
+      }
+    }
 
     return {
       id: q.id,
@@ -172,11 +192,16 @@ router.get("/questions", optionalAuth, (req, res) => {
       options,
       correctIndex: q.correct_index,
       explanation: q.explanation,
+      solutionKey: q.solution_key || q.explanation || "",
+      maxPoints: q.max_points || q.points || 1,
       points: q.points || 1,
       taskNumber: q.task_number || 0,
       ...(correctAnswer !== undefined ? { correctAnswer } : {}),
+      ...(criteria !== undefined ? { criteria } : {}),
     };
   });
+
+  res.json({ questions });
 
   res.json({ questions });
 });

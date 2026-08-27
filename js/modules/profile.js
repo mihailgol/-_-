@@ -1,6 +1,7 @@
 import { appState } from "./state.js";
-import { showToast } from "./ui.js";
+import { showToast, openModal } from "./ui.js";
 import { api } from "./utils.js";
+import { switchView } from "./navigation.js";
 
 export function initProfileView() {
   const profileSection = document.getElementById("view-profile");
@@ -19,10 +20,11 @@ export function initProfileView() {
   const sidebarUserBlock = document.getElementById("sidebarUserBlock");
   if (sidebarUserBlock) {
     sidebarUserBlock.addEventListener("click", () => {
-      const stateModule = import("./state.js");
-      stateModule.then(({ navigateTo }) => {
-        navigateTo("profile");
-      });
+      if (appState.user && appState.user.isLoggedIn) {
+        switchView("profile");
+      } else {
+        openModal("authModal");
+      }
     });
   }
 }

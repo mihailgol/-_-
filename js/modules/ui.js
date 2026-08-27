@@ -36,6 +36,13 @@ export function showToast(title, message) {
 }
 
 export function openModal(modalId) {
+  if (modalId !== "imageLightboxModal") {
+    document.querySelectorAll(".modal-overlay.active").forEach((m) => {
+      if (m.id !== modalId && m.id !== "imageLightboxModal") {
+        m.classList.remove("active");
+      }
+    });
+  }
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.add("active");
@@ -70,6 +77,15 @@ export function initGlobalUIEvents() {
         closeModal(overlay.id);
       }
     });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const activeModals = document.querySelectorAll(".modal-overlay.active");
+      activeModals.forEach((modal) => {
+        closeModal(modal.id);
+      });
+    }
   });
 
   window.closeModal = closeModal;

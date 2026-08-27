@@ -271,6 +271,7 @@ export function initSchema() {
       context_id TEXT NOT NULL,
       question_id TEXT NOT NULL,
       student_answer TEXT NOT NULL,
+      attached_photos_json TEXT,
       self_score INTEGER,
       self_breakdown_json TEXT,
       teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -293,6 +294,12 @@ export function initSchema() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  try {
+    db.exec("ALTER TABLE extended_submissions ADD COLUMN attached_photos_json TEXT;");
+  } catch (err) {
+    void err;
+  }
 
   try {
     db.exec("ALTER TABLE subjects ADD COLUMN is_other INTEGER NOT NULL DEFAULT 0;");
@@ -384,6 +391,18 @@ export function seedAdminUser() {
     db.prepare(
       "UPDATE users SET password_hash = ?, role = 'ADMIN', status = 'active' WHERE email = ?"
     ).run(passwordHash, "admin@examhub.ru");
+  }
+
+  const teacherHash = bcrypt.hashSync("teacher123", 10);
+  let teacher = db.prepare("SELECT id FROM users WHERE email = ?").get("teacher@examhub.ru");
+  if (!teacher) {
+    db.prepare(
+      "INSERT INTO users (email, password_hash, name, role, status, exam_type) VALUES (?, ?, ?, 'teacher', 'active', 'EGE')"
+    ).run("teacher@examhub.ru", teacherHash, "Анна Сергеевна (Репетитор)");
+  } else {
+    db.prepare(
+      "UPDATE users SET password_hash = ?, role = 'teacher', status = 'active' WHERE email = ?"
+    ).run(teacherHash, "teacher@examhub.ru");
   }
 
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();

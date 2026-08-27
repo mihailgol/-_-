@@ -135,7 +135,13 @@ test.describe("ExamHub — smoke tests", () => {
     // Пройти все вопросы теста
     const questionCount = parseInt(match[1], 10);
     for (let i = 0; i < questionCount; i++) {
-      await page.locator("#quizOptionsGrid .quiz-option-btn").first().click();
+      const optionBtn = page.locator("#quizOptionsGrid .quiz-option-btn").first();
+      const extTextarea = page.locator("#quizExtendedTextarea");
+      if (await optionBtn.isVisible()) {
+        await optionBtn.click();
+      } else if (await extTextarea.isVisible()) {
+        await extTextarea.fill("Тестовый ответ ученика");
+      }
       await page.locator("#quizNextBtn").click();
       await expect(page.locator("#quizExplanationBox")).toBeVisible();
       if (i < questionCount - 1) {

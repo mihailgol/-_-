@@ -164,6 +164,25 @@ function openTeacherReviewModal(sub) {
       </div>
     </div>
 
+    ${
+      sub.attachedPhotos && sub.attachedPhotos.length > 0
+        ? `
+    <div style="background: var(--color-card-bg); border: 1px solid var(--color-border); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-purple); text-transform: uppercase; margin-bottom: 8px;">📷 Прикрепенные фотографии работы (${sub.attachedPhotos.length}):</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        ${sub.attachedPhotos
+          .map(
+            (photoUrl) => `
+          <img src="${photoUrl}" class="attached-work-photo" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid var(--color-border); cursor: pointer; transition: transform 0.2s;" title="Нажмите для просмотра в полном размере" />
+        `
+          )
+          .join("")}
+      </div>
+    </div>
+    `
+        : ""
+    }
+
     <div style="background: rgba(82, 196, 26, 0.08); border: 1px solid var(--color-green); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
       <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-green); text-transform: uppercase; margin-bottom: 4px;">🔑 Ключ ответа (ФИПИ):</div>
       <div style="font-size: 0.9rem; white-space: pre-wrap;">${qInfo.solutionKey || "Ключ не указан"}</div>
@@ -186,6 +205,16 @@ function openTeacherReviewModal(sub) {
       </div>
     </form>
   `;
+
+  modalBody.querySelectorAll(".attached-work-photo").forEach((img) => {
+    img.addEventListener("click", () => {
+      const lbImg = document.getElementById("lightboxImage");
+      if (lbImg) {
+        lbImg.src = img.src;
+        openModal("imageLightboxModal");
+      }
+    });
+  });
 
   openModal("teacherReviewModal");
 

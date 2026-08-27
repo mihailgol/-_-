@@ -268,43 +268,147 @@ router.delete("/theory/:id", (req, res) => {
   res.json({ ok: true });
 });
 
+function getAdminQuestions(queryObj = {}) {
+  const { subjectId, subject, taskNumber, task_number, q, type } = queryObj;
+  let sql = `
+    SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
+    FROM questions q 
+    JOIN topics t ON t.id = q.topic_id 
+    JOIN subjects s ON s.id = t.subject_id 
+    WHERE 1=1
+  `;
+  const params = [];
+
+  const subj = subjectId || subject;
+  if (subj && String(subj).trim() !== "" && subj !== "all") {
+    sql += ` AND t.subject_id = ?`;
+    params.push(String(subj).trim());
+  }
+
+  const taskNum = taskNumber ?? task_number;
+  if (taskNum !== undefined && taskNum !== null && String(taskNum).trim() !== "" && taskNum !== "all") {
+    sql += ` AND q.task_number = ?`;
+    params.push(Number(taskNum));
+  }
+
+  if (type && String(type).trim() !== "" && type !== "all") {
+    sql += ` AND q.type = ?`;
+    params.push(String(type).trim());
+  }
+
+  sql += ` ORDER BY q.task_number ASC, q.sort_order ASC, q.id ASC`;
+
+  let rows = db.prepare(sql).all(...params);
+
+  if (q && String(q).trim() !== "") {
+    const searchTerms = String(q).trim().toLowerCase().split(/\s+/).filter(Boolean);
+    rows = rows.filter((item) => {
+      const qText = String(item.question || "").toLowerCase();
+      const topicText = String(item.topic_title || "").toLowerCase();
+      const subjText = String(item.subject_title || "").toLowerCase();
+      const idText = String(item.id || "").toLowerCase();
+      return searchTerms.every(
+        (term) =>
+          qText.includes(term) ||
+          topicText.includes(term) ||
+          subjText.includes(term) ||
+          idText.includes(term)
+      );
+    });
+  }
+
+  return rows;
+}
+
+router.get("/tests/questions", (req, res) => {
+  try {
+    const questions = getAdminQuestions(req.query);
+    res.json({ questions });
+  } catch (err) {
+    console.error("Error fetching admin questions:", err);
+    res.status(500).json({ error: "Не удалось получить список вопросов" });
+  }
+});
+
 router.get("/tests", (req, res) => {
-  const questions = db
-    .prepare(
-      `SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
-       FROM questions q 
-       JOIN topics t ON t.id = q.topic_id 
-       JOIN subjects s ON s.id = t.subject_id 
-       ORDER BY q.task_number ASC, q.sort_order ASC`
-    )
-    .all();
-  res.json({ questions });
+  try {
+    const questions = getAdminQuestions(req.query);
+    res.json({ questions });
+  } catch (err) {
+    console.error("Error fetching admin questions:", err);
+    res.status(500).json({ error: "Не удалось получить список вопросов" });
+  }
+});
+
+router.get("/tests/questions/:id", (req, res) => {
+  try {
+    const question = db
+      .prepare(
+        `SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
+         FROM questions q 
+         JOIN topics t ON t.id = q.topic_id 
+         JOIN subjects s ON s.id = t.subject_id 
+         WHERE q.id = ?`
+      )
+      .get(req.params.id);
+    if (!question) {
+      return res.status(404).json({ error: "Вопрос не найден" });
+    }
+    res.json({ question });
+  } catch (err) {
+    console.error("Error fetching question by id:", err);
+    res.status(500).json({ error: "Не удалось получить вопрос" });
+  }
 });
 
 router.post("/tests/questions", (req, res) => {
-  let { subjectId, topicId, taskNumber, task_number, type, question, options, correctIndex, correctAnswer, solutionKey, maxPoints, criteria, explanation, points } = req.body || {};
-  if (!question || (!topicId && !subjectId)) {
+  let {
+    subjectId,
+    subject_id,
+    topicId,
+    topic_id,
+    taskNumber,
+    task_number,
+    type,
+    question,
+    options,
+    options_json,
+    correctIndex,
+    correct_index,
+    correctAnswer,
+    solutionKey,
+    maxPoints,
+    criteria,
+    criteria_json,
+    explanation,
+    points,
+  } = req.body || {};
+
+  const targetSubjectId = subjectId || subject_id;
+  let finalTopicId = topicId || topic_id;
+
+  if (!question || (!finalTopicId && !targetSubjectId)) {
     return res.status(400).json({ error: "Укажите предмет/тему и текст вопроса" });
   }
 
-  let finalTopicId = topicId;
-
   if (finalTopicId) {
     const existingTopic = db.prepare("SELECT id FROM topics WHERE id = ?").get(finalTopicId);
-    if (!existingTopic && subjectId) {
+    if (!existingTopic && targetSubjectId) {
       finalTopicId = null;
     }
   }
 
-  if (!finalTopicId && subjectId) {
-    const firstTopic = db.prepare("SELECT id FROM topics WHERE subject_id = ? ORDER BY sort_order ASC").get(subjectId);
+  if (!finalTopicId && targetSubjectId) {
+    const firstTopic = db
+      .prepare("SELECT id FROM topics WHERE subject_id = ? ORDER BY sort_order ASC")
+      .get(targetSubjectId);
     if (firstTopic) {
       finalTopicId = firstTopic.id;
     } else {
-      finalTopicId = `top_${subjectId}_gen_${Date.now()}`;
+      finalTopicId = `top_${targetSubjectId}_gen_${Date.now()}`;
       db.prepare(
         "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, 0, '45 мин', '')"
-      ).run(finalTopicId, subjectId, "Общие задания");
+      ).run(finalTopicId, targetSubjectId, "Общие задания");
     }
   }
 
@@ -315,29 +419,209 @@ router.post("/tests/questions", (req, res) => {
   const qTaskNum = Number(taskNumber ?? task_number ?? 0);
   const qId = `q_${Date.now()}_${randomBytes(2).toString("hex")}`;
   const finalPoints = type === "extended" ? Number(maxPoints || points || 3) : Number(points || 1);
-  const finalCorrectAnswer = type === "extended" 
-    ? { solutionKey: solutionKey || "", maxPoints: finalPoints, criteria: Array.isArray(criteria) ? criteria : [] }
-    : (correctAnswer || null);
+  const finalCriteria = Array.isArray(criteria)
+    ? criteria
+    : typeof criteria_json === "string"
+      ? JSON.parse(criteria_json || "[]")
+      : [];
+  const finalCorrectAnswer =
+    type === "extended"
+      ? { solutionKey: solutionKey || "", maxPoints: finalPoints, criteria: finalCriteria }
+      : correctAnswer || null;
+
+  let optionsArr = [];
+  if (Array.isArray(options)) {
+    optionsArr = options;
+  } else if (typeof options_json === "string") {
+    try {
+      optionsArr = JSON.parse(options_json);
+    } catch {
+      optionsArr = [];
+    }
+  }
+
+  const finalCorrectIndex = typeof correctIndex === "number" ? correctIndex : (typeof correct_index === "number" ? correct_index : 0);
 
   db.prepare(
-    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number, solution_key, criteria_json, max_points)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     qId,
     finalTopicId,
     type || "single",
     question,
-    JSON.stringify(options || []),
-    typeof correctIndex === "number" ? correctIndex : 0,
+    JSON.stringify(optionsArr),
+    finalCorrectIndex,
     JSON.stringify(finalCorrectAnswer),
     explanation || "",
     finalPoints,
-    qTaskNum
+    qTaskNum,
+    solutionKey || "",
+    JSON.stringify(finalCriteria),
+    finalPoints
   );
 
   logAdminActivity(req.user.id, "CREATE_QUESTION", { qId, topicId: finalTopicId, taskNumber: qTaskNum }, req.ip);
 
   res.status(201).json({ id: qId, ok: true });
+});
+
+router.patch("/tests/questions/:id", (req, res) => {
+  const qId = req.params.id;
+  const existing = db.prepare("SELECT * FROM questions WHERE id = ?").get(qId);
+  if (!existing) {
+    return res.status(404).json({ error: "Вопрос не найден" });
+  }
+
+  const body = req.body || {};
+  const {
+    question,
+    taskNumber,
+    task_number,
+    type,
+    options,
+    options_json,
+    correctIndex,
+    correct_index,
+    solutionKey,
+    solution_key,
+    maxPoints,
+    max_points,
+    criteria,
+    criteria_json,
+    explanation,
+    points,
+    correctAnswer,
+    correct_answer_json,
+    topicId,
+    topic_id,
+    subjectId,
+    subject_id,
+  } = body;
+
+  const updatedQuestion = question !== undefined ? String(question) : existing.question;
+  const updatedType = type !== undefined ? String(type) : existing.type;
+  const updatedTaskNumber =
+    taskNumber !== undefined
+      ? Number(taskNumber)
+      : task_number !== undefined
+        ? Number(task_number)
+        : existing.task_number;
+
+  let updatedOptionsJson = existing.options_json;
+  if (options !== undefined) {
+    updatedOptionsJson = JSON.stringify(Array.isArray(options) ? options : []);
+  } else if (options_json !== undefined) {
+    updatedOptionsJson = typeof options_json === "string" ? options_json : JSON.stringify(options_json);
+  }
+
+  const updatedCorrectIndex =
+    correctIndex !== undefined
+      ? Number(correctIndex)
+      : correct_index !== undefined
+        ? Number(correct_index)
+        : existing.correct_index;
+
+  const updatedExplanation = explanation !== undefined ? String(explanation) : existing.explanation;
+
+  const updatedPoints =
+    points !== undefined
+      ? Number(points)
+      : maxPoints !== undefined
+        ? Number(maxPoints)
+        : existing.points;
+  const updatedMaxPoints =
+    maxPoints !== undefined
+      ? Number(maxPoints)
+      : max_points !== undefined
+        ? Number(max_points)
+        : updatedType === "extended"
+          ? updatedPoints
+          : existing.max_points || 1;
+
+  const updatedSolutionKey =
+    solutionKey !== undefined
+      ? String(solutionKey)
+      : solution_key !== undefined
+        ? String(solution_key)
+        : existing.solution_key || "";
+
+  let updatedCriteriaJson = existing.criteria_json;
+  if (criteria !== undefined) {
+    updatedCriteriaJson = JSON.stringify(Array.isArray(criteria) ? criteria : []);
+  } else if (criteria_json !== undefined) {
+    updatedCriteriaJson = typeof criteria_json === "string" ? criteria_json : JSON.stringify(criteria_json);
+  }
+
+  let updatedCorrectAnswerJson = existing.correct_answer_json;
+  if (correctAnswer !== undefined) {
+    updatedCorrectAnswerJson = typeof correctAnswer === "string" ? correctAnswer : JSON.stringify(correctAnswer);
+  } else if (correct_answer_json !== undefined) {
+    updatedCorrectAnswerJson = typeof correct_answer_json === "string" ? correct_answer_json : JSON.stringify(correct_answer_json);
+  } else if (updatedType === "extended") {
+    let parsedCriteria = [];
+    try {
+      if (updatedCriteriaJson) parsedCriteria = JSON.parse(updatedCriteriaJson);
+    } catch {
+      parsedCriteria = [];
+    }
+    updatedCorrectAnswerJson = JSON.stringify({
+      solutionKey: updatedSolutionKey,
+      maxPoints: updatedMaxPoints,
+      criteria: parsedCriteria,
+    });
+  }
+
+  let updatedTopicId = existing.topic_id;
+  const targetTopicId = topicId || topic_id;
+  const targetSubjectId = subjectId || subject_id;
+
+  if (targetTopicId) {
+    const topicExists = db.prepare("SELECT id FROM topics WHERE id = ?").get(targetTopicId);
+    if (topicExists) updatedTopicId = targetTopicId;
+  } else if (targetSubjectId) {
+    const firstTopic = db
+      .prepare("SELECT id FROM topics WHERE subject_id = ? ORDER BY sort_order ASC")
+      .get(targetSubjectId);
+    if (firstTopic) {
+      updatedTopicId = firstTopic.id;
+    }
+  }
+
+  db.prepare(
+    `UPDATE questions SET
+      topic_id = ?,
+      type = ?,
+      question = ?,
+      options_json = ?,
+      correct_index = ?,
+      explanation = ?,
+      points = ?,
+      correct_answer_json = ?,
+      task_number = ?,
+      solution_key = ?,
+      criteria_json = ?,
+      max_points = ?
+    WHERE id = ?`
+  ).run(
+    updatedTopicId,
+    updatedType,
+    updatedQuestion,
+    updatedOptionsJson,
+    updatedCorrectIndex,
+    updatedExplanation,
+    updatedPoints,
+    updatedCorrectAnswerJson,
+    updatedTaskNumber,
+    updatedSolutionKey,
+    updatedCriteriaJson,
+    updatedMaxPoints,
+    qId
+  );
+
+  logAdminActivity(req.user.id, "UPDATE_QUESTION", { qId, taskNumber: updatedTaskNumber }, req.ip);
+
+  res.json({ ok: true, id: qId });
 });
 
 router.delete("/tests/questions/:id", (req, res) => {

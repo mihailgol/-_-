@@ -109,4 +109,54 @@ test.describe("Admin Panel & Editor Systems — QA E2E Tests", () => {
     await expect(page.locator("#testTabAIContent")).toBeVisible();
     await expect(page.locator("#testTabAIContent")).toContainText("В разработке");
   });
+
+  test("база вопросов администратора — фильтрация, поиск и модальное окно редактирования", async ({ page }) => {
+    // Вход в панель администратора
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { renderAdminDashboard } = await import("/js/modules/admin-dashboard.js");
+      switchView("admin");
+      renderAdminDashboard();
+    });
+
+    await expect(page.locator("#view-admin")).toBeVisible();
+
+    // Переключение на вкладку "База вопросов"
+    const questionsTabBtn = page.locator('.btn-tab[data-admin-tab="questions"]');
+    await expect(questionsTabBtn).toBeVisible();
+    await questionsTabBtn.click();
+
+    // Проверка отображения таблицы и панели фильтров
+    await expect(page.locator("#adminQuestionsTable")).toBeVisible();
+    await expect(page.locator("#adminQuestionSearchInput")).toBeVisible();
+    await expect(page.locator("#adminQuestionSubjectFilter")).toBeVisible();
+    await expect(page.locator("#adminQuestionTaskNumberFilter")).toBeVisible();
+    await expect(page.locator("#adminQuestionTypeFilter")).toBeVisible();
+
+    // Проверка наличия строк с вопросами
+    const rows = page.locator("#adminQuestionsTableBody tr");
+    await expect(rows.first()).toBeVisible();
+    const initialCount = await rows.count();
+    expect(initialCount).toBeGreaterThan(0);
+
+    // Фильтрация по предмету (Математика)
+    await page.locator("#adminQuestionSubjectFilter").selectOption("math");
+    await expect(page.locator("#adminQuestionsTableBody tr").first()).toBeVisible();
+
+    // Поиск по ключевому слову
+    await page.locator("#adminQuestionSearchInput").fill("уравнен");
+    await expect(page.locator("#adminQuestionsTableBody")).toContainText("уравнен");
+
+    // Открытие модального окна редактирования первого отфильтрованного вопроса
+    const firstEditBtn = page.locator(".edit-question-btn").first();
+    await firstEditBtn.click();
+    await expect(page.locator("#adminModal")).toHaveClass(/active/);
+    await expect(page.locator("#adminEditQuestionForm")).toBeVisible();
+    await expect(page.locator("#editQuestionText")).toBeVisible();
+
+    // Закрытие модального окна редактирования
+    await page.locator("#cancelEditQuestionBtn").click();
+    await expect(page.locator("#adminModal")).not.toHaveClass(/active/);
+  });
 });
+

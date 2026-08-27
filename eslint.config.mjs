@@ -10,6 +10,7 @@ export default [
       "playwright-report/",
       "js/lucide.min.js",
       "coverage/",
+      "audit-report/",
       ".serena/",
       ".agents/",
       ".agent/",

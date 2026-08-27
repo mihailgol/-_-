@@ -1559,6 +1559,11 @@
                 <span class="quiz-progress-text" id="quizProgressText">Вопрос 1 из 5</span>
               </div>
 
+              <div class="quiz-minimap-container" id="quizMinimapContainer">
+                <div class="quiz-minimap-label">Вопросы:</div>
+                <div class="quiz-minimap-grid" id="quizMinimapGrid"></div>
+              </div>
+
               <div class="quiz-card" id="quizCard">
                 <div class="quiz-question-text" id="quizQuestionText">
                   Какой органоид клетки отвечает за синтез АТФ в процессе клеточного дыхания?
@@ -2057,12 +2062,19 @@
     </div>
 
     <div class="modal-overlay" id="teacherReviewModal">
-      <div class="modal-card" style="max-width: 700px;">
+      <div class="modal-card" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
         <button class="modal-close-btn" data-close-modal="teacherReviewModal">&times;</button>
         <div style="padding: 24px;">
           <h3 style="margin-top: 0; margin-bottom: 16px;">📝 Проверка задания учителем</h3>
           <div id="teacherReviewBody"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="imageLightboxModal">
+      <div class="modal-card" style="max-width: 90vw; background: transparent; box-shadow: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <button class="modal-close-btn" data-close-modal="imageLightboxModal" style="color: #fff; font-size: 2rem; top: 10px; right: 20px;">&times;</button>
+        <img id="lightboxImage" src="" alt="Фотография работы" style="max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" />
       </div>
     </div>
 

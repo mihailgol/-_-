@@ -134,8 +134,34 @@
 - **Решение:** В [tests/unit/release_features.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/release_features.test.mjs), [tests/unit/site_settings.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/site_settings.test.mjs) и [tests/unit/support_tickets.test.mjs](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/tests/unit/support_tickets.test.mjs) добавлены хуки `beforeEach(() => { resetDb(); initDb(); })`.
 - **Статус:** исправлено, подтверждено 100% прохождением всех 21 юнит-файлов (145/145 тестов).
 
+### 25. Загрузка фотографий выполненных работ учеников (Часть 2 ОГЭ/ЕГЭ)
+- **Симптом:** Отсутствовала возможность прикрепления сканов/фотографий бланков ответов и рукописных решений учеников при выполнении заданий Части 2.
+- **Причина:** Таблица `extended_submissions` не содержала поле для хранения прикрепленных изображений, отсутствовал API-эндпоинт загрузки файлов и отображение фото в кабинете репетитора.
+- **Решение:** В [server/db.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/db.js) добавлено поле `attached_photos_json`. Создан эндпоинт `POST /api/upload` в [server/routes/upload.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/routes/upload.js). Обновлена модалка самопроверки [js/modules/mock-exam.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/js/modules/mock-exam.js) и кабинет учителя [js/modules/teacher.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/js/modules/teacher.js) с добавлением интерактивного лайтбокса `#imageLightboxModal`.
+### 26. Ошибка TypeError: navigateTo is not a function при клике на блок профиля
+- **Симптом:** При клике на блок пользователя `#sidebarUserBlock` в консоли браузера возникало необработанное исключение `TypeError: navigateTo is not a function at profile.js:24:9`.
+- **Причина:** `js/modules/profile.js` пытался динамически импортировать несуществующую функцию `navigateTo` из `./state.js`.
+- **Решение:** В [js/modules/profile.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/js/modules/profile.js) импортированы `switchView` из `./navigation.js` и `openModal` из `./ui.js`. Для авторизованных пользователей выполняется переход в профиль `switchView("profile")`, для гостей открывается модальное окно авторизации `openModal("authModal")`.
+- **Статус:** исправлено, подтверждено в браузере.
+
+### 27. Блокировка кликов неактивными модальными окнами при повторном открытии
+- **Симптом:** При открытии модального окна авторизации или профиля клики могли перехватываться предыдущим открытым модальным окном (например, `premiumModal`).
+- **Причина:** `openModal(id)` не сбрасывал класс `active` у ранее открытых модальных оверлеев.
+- **Решение:** В [js/modules/ui.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/js/modules/ui.js) в `openModal()` добавлена автоматическая деактивация всех других модальных окон перед открытием целевого.
+- **Статус:** исправлено, подтверждено в браузере.
+
+### 28. Ошибка 401 Unauthorized при запросе попыток и статистики пользователя в режиме гостя
+- **Симптом:** При открытии личного кабинета `#profile` неавторизованным пользователем в консоль выводились ошибки сетевых запросов `Failed to load resource: the server responded with a status of 401 (Unauthorized) @ /api/progress/attempts`.
+- **Причина:** Эндпоинты `/api/progress/stats` и `/api/progress/attempts` использовали строгий middleware `requireAuth`, отдавая 401 ошибку вместо пустого списка для гостей.
+- **Решение:** В [server/routes/progress.js](file:///c:/Users/мишка/Desktop/сайтик_бахчасарай/server/routes/progress.js) эндпоинты переведены на `optionalAuth` с возвратом `{ attempts: [] }` и нулевой статистики для гостей со статусом 200 OK.
+- **Статус:** исправлено, подтверждено в браузере.
+
 ## Открытые вопросы
 - Содержимое конспектов/вопросов — учебный контент, динамически пополняется.
 - Платежи Premium — mock-заглушка для тестирования без внешнего эквайринга.
+
+
+
+
 
 

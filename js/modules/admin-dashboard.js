@@ -57,6 +57,7 @@ function renderAdminOverview(container, data) {
         <button class="btn btn-tab" data-admin-tab="teachers">👨‍🏫 Учителя</button>
         <button class="btn btn-tab" data-admin-tab="subscriptions">💳 Подписки</button>
         <button class="btn btn-tab" data-admin-tab="theory">📖 Теория</button>
+        <button class="btn btn-tab" data-admin-tab="questions">❓ База вопросов</button>
         <button class="btn btn-tab" data-admin-tab="tests">📝 Тесты</button>
         <button class="btn btn-tab" data-admin-tab="analytics">📈 Аналитика</button>
         <button class="btn btn-tab" data-admin-tab="support">📩 Обращения</button>
@@ -377,6 +378,20 @@ async function loadAdminTabContent(tabName) {
         }
       });
     });
+    return;
+  }
+
+  if (tabName === "questions") {
+    let questionsList;
+    try {
+      const res = await api("/api/admin/tests/questions");
+      questionsList = res?.questions || [];
+    } catch (err) {
+      showToast("⚠️ Ошибка", err.message || "Не удалось загрузить вопросы");
+      questionsList = [];
+    }
+
+    renderQuestionsTab(contentArea, questionsList);
     return;
   }
 
@@ -747,3 +762,426 @@ async function renderAdminSupportTickets(contentArea) {
     showToast("⚠️ Ошибка", err.message || "Не удалось загрузить обращения");
   }
 }
+
+const SUBJECTS_LIST = [
+  { id: "math", title: "Математика" },
+  { id: "russian", title: "Русский язык" },
+  { id: "biology", title: "Биология" },
+  { id: "chemistry", title: "Химия" },
+  { id: "physics", title: "Физика" },
+  { id: "informatics", title: "Информатика" },
+  { id: "social", title: "Обществознание" },
+  { id: "history", title: "История" },
+  { id: "literature", title: "Литература" },
+  { id: "geography", title: "География" },
+];
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getTypeBadge(type) {
+  switch (type) {
+    case "single":
+      return '<span style="background: rgba(99, 102, 241, 0.12); color: #6366f1; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">1️⃣ Одиночный</span>';
+    case "multiple":
+      return '<span style="background: rgba(16, 185, 129, 0.12); color: #10b981; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">☑️ Множественный</span>';
+    case "text":
+      return '<span style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">✍️ Текст</span>';
+    case "extended":
+      return '<span style="background: rgba(236, 72, 153, 0.12); color: #ec4899; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">📝 Часть 2 (ФИПИ)</span>';
+    case "matching":
+      return '<span style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">🔄 Соответствие</span>';
+    case "sequence":
+      return '<span style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">🔢 Последовательность</span>';
+    default:
+      return `<span style="background: var(--color-bg-secondary); color: var(--color-text-secondary); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem;">${escapeHtml(type) || "Стандарт"}</span>`;
+  }
+}
+
+function renderQuestionsTab(contentArea, initialQuestions) {
+  let questions = [...initialQuestions];
+  let filter = {
+    q: "",
+    subjectId: "all",
+    taskNumber: "",
+    type: "all",
+  };
+
+  function getFilteredQuestions() {
+    return questions.filter((item) => {
+      if (filter.subjectId !== "all" && item.subject_id !== filter.subjectId) {
+        return false;
+      }
+      if (filter.taskNumber && String(item.task_number) !== String(filter.taskNumber)) {
+        return false;
+      }
+      if (filter.type !== "all" && item.type !== filter.type) {
+        return false;
+      }
+      if (filter.q) {
+        const query = filter.q.toLowerCase();
+        const textMatch = String(item.question || "").toLowerCase().includes(query);
+        const idMatch = String(item.id || "").toLowerCase().includes(query);
+        const subjMatch = String(item.subject_title || "").toLowerCase().includes(query);
+        const topicMatch = String(item.topic_title || "").toLowerCase().includes(query);
+        if (!textMatch && !idMatch && !subjMatch && !topicMatch) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  function renderTableRows(filtered) {
+    const tbody = document.getElementById("adminQuestionsTableBody");
+    const countBadge = document.getElementById("adminQuestionsCountBadge");
+    if (countBadge) {
+      countBadge.textContent = `${filtered.length} из ${questions.length}`;
+    }
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="padding: 32px; text-align: center; color: var(--color-text-secondary);">
+            Вопросы по заданным фильтрам не найдены
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtered
+      .map((q) => {
+        const previewText =
+          q.question && q.question.length > 120
+            ? q.question.slice(0, 120) + "..."
+            : q.question || "—";
+        return `
+          <tr style="border-bottom: 1px solid var(--color-border-light);">
+            <td style="padding: 10px; font-family: monospace; font-size: 0.8rem; color: var(--color-text-secondary); white-space: nowrap;">
+              #${escapeHtml(q.id)}
+            </td>
+            <td style="padding: 10px; white-space: nowrap;">
+              <span style="font-weight: 600;">${escapeHtml(q.subject_title || q.subject_id || "Предмет")}</span>
+            </td>
+            <td style="padding: 10px; text-align: center; white-space: nowrap;">
+              <span style="display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--color-bg-secondary); font-weight: 700; font-size: 0.8rem;">
+                №${q.task_number || 0}
+              </span>
+            </td>
+            <td style="padding: 10px; white-space: nowrap;">
+              ${getTypeBadge(q.type)}
+            </td>
+            <td style="padding: 10px; max-width: 360px; word-break: break-word; font-size: 0.88rem; line-height: 1.4;">
+              <div style="font-weight: 500;">${escapeHtml(previewText)}</div>
+              ${q.topic_title ? `<div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 2px;">Тема: ${escapeHtml(q.topic_title)}</div>` : ""}
+            </td>
+            <td style="padding: 10px; white-space: nowrap;">
+              <div style="display: flex; gap: 6px;">
+                <button class="btn btn-outline edit-question-btn" data-id="${escapeHtml(q.id)}" style="padding: 4px 8px; font-size: 0.78rem;">
+                  ✏️ Редактировать
+                </button>
+                <button class="btn btn-outline delete-question-btn" data-id="${escapeHtml(q.id)}" style="padding: 4px 8px; font-size: 0.78rem; color: #ef4444; border-color: #fca5a5;">
+                  🗑️ Удалить
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    tbody.querySelectorAll(".edit-question-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const item = questions.find((x) => x.id === id);
+        if (item) {
+          openEditQuestionModal(item, async () => {
+            try {
+              const res = await api("/api/admin/tests/questions");
+              questions = res?.questions || [];
+              renderTableRows(getFilteredQuestions());
+            } catch (err) {
+              void err;
+            }
+          });
+        }
+      });
+    });
+
+    tbody.querySelectorAll(".delete-question-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        if (confirm(`Вы действительно хотите удалить вопрос #${id} из базы данных?`)) {
+          try {
+            await api(`/api/admin/tests/questions/${id}`, { method: "DELETE" });
+            showToast("🗑️ Удалено", "Вопрос успешно удален из базы данных");
+            questions = questions.filter((x) => x.id !== id);
+            renderTableRows(getFilteredQuestions());
+          } catch (err) {
+            showToast("⚠️ Ошибка", err.message || "Не удалось удалить вопрос");
+          }
+        }
+      });
+    });
+  }
+
+  contentArea.innerHTML = `
+    <div style="background: var(--color-card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--color-border);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0;">❓ База вопросов и заданий</h3>
+            <span id="adminQuestionsCountBadge" style="background: var(--color-bg-secondary); padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; color: var(--color-text-secondary);">
+              ${questions.length} вопросов
+            </span>
+          </div>
+          <p style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.85rem;">
+            Табличный реестр всех вопросов платформы по 10 предметам с фильтрацией, редактированием и удалением.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="adminCreateQuestionFromRegistryBtn">➕ Создать вопрос в Конструкторе</button>
+        </div>
+      </div>
+
+      <!-- Toolbar / Filters -->
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; background: var(--color-bg-secondary); padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+        <div style="flex: 2; min-width: 220px;">
+          <input type="text" id="adminQuestionSearchInput" class="search-input" placeholder="🔍 Поиск по тексту вопроса, ID или теме..." style="width: 100%; box-sizing: border-box;" />
+        </div>
+        <div style="flex: 1; min-width: 160px;">
+          <select id="adminQuestionSubjectFilter" class="search-input" style="width: 100%; box-sizing: border-box;">
+            <option value="all">Все 10 предметов</option>
+            ${SUBJECTS_LIST.map((s) => `<option value="${s.id}">${s.title}</option>`).join("")}
+          </select>
+        </div>
+        <div style="width: 120px;">
+          <input type="number" id="adminQuestionTaskNumberFilter" class="search-input" placeholder="№ задания" min="1" max="50" style="width: 100%; box-sizing: border-box;" />
+        </div>
+        <div style="flex: 1; min-width: 160px;">
+          <select id="adminQuestionTypeFilter" class="search-input" style="width: 100%; box-sizing: border-box;">
+            <option value="all">Все типы вопросов</option>
+            <option value="single">1️⃣ Одиночный выбор</option>
+            <option value="multiple">☑️ Множественный выбор</option>
+            <option value="text">✍️ Текстовый ввод</option>
+            <option value="extended">📝 Часть 2 (ФИПИ)</option>
+            <option value="matching">🔄 Соответствие</option>
+            <option value="sequence">🔢 Последовательность</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn btn-outline" id="adminQuestionResetBtn" style="padding: 8px 14px; font-size: 0.85rem;">
+            🔄 Сброс
+          </button>
+        </div>
+      </div>
+
+      <!-- Questions Table -->
+      <div style="overflow-x: auto;">
+        <table id="adminQuestionsTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--color-border); color: var(--color-text-secondary);">
+              <th style="padding: 10px;">ID</th>
+              <th style="padding: 10px;">Предмет</th>
+              <th style="padding: 10px; text-align: center;">№ Задания</th>
+              <th style="padding: 10px;">Тип</th>
+              <th style="padding: 10px;">Текст вопроса</th>
+              <th style="padding: 10px;">Действия</th>
+            </tr>
+          </thead>
+          <tbody id="adminQuestionsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const searchInput = document.getElementById("adminQuestionSearchInput");
+  const subjectFilter = document.getElementById("adminQuestionSubjectFilter");
+  const taskNumberFilter = document.getElementById("adminQuestionTaskNumberFilter");
+  const typeFilter = document.getElementById("adminQuestionTypeFilter");
+  const resetBtn = document.getElementById("adminQuestionResetBtn");
+  const createBtn = document.getElementById("adminCreateQuestionFromRegistryBtn");
+
+  searchInput?.addEventListener("input", (e) => {
+    filter.q = e.target.value;
+    renderTableRows(getFilteredQuestions());
+  });
+
+  subjectFilter?.addEventListener("change", (e) => {
+    filter.subjectId = e.target.value;
+    renderTableRows(getFilteredQuestions());
+  });
+
+  taskNumberFilter?.addEventListener("input", (e) => {
+    filter.taskNumber = e.target.value.trim();
+    renderTableRows(getFilteredQuestions());
+  });
+
+  typeFilter?.addEventListener("change", (e) => {
+    filter.type = e.target.value;
+    renderTableRows(getFilteredQuestions());
+  });
+
+  resetBtn?.addEventListener("click", () => {
+    filter = { q: "", subjectId: "all", taskNumber: "", type: "all" };
+    if (searchInput) searchInput.value = "";
+    if (subjectFilter) subjectFilter.value = "all";
+    if (taskNumberFilter) taskNumberFilter.value = "";
+    if (typeFilter) typeFilter.value = "all";
+    renderTableRows(getFilteredQuestions());
+  });
+
+  createBtn?.addEventListener("click", () => {
+    import("./navigation.js").then((m) => m.switchView("test-editor"));
+    import("./test-editor.js").then((m) => m.initTestEditor());
+  });
+
+  renderTableRows(getFilteredQuestions());
+}
+
+function openEditQuestionModal(q, onSaved) {
+  const body = document.getElementById("adminModalBody");
+  if (!body) return;
+
+  let optionsArr = [];
+  try {
+    if (typeof q.options_json === "string") {
+      optionsArr = JSON.parse(q.options_json);
+    } else if (Array.isArray(q.options)) {
+      optionsArr = q.options;
+    }
+  } catch {
+    optionsArr = [];
+  }
+
+  const optionsAsText = Array.isArray(optionsArr) ? optionsArr.join("\n") : "";
+
+  body.innerHTML = `
+    <div style="padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.25rem;">✏️ Редактирование вопроса</h3>
+        <span style="font-family: monospace; font-size: 0.8rem; background: var(--color-bg-secondary); padding: 2px 8px; border-radius: 6px;">#${escapeHtml(q.id)}</span>
+      </div>
+
+      <form id="adminEditQuestionForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Предмет</label>
+          <select id="editQuestionSubject" class="search-input" style="width: 100%; box-sizing: border-box;">
+            ${SUBJECTS_LIST.map((s) => `<option value="${s.id}" ${q.subject_id === s.id ? "selected" : ""}>${s.title}</option>`).join("")}
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">№ Задания</label>
+            <input type="number" id="editQuestionTaskNumber" class="search-input" value="${q.task_number || 1}" min="1" max="50" style="width: 100%; box-sizing: border-box;" required />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Тип вопроса</label>
+            <select id="editQuestionType" class="search-input" style="width: 100%; box-sizing: border-box;">
+              <option value="single" ${q.type === "single" ? "selected" : ""}>1️⃣ Одиночный</option>
+              <option value="multiple" ${q.type === "multiple" ? "selected" : ""}>☑️ Множественный</option>
+              <option value="text" ${q.type === "text" ? "selected" : ""}>✍️ Текст</option>
+              <option value="extended" ${q.type === "extended" ? "selected" : ""}>📝 Часть 2 (ФИПИ)</option>
+              <option value="matching" ${q.type === "matching" ? "selected" : ""}>🔄 Соответствие</option>
+              <option value="sequence" ${q.type === "sequence" ? "selected" : ""}>🔢 Последовательность</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Баллы (Max)</label>
+            <input type="number" id="editQuestionPoints" class="search-input" value="${q.max_points || q.points || 1}" min="1" max="10" style="width: 100%; box-sizing: border-box;" required />
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Текст вопроса</label>
+          <textarea id="editQuestionText" class="search-input" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical;" required>${escapeHtml(q.question || "")}</textarea>
+        </div>
+
+        <div id="editQuestionOptionsWrapper">
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Варианты ответов (по одному на строку)</label>
+          <textarea id="editQuestionOptions" class="search-input" rows="3" placeholder="Вариант 1&#10;Вариант 2&#10;Вариант 3&#10;Вариант 4" style="width: 100%; box-sizing: border-box; resize: vertical;">${escapeHtml(optionsAsText)}</textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Правильный вариант (1..N)</label>
+            <input type="number" id="editQuestionCorrectIndex" class="search-input" value="${typeof q.correct_index === "number" ? q.correct_index + 1 : 1}" min="1" max="10" style="width: 100%; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Ключ / Эталонный ответ</label>
+            <input type="text" id="editQuestionSolutionKey" class="search-input" value="${escapeHtml(q.solution_key || "")}" placeholder="Ответ или ключ" style="width: 100%; box-sizing: border-box;" />
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Пояснение решения</label>
+          <textarea id="editQuestionExplanation" class="search-input" rows="2" placeholder="Объяснение правильного решения..." style="width: 100%; box-sizing: border-box; resize: vertical;">${escapeHtml(q.explanation || "")}</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+          <button type="button" class="btn btn-outline" id="cancelEditQuestionBtn">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="saveEditQuestionBtn">💾 Сохранить изменения</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  openModal("adminModal");
+
+  document.getElementById("cancelEditQuestionBtn")?.addEventListener("click", () => closeModal("adminModal"));
+
+  document.getElementById("adminEditQuestionForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const subjectId = document.getElementById("editQuestionSubject")?.value;
+    const taskNumber = Number(document.getElementById("editQuestionTaskNumber")?.value || 0);
+    const type = document.getElementById("editQuestionType")?.value;
+    const points = Number(document.getElementById("editQuestionPoints")?.value || 1);
+    const questionText = document.getElementById("editQuestionText")?.value.trim();
+    const optionsRaw = document.getElementById("editQuestionOptions")?.value.trim();
+    const correctIdxVal = Number(document.getElementById("editQuestionCorrectIndex")?.value || 1) - 1;
+    const solutionKey = document.getElementById("editQuestionSolutionKey")?.value.trim();
+    const explanation = document.getElementById("editQuestionExplanation")?.value.trim();
+
+    const options = optionsRaw
+      ? optionsRaw
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    try {
+      await api(`/api/admin/tests/questions/${q.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          subjectId,
+          taskNumber,
+          type,
+          points,
+          maxPoints: points,
+          question: questionText,
+          options,
+          correctIndex: Math.max(0, correctIdxVal),
+          solutionKey,
+          explanation,
+        }),
+      });
+
+      showToast("✅ Сохранено", "Вопрос успешно обновлен");
+      closeModal("adminModal");
+      if (onSaved) onSaved();
+    } catch (err) {
+      showToast("⚠️ Ошибка", err.message || "Не удалось сохранить вопрос");
+    }
+  });
+}
+

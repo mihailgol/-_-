@@ -237,20 +237,13 @@ router.post("/:id/submit", optionalAuth, (req, res) => {
   });
 });
 
-router.post("/:id/self-assess", requireAuth, (req, res) => {
+router.post("/:id/self-assess", optionalAuth, (req, res) => {
   const { attemptId, selfScores = {} } = req.body || {};
-
-  const attempt = db
-    .prepare(`SELECT * FROM mock_exam_attempts WHERE id = ? AND user_id = ?`)
-    .get(attemptId, req.user.id);
-
-  if (!attempt) {
-    return res.status(404).json({ error: "Попытка прохождения не найдена" });
-  }
+  const examId = req.params.id;
 
   const exam = db
     .prepare(`SELECT * FROM mock_exams WHERE id = ?`)
-    .get(attempt.mock_exam_id);
+    .get(examId);
 
   if (!exam) {
     return res.status(404).json({ error: "Пробный экзамен не найден" });
@@ -263,84 +256,124 @@ router.post("/:id/self-assess", requireAuth, (req, res) => {
     questions = [];
   }
 
-  let answers;
-  try {
-    answers = JSON.parse(attempt.answers_json);
-  } catch {
-    answers = {};
-  }
-
   let extendedPrimaryEarned = 0;
-
-  // Find student's group if any
-  const member = db
-    .prepare(`SELECT group_id FROM group_members WHERE student_id = ? ORDER BY joined_at DESC LIMIT 1`)
-    .get(req.user.id);
-  const groupId = member ? member.group_id : null;
-
   questions.forEach((q) => {
     if (q.type === "extended") {
       const qScoreObj = selfScores[q.id] || {};
       const score = Math.max(0, Math.min(q.maxPoints || q.points || 3, Number(qScoreObj.score) || 0));
       extendedPrimaryEarned += score;
-
-      const studentAnswer = String(answers[q.id] || "").trim();
-
-      // Check if extended_submission exists for this attempt/question
-      const existing = db
-        .prepare(
-          `SELECT id FROM extended_submissions WHERE user_id = ? AND context_type = 'mock_exam' AND context_id = ? AND question_id = ?`
-        )
-        .get(req.user.id, String(attemptId), String(q.id));
-
-      if (existing) {
-        db.prepare(
-          `UPDATE extended_submissions SET student_answer = ?, self_score = ?, self_breakdown_json = ?, status = 'self_assessed', updated_at = datetime('now') WHERE id = ?`
-        ).run(studentAnswer, score, JSON.stringify(qScoreObj.breakdown || {}), existing.id);
-      } else {
-        db.prepare(
-          `INSERT INTO extended_submissions (user_id, group_id, context_type, context_id, question_id, student_answer, self_score, self_breakdown_json, status)
-           VALUES (?, ?, 'mock_exam', ?, ?, ?, ?, ?, 'self_assessed')`
-        ).run(
-          req.user.id,
-          groupId,
-          String(attemptId),
-          String(q.id),
-          studentAnswer,
-          score,
-          JSON.stringify(qScoreObj.breakdown || {})
-        );
-      }
     }
   });
 
-  // Calculate new primary score (base primary score + extended score)
-  // Base primary score is calculated from non-extended questions
-  let nonExtendedPrimary = 0;
-  questions.forEach((q, idx) => {
-    if (q.type !== "extended") {
-      let selectedIndex = null;
-      if (answers[q.id] !== undefined) selectedIndex = Number(answers[q.id]);
-      else if (answers[idx] !== undefined) selectedIndex = Number(answers[idx]);
-      if (selectedIndex !== null && selectedIndex === q.correctIndex) {
-        nonExtendedPrimary += q.points || 1;
-      }
-    }
+  let maxPrimary = 0;
+  questions.forEach((q) => {
+    maxPrimary += q.maxPoints || q.points || 1;
   });
 
-  const newPrimaryScore = nonExtendedPrimary + extendedPrimaryEarned;
+  if (req.user && attemptId) {
+    const attempt = db
+      .prepare(`SELECT * FROM mock_exam_attempts WHERE id = ? AND user_id = ?`)
+      .get(attemptId, req.user.id);
+
+    if (attempt) {
+      let answers;
+      try {
+        answers = JSON.parse(attempt.answers_json);
+      } catch {
+        answers = {};
+      }
+
+      const member = db
+        .prepare(`SELECT group_id FROM group_members WHERE student_id = ? ORDER BY joined_at DESC LIMIT 1`)
+        .get(req.user.id);
+      const groupId = member ? member.group_id : null;
+
+      questions.forEach((q) => {
+        if (q.type === "extended") {
+          const qScoreObj = selfScores[q.id] || {};
+          const score = Math.max(0, Math.min(q.maxPoints || q.points || 3, Number(qScoreObj.score) || 0));
+          const studentAnswer = String(answers[q.id] || "").trim();
+
+          const attachedPhotos = req.body.attachedPhotos || {};
+          const photosForQ = Array.isArray(attachedPhotos[q.id])
+            ? attachedPhotos[q.id]
+            : Array.isArray(attachedPhotos)
+              ? attachedPhotos
+              : [];
+          const photosJson = JSON.stringify(photosForQ);
+
+          const existing = db
+            .prepare(
+              `SELECT id FROM extended_submissions WHERE user_id = ? AND context_type = 'mock_exam' AND context_id = ? AND question_id = ?`
+            )
+            .get(req.user.id, String(attemptId), String(q.id));
+
+          if (existing) {
+            db.prepare(
+              `UPDATE extended_submissions SET student_answer = ?, attached_photos_json = ?, self_score = ?, self_breakdown_json = ?, status = 'self_assessed', updated_at = datetime('now') WHERE id = ?`
+            ).run(studentAnswer, photosJson, score, JSON.stringify(qScoreObj.breakdown || {}), existing.id);
+          } else {
+            db.prepare(
+              `INSERT INTO extended_submissions (user_id, group_id, context_type, context_id, question_id, student_answer, attached_photos_json, self_score, self_breakdown_json, status)
+               VALUES (?, ?, 'mock_exam', ?, ?, ?, ?, ?, ?, 'self_assessed')`
+            ).run(
+              req.user.id,
+              groupId,
+              String(attemptId),
+              String(q.id),
+              studentAnswer,
+              photosJson,
+              score,
+              JSON.stringify(qScoreObj.breakdown || {})
+            );
+          }
+        }
+      });
+
+      let nonExtendedPrimary = 0;
+      questions.forEach((q, idx) => {
+        if (q.type !== "extended") {
+          let selectedIndex = null;
+          if (answers[q.id] !== undefined) selectedIndex = Number(answers[q.id]);
+          else if (answers[idx] !== undefined) selectedIndex = Number(answers[idx]);
+          if (selectedIndex !== null && selectedIndex === q.correctIndex) {
+            nonExtendedPrimary += q.points || 1;
+          }
+        }
+      });
+
+      const newPrimaryScore = nonExtendedPrimary + extendedPrimaryEarned;
+      const newSecondaryScore = convertScore({
+        examType: exam.exam_type,
+        primaryScore: newPrimaryScore,
+        maxPrimaryScore: attempt.max_primary_score || maxPrimary,
+        conversionTable: exam.conversion_table_json,
+      });
+
+      db.prepare(
+        `UPDATE mock_exam_attempts SET primary_score = ?, secondary_score = ?, self_assessed = 1 WHERE id = ?`
+      ).run(newPrimaryScore, newSecondaryScore, attempt.id);
+
+      return res.json({
+        ok: true,
+        primaryScore: newPrimaryScore,
+        secondaryScore: newSecondaryScore,
+        extendedPrimaryEarned,
+      });
+    }
+  }
+
+  // Fallback for guest or without attemptId
+  const basePrimary = Number(req.body.primaryScore || 0);
+  const newPrimaryScore = basePrimary + extendedPrimaryEarned;
   const newSecondaryScore = convertScore({
     examType: exam.exam_type,
     primaryScore: newPrimaryScore,
-    maxPrimaryScore: attempt.max_primary_score,
+    maxPrimaryScore: maxPrimary,
     conversionTable: exam.conversion_table_json,
   });
 
-  db.prepare(
-    `UPDATE mock_exam_attempts SET primary_score = ?, secondary_score = ?, self_assessed = 1 WHERE id = ?`
-  ).run(newPrimaryScore, newSecondaryScore, attempt.id);
-
-  res.json({
+  return res.json({
     ok: true,
     primaryScore: newPrimaryScore,
     secondaryScore: newSecondaryScore,

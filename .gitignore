@@ -10,5 +10,7 @@ data/
 .agents/
 .obsidian/
 server/*.sqlite*
+audit-report/
+uploads/
 
 

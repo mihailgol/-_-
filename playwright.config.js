@@ -6,11 +6,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
-  reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
+  reporter: process.env.UX_AUDIT
+    ? [["list"], ["html", { open: "never", outputFolder: "audit-report" }]]
+    : [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   use: {
     baseURL: "http://localhost:8000",
-    trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    trace: process.env.UX_AUDIT ? "on" : "on-first-retry",
+    video: process.env.UX_AUDIT ? "on" : "off",
+    screenshot: process.env.UX_AUDIT ? "on" : "only-on-failure",
   },
   projects: [
     {

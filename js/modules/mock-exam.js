@@ -350,6 +350,10 @@ function openSelfAssessmentModal(result) {
   if (!container || !result.extendedQuestions) return;
 
   const extQuestions = result.extendedQuestions;
+  const attachedPhotosMap = {};
+  extQuestions.forEach((q) => {
+    attachedPhotosMap[q.id] = [];
+  });
 
   container.innerHTML = extQuestions
     .map(
@@ -363,6 +367,17 @@ function openSelfAssessmentModal(result) {
         <div style="background: var(--color-card-bg); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
           <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: 4px;">Ваш написанный ответ:</div>
           <div style="font-size: 0.95rem; white-space: pre-wrap;">${q.studentAnswer || "<em style='color: var(--color-text-secondary);'>Ответ не введен</em>"}</div>
+        </div>
+
+        <div style="background: var(--color-card-bg); border: 1px solid var(--color-border); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-text-primary);">📷 Фотографии решения / бланка ответов:</div>
+            <input type="file" accept="image/*" class="work-photo-input" data-q-id="${q.id}" multiple style="display: none;" />
+            <button type="button" class="btn btn-outline upload-photo-btn" data-q-id="${q.id}" style="font-size: 0.85rem; padding: 6px 12px;">
+              📎 Прикрепить фото
+            </button>
+          </div>
+          <div class="photo-previews-container" id="photoPreviews_${q.id}" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;"></div>
         </div>
 
         <div style="background: rgba(82, 196, 26, 0.08); border: 1px solid var(--color-green); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
@@ -390,6 +405,90 @@ function openSelfAssessmentModal(result) {
     )
     .join("");
 
+  container.querySelectorAll(".upload-photo-btn").forEach((btn) => {
+    const qId = btn.getAttribute("data-q-id");
+    const fileInput = container.querySelector(`.work-photo-input[data-q-id="${qId}"]`);
+    if (!fileInput) return;
+
+    btn.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          showToast("⚠️ Ошибка", "Выбирайте только файлы изображений (JPG, PNG)");
+          continue;
+        }
+        try {
+          const reader = new FileReader();
+          reader.onload = async (evt) => {
+            const base64Image = evt.target.result;
+            try {
+              const res = await api("/api/upload", {
+                method: "POST",
+                body: JSON.stringify({ image: base64Image }),
+              });
+              if (res.url) {
+                attachedPhotosMap[qId].push(res.url);
+                renderPhotoPreviews(qId);
+              }
+            } catch (err) {
+              console.error("Failed to upload photo:", err);
+              showToast("⚠️ Ошибка", "Не удалось загрузить фотографию");
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      fileInput.value = "";
+    });
+  });
+
+  function renderPhotoPreviews(qId) {
+    const previewBox = document.getElementById(`photoPreviews_${qId}`);
+    if (!previewBox) return;
+    const photos = attachedPhotosMap[qId] || [];
+
+    if (photos.length === 0) {
+      previewBox.innerHTML = `<span style="font-size: 0.85rem; color: var(--color-text-secondary); font-style: italic;">Фотографии работы не прикреплены</span>`;
+      return;
+    }
+
+    previewBox.innerHTML = photos
+      .map(
+        (url, pIdx) => `
+        <div style="position: relative; width: 80px; height: 80px;">
+          <img src="${url}" class="preview-work-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--color-border); cursor: pointer;" title="Посмотреть крупнее" />
+          <button type="button" class="delete-photo-btn" data-q-id="${qId}" data-idx="${pIdx}" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">&times;</button>
+        </div>
+      `
+      )
+      .join("");
+
+    previewBox.querySelectorAll(".preview-work-img").forEach((img) => {
+      img.addEventListener("click", () => {
+        const lbImg = document.getElementById("lightboxImage");
+        if (lbImg) {
+          lbImg.src = img.src;
+          openModal("imageLightboxModal");
+        }
+      });
+    });
+
+    previewBox.querySelectorAll(".delete-photo-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.getAttribute("data-idx"), 10);
+        attachedPhotosMap[qId].splice(idx, 1);
+        renderPhotoPreviews(qId);
+      });
+    });
+  }
+
+  extQuestions.forEach((q) => renderPhotoPreviews(q.id));
+
   openModal("selfAssessmentModal");
 
   const saveBtn = document.getElementById("saveSelfAssessmentBtn");
@@ -407,12 +506,14 @@ function openSelfAssessmentModal(result) {
           method: "POST",
           body: JSON.stringify({
             attemptId: result.attemptId,
+            primaryScore: result.primaryScore,
             selfScores,
+            attachedPhotos: attachedPhotosMap,
           }),
         });
 
         closeModal("selfAssessmentModal");
-        showToast("🎉 Успешно", "Самооценка сохранена! Итоговый результат обновлен.");
+        showToast("🎉 Успешно", "Самооценка и фотографии сохранены! Результат обновлен.");
 
         document.getElementById("mockPrimaryScore").textContent = `${res.primaryScore} / ${result.maxPrimaryScore}`;
         document.getElementById("mockSecondaryScore").textContent = res.secondaryScore;

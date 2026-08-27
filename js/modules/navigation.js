@@ -68,7 +68,10 @@ export function switchView(viewName, { replace = false } = {}) {
     }
   });
 
-  document.querySelector(".view-container").scrollTop = 0;
+  const viewContainer = document.querySelector(".view-container");
+  if (viewContainer) {
+    viewContainer.scrollTop = 0;
+  }
 
   if (HASH_VIEWS.includes(viewName) && location.hash !== `#${viewName}`) {
     if (replace) {
@@ -262,6 +265,7 @@ export function initRouter() {
         });
       });
 
+      searchDropdown.classList.add("active");
       if (results.length === 0) {
         searchDropdown.innerHTML = `<div class="search-result-empty">Ничего не найдено по запросу "${query}"</div>`;
       } else {

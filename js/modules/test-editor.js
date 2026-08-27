@@ -1,6 +1,234 @@
 import { showToast } from "./ui.js";
 import { api, getRecommendedTaskType } from "./utils.js";
 
+export function getDefaultFIPITemplate(subjectId, taskNumber, examType) {
+  const normSub = String(subjectId || "math").toLowerCase();
+  const taskNum = parseInt(taskNumber, 10) || 1;
+  const rawExam = (examType || (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE").toUpperCase();
+  const exam = rawExam === "OGE" ? "OGE" : "EGE";
+
+  if (normSub === "math") {
+    if (exam === "OGE") {
+      if (taskNum >= 23) {
+        return {
+          solutionKey: "Элементы ответа:\n1) Выполнен верный геометрический чертеж и приведено обоснованное доказательство/расчет.\n2) Получен верный ответ с опорой на геометрические теоремы.",
+          maxPoints: 2,
+          criteriaText: "K1: Доказательство и вычисления выполнены верно (2 б.)\nK2: Допущена вычислительная ошибка при верной логике (1 б.)",
+          topicTitle: `Задание №${taskNum}. Геометрическая задача Части 2 (ФИПИ)`,
+        };
+      }
+      return {
+        solutionKey: "Элементы ответа:\n1) Выполнены алгебраические преобразования / построен график функции.\n2) Обоснованно получен верный числовой ответ / найдены значения параметра.",
+        maxPoints: 2,
+        criteriaText: "K1: Обоснованно получен верный ответ (2 б.)\nK2: Ход решения верен, но допущена вычислительная ошибка (1 б.)",
+        topicTitle: `Задание №${taskNum}. Алгебраическая задача Части 2 (ФИПИ)`,
+      };
+    }
+    if (taskNum === 14 || taskNum === 17) {
+      return {
+        solutionKey: "Элементы ответа:\n1) Построен верный геометрический чертеж и доказано геометрическое утверждение.\n2) Выполнены необходимые вычисления и получен верный численный ответ.",
+        maxPoints: 3,
+        criteriaText: "K1: Доказательство и вычисления выполнены верно (2 б.)\nK2: Допущена ошибка в вычислениях при верном ходе доказательства (1 б.)",
+        topicTitle: `Задание №${taskNum}. Геометрическая задача повышенной сложности (ФИПИ)`,
+      };
+    }
+    if (taskNum === 18 || taskNum === 19) {
+      return {
+        solutionKey: "Элементы ответа:\n1) Проведен полный аналитический/графический анализ условий с параметром или числовой модели.\n2) Выделены все граничные значения и особые точки.\n3) Обоснованно получен полный правильный ответ.",
+        maxPoints: 4,
+        criteriaText: "K1: Полное и обоснованное решение всех пунктов (2 б.)\nK2: Верно решены ключевые подпункты или допущена описка (2 б.)",
+        topicTitle: `Задание №${taskNum}. Задача высокого уровня сложности (ФИПИ)`,
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Выполнены аналитические преобразования и построена верная математическая модель.\n2) Обоснованно получен верный числовой ответ в соответствии с условиями задачи.",
+      maxPoints: 2,
+      criteriaText: "K1: Обоснованно получен верный ответ (2 б.)\nK2: Ход решения верен, но допущена вычислительная ошибка (1 б.)",
+      topicTitle: `Задание №${taskNum}. Развернутое математическое решение (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "russian") {
+    if (exam === "OGE") {
+      if (taskNum === 1) {
+        return {
+          solutionKey: "Элементы ответа:\n1) Точно передано главное содержание всех 3 микротем исходного текста.\n2) Применены 1 или несколько приемов сжатия текста на протяжении всего изложения.\n3) Сохранена смысловая цельность, речевая связность и последовательность.",
+          maxPoints: 7,
+          criteriaText: "K1: Содержание изложения (3 б.)\nK2: Сжатие исходного текста (3 б.)\nK3: Смысловая цельность и последовательность (1 б.)",
+          topicTitle: "Задание №1. Сжатое изложение по прослушанному тексту (ФИПИ)",
+        };
+      }
+      return {
+        solutionKey: "Элементы ответа:\n1) Сформулирован тезис и дано толкование понятия/фрагмента.\n2) Приведены 2 примера-аргумента (из текста и жизненного опыта).\n3) Смысловая цельность, композиционная стройность и речевое оформление.",
+        maxPoints: 7,
+        criteriaText: "K1: Толкование значения слова / тезис (2 б.)\nK2: Наличие примеров-аргументов (3 б.)\nK3: Смысловая цельность и композиция (2 б.)",
+        topicTitle: `Задание №${taskNum}. Сочинение-рассуждение (ФИПИ)`,
+      };
+    }
+    if (taskNum >= 27) {
+      return {
+        solutionKey: "Элементы ответа:\n1) Сформулирована проблема исходного текста и авторская позиция.\n2) Приведены два примера-иллюстрации из текста с пояснениями и указана смысловая связь.\n3) Выражено и обосновано собственное отношение к позиции автора.\n4) Соблюдены нормы орфографии, пунктуации, грамматики и речи.",
+        maxPoints: 10,
+        criteriaText: "K1: Формулировка проблемы и авторской позиции (2 б.)\nK2: Комментарий к проблеме (2 примера и связь) (3 б.)\nK3: Собственная позиция с обоснованием (1 б.)\nK4: Логика, речевые и грамматические нормы (2 б.)\nK5: Соблюдение орфографических и пунктуационных норм (2 б.)",
+        topicTitle: "Задание №27. Сочинение-рассуждение по прочитанному тексту (ФИПИ)",
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Сформулирована позиция/проблема исходного текста с опорой на примеры.\n2) Приведены развернутые комментарии и пояснения смысловой связи.\n3) Соблюдены нормы литературного языка и композиционная стройность.",
+      maxPoints: 3,
+      criteriaText: "K1: Полнота и глубина раскрытия темы (2 б.)\nK2: Логичность, связность и речевое оформление (1 б.)",
+      topicTitle: `Задание №${taskNum}. Развернутый ответ по русскому языку (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "biology") {
+    return {
+      solutionKey: "Элементы ответа:\n1) Указаны ключевые биологические термины, структуры и процессы.\n2) Описана причинно-следственная связь в наблюдаемом явлении/эксперименте.\n3) Сформулирован аргументированный биологический вывод.",
+      maxPoints: 3,
+      criteriaText: "K1: Соответствие ответа эталонным элементам ФИПИ (2 б.)\nK2: Логичность и полнота биологического обоснования (1 б.)",
+      topicTitle: `Задание №${taskNum}. Биологический анализ и обоснование (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "chemistry") {
+    if (taskNum >= 33 || (exam === "OGE" && taskNum === 22)) {
+      return {
+        solutionKey: "Элементы ответа:\n1) Составлены уравнения химических реакций с правильными коэффициентами.\n2) Рассчитаны количества веществ, вступивших в реакцию и образовавшихся продуктов.\n3) Составлены алгебраические пропорции и определены искомые массовые доли.",
+        maxPoints: exam === "OGE" ? 3 : 4,
+        criteriaText: "K1: Составлены верные химические уравнения (2 б.)\nK2: Выполнены стехиометрические расчеты (2 б.)",
+        topicTitle: `Задание №${taskNum}. Расчетная химическая задача (ФИПИ)`,
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Составлены уравнения химических реакций с правильными коэффициентами.\n2) Составлен электронный баланс / ионные уравнения (указаны окислитель и восстановитель).\n3) Вычислены необходимые стехиометрические величины.",
+      maxPoints: 3,
+      criteriaText: "K1: Составлены верные химические уравнения (2 б.)\nK2: Составлен электронный баланс / расчеты (1 б.)",
+      topicTitle: `Задание №${taskNum}. Химический эксперимент и реакции (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "physics") {
+    return {
+      solutionKey: "Элементы ответа:\n1) Записаны исходные физические законы и формулы, описывающие процесс.\n2) Проведены математические преобразования и подстановка числовых данных с размерностями.\n3) Получен верный численный ответ с физическим анализом результата.",
+      maxPoints: 3,
+      criteriaText: "K1: Записаны формулы и получен верный численный ответ (2 б.)\nK2: Правильный ход рассуждений с единичной погрешностью (1 б.)",
+      topicTitle: `Задание №${taskNum}. Физическая задача с развернутым решением (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "informatics") {
+    if (taskNum === 27) {
+      return {
+        solutionKey: "Элементы ответа:\n1) Предложен эффективный алгоритм обработки данных (по времени и памяти).\n2) Написан корректный программный код без синтаксических ошибок.\n3) Программа правильно обрабатывает все тестовые файлы A и B.",
+        maxPoints: 2,
+        criteriaText: "K1: Реализован эффективный и корректный алгоритм (2 б.)\nK2: Алгоритм верен, но не оптимален по ресурсам (1 б.)",
+        topicTitle: "Задание №27. Сложная алгоритмическая задача по программированию (ФИПИ)",
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Предложен корректный алгоритм обработки данных с оптимальной сложностью.\n2) Написан программный код без синтаксических ошибок.\n3) Программа корректно обрабатывает краевые и экстремальные значения данных.",
+      maxPoints: 2,
+      criteriaText: "K1: Реализован эффективный и корректный алгоритм (2 б.)\nK2: Алгоритм верен, но не оптимален по памяти/времени (1 б.)",
+      topicTitle: `Задание №${taskNum}. Алгоритмизация и программирование (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "social") {
+    if (taskNum === 24) {
+      return {
+        solutionKey: "Элементы ответа:\n1) План содержит не менее 3 пунктов, из которых 2 и более детализированы в подпунктах.\n2) Количество подпунктов каждого детализированного пункта составляет не менее 3.\n3) Пункты плана охватывают ключевые аспекты темы без фактических ошибок.",
+        maxPoints: 4,
+        criteriaText: "K1: Раскрытие темы по существу в подпунктах (3 б.)\nK2: Корректность формулировок пунктов и подпунктов (1 б.)",
+        topicTitle: "Задание №24. Сложный развернутый план темы (ФИПИ)",
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Раскрыт смысл ключевого обществоведческого понятия.\n2) Приведены развернутые и конкретные примеры, иллюстрирующие теоретические положения.\n3) Сформулированы корректные выводы с опорой на обществоведческий курс.",
+      maxPoints: 3,
+      criteriaText: "K1: Раскрытие сущности понятий и положений (2 б.)\nK2: Качество и развернутость аргументации (1 б.)",
+      topicTitle: `Задание №${taskNum}. Обществоведческий анализ и аргументация (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "history") {
+    return {
+      solutionKey: "Элементы ответа:\n1) Указаны точные исторические факты, даты, персоналии и причинно-следственные связи.\n2) Сформулирован аргументированный исторический тезис.\n3) Приведены факты-обоснования без фактических ошибок.",
+      maxPoints: 3,
+      criteriaText: "K1: Указаны ключевые исторические факты и взаимосвязи (2 б.)\nK2: Аргументированность тезиса и отсутствие ошибок (1 б.)",
+      topicTitle: `Задание №${taskNum}. Исторический источник и аргументация (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "literature") {
+    if (taskNum === 11 && exam === "EGE") {
+      return {
+        solutionKey: "Элементы ответа:\n1) Тема раскрыта глубоко и многосторонне с опорой на авторскую позицию.\n2) Текст произведения привлечен на уровне анализа важных фрагментов и микротем.\n3) Теоретико-литературные понятия использованы для анализа текста.\n4) Композиционная цельность и логика изложения сохранены.",
+        maxPoints: 5,
+        criteriaText: "K1: Соответствие теме и глубина раскрытия (2 б.)\nK2: Привлечение текста для аргументации (2 б.)\nK3: Опора на теоретико-литературные понятия и логика (1 б.)",
+        topicTitle: "Задание №11. Развернутое сочинение по литературе (ФИПИ)",
+      };
+    }
+    return {
+      solutionKey: "Элементы ответа:\n1) Дан прямой ответ на вопрос с опорой на авторскую позицию и текст произведения.\n2) Проведен анализ фрагмента с использованием литературоведческих терминов.\n3) Соблюдена композиционная стройность и речевые нормы.",
+      maxPoints: 3,
+      criteriaText: "K1: Соответствие ответа теме и глубина анализа (2 б.)\nK2: Логика изложения и речевые нормы (1 б.)",
+      topicTitle: `Задание №${taskNum}. Развернутый анализ произведения (ФИПИ)`,
+    };
+  }
+
+  if (normSub === "geography") {
+    return {
+      solutionKey: "Элементы ответа:\n1) Проведен географический анализ факторов и взаимосвязей процессов.\n2) Выполнены необходимые географические расчеты.\n3) Сформулирован обоснованный географический вывод.",
+      maxPoints: 2,
+      criteriaText: "K1: Обоснованно получен верный географический вывод (2 б.)\nK2: Присутствует правильное объяснение закономерностей (1 б.)",
+      topicTitle: `Задание №${taskNum}. Географический анализ и расчеты (ФИПИ)`,
+    };
+  }
+
+  return {
+    solutionKey: "Элементы ответа:\n1) Изложены ключевые теоретические положения в соответствии с требованиями ФИПИ.\n2) Приведено подробное обоснование и разбор решения.\n3) Получен верный итоговый результат.",
+    maxPoints: 3,
+    criteriaText: "K1: Соответствие ответа эталонным элементам ФИПИ (2 б.)\nK2: Логичность и полнота обоснования решения (1 б.)",
+    topicTitle: `Задание №${taskNum} (Часть 2, ФИПИ)`,
+  };
+}
+
+export function handleFillDefaultCriteria() {
+  const subId = document.getElementById("qSubjectSelect")?.value || "math";
+  const taskNum = parseInt(document.getElementById("qTaskNumberInput")?.value || "1", 10);
+  const activeExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+  const typeSelect = document.getElementById("qTypeSelect");
+  const optionsArea = document.getElementById("dynamicOptionsArea");
+  const previewArea = document.getElementById("qLivePreview");
+
+  if (typeSelect && typeSelect.value !== "extended") {
+    typeSelect.value = "extended";
+    renderOptionsInputs("extended", optionsArea);
+  }
+
+  const template = getDefaultFIPITemplate(subId, taskNum, activeExam);
+  const keyEl = document.getElementById("extSolutionKeyInput");
+  const maxPtsEl = document.getElementById("extMaxPointsInput");
+  const critEl = document.getElementById("extCriteriaInput");
+  const topicEl = document.getElementById("qTopicTitleInput");
+
+  if (keyEl) keyEl.value = template.solutionKey;
+  if (maxPtsEl) maxPtsEl.value = template.maxPoints;
+  if (critEl) critEl.value = template.criteriaText;
+  if (topicEl && !topicEl.value.trim()) {
+    topicEl.value = template.topicTitle;
+  }
+
+  if (previewArea) {
+    updateTestPreview("extended", previewArea);
+  }
+
+  showToast(
+    "✨ Критерии заполнены",
+    "Критерии ФИПИ (K1: 2 б., K2: 1 б.) и эталонный ключ решения подставлены."
+  );
+}
+
 export function initTestEditor() {
   const container = document.getElementById("testEditorContainer");
   if (!container) return;
@@ -20,6 +248,7 @@ export function initTestEditor() {
         <h2 style="margin: 0;">📝 Конструктор Тестов (Выбор предмета, Номер задания & БД)</h2>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <button class="btn btn-outline" id="clearQuestionBtn" style="color: #ef4444; border-color: #fca5a5;">🗑️ Очистить форму</button>
+          <button class="btn btn-outline" id="fillDefaultCriteriaBtn" title="Заполнить эталонные критерии ФИПИ">✨ Заполнить критерии по умолчанию</button>
           <button class="btn btn-outline" id="loadQuestionBankBtn">🏦 Банк вопросов</button>
           <button class="btn btn-outline" id="previewStudentTestBtn">👁️ Глазами ученика</button>
           <button class="btn btn-primary" id="saveQuestionBtn">💾 Сохранить вопрос в БД</button>
@@ -123,7 +352,7 @@ export function initTestEditor() {
   const autoSelectTypeByTaskNumber = () => {
     const subId = document.getElementById("qSubjectSelect")?.value || "math";
     const taskNum = document.getElementById("qTaskNumberInput")?.value || "1";
-    const activeExam = localStorage.getItem("examhub_exam_type") || "EGE";
+    const activeExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
     const recommendedType = getRecommendedTaskType(subId, taskNum, activeExam);
     if (typeSelect) {
       typeSelect.value = recommendedType;
@@ -134,7 +363,7 @@ export function initTestEditor() {
 
   const initialTaskNum = document.getElementById("qTaskNumberInput")?.value || "1";
   const initialSubId = document.getElementById("qSubjectSelect")?.value || "math";
-  const initialActiveExam = localStorage.getItem("examhub_exam_type") || "EGE";
+  const initialActiveExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
   const initialType = getRecommendedTaskType(initialSubId, initialTaskNum, initialActiveExam);
   if (typeSelect) typeSelect.value = initialType;
   renderOptionsInputs(initialType, optionsArea);
@@ -162,6 +391,14 @@ export function initTestEditor() {
   optionsArea?.addEventListener("change", triggerLiveUpdate);
 
   triggerLiveUpdate();
+
+  document.getElementById("fillDefaultCriteriaBtn")?.addEventListener("click", handleFillDefaultCriteria);
+
+  container.addEventListener("click", (e) => {
+    if (e.target.closest("#fillDefaultCriteriaBtn") || e.target.closest("#extFillDefaultCriteriaBtn") || e.target.closest(".fill-default-criteria-btn")) {
+      handleFillDefaultCriteria();
+    }
+  });
 
   document.getElementById("clearQuestionBtn")?.addEventListener("click", () => {
     document.getElementById("qTextarea").value = "";
@@ -290,7 +527,10 @@ function renderOptionsInputs(type, container) {
     `;
   } else if (type === "extended") {
     container.innerHTML = `
-      <div style="font-weight: 600; margin-bottom: 8px; color: #6366f1;">🔑 Ключ эталонного решения ФИПИ:</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="font-weight: 600; color: #6366f1;">🔑 Ключ эталонного решения ФИПИ:</div>
+        <button type="button" class="btn btn-outline btn-sm fill-default-criteria-btn" id="extFillDefaultCriteriaBtn" style="font-size: 11px; padding: 4px 10px; border-color: #6366f1; color: #6366f1;">✨ Заполнить по умолчанию</button>
+      </div>
       <textarea id="extSolutionKeyInput" class="search-input" style="width: 100%; height: 75px; box-sizing: border-box; margin-bottom: 10px;" placeholder="Элементы ответа:&#10;1) ...&#10;2) ..."></textarea>
       
       <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
@@ -383,12 +623,21 @@ function updateTestPreview(type, container) {
   } else if (type === "extended") {
     const keyVal = document.getElementById("extSolutionKeyInput")?.value.trim() || "1) Элемент ответа 1\n2) Элемент ответа 2";
     const maxPts = document.getElementById("extMaxPointsInput")?.value || "3";
+    const criteriaVal = document.getElementById("extCriteriaInput")?.value.trim();
+    let criteriaPreviewHtml = "";
+    if (criteriaVal) {
+      criteriaPreviewHtml = `
+        <div style="font-size: 11px; color: #10b981; margin-top: 8px; font-weight: 700;">📋 Критерии оценивания:</div>
+        <div style="font-size: 12px; white-space: pre-line; color: var(--color-text-secondary); margin-top: 2px;">${criteriaVal}</div>
+      `;
+    }
     optionsPreviewHtml = `
       <div style="margin-top: 14px; padding: 12px 14px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border);">
         <div style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 6px;">✍️ Развернутый ответ ученика (Часть 2, макс. ${maxPts} б.):</div>
         <textarea class="search-input" placeholder="Развернутый разбор ответа учеником..." disabled style="width: 100%; height: 50px; box-sizing: border-box;"></textarea>
         <div style="font-size: 11px; color: #6366f1; margin-top: 8px; font-weight: 700;">🔑 Эталонный ключ решения ФИПИ:</div>
         <div style="font-size: 12px; white-space: pre-line; color: var(--color-text-primary); margin-top: 2px;">${keyVal}</div>
+        ${criteriaPreviewHtml}
       </div>
     `;
   } else {
