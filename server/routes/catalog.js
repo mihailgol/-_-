@@ -85,6 +85,7 @@ function formatTopic(t, user) {
             maxPoints: q.max_points || q.points || 1,
             points: q.points || 1,
             taskNumber: q.task_number || 0,
+            examType: q.exam_type || "EGE",
             ...(correctAnswer !== undefined ? { correctAnswer } : {}),
             ...(criteria !== undefined ? { criteria } : {}),
           };
@@ -131,6 +132,7 @@ router.get("/subjects/:id", optionalAuth, (req, res) => {
 router.get("/questions", optionalAuth, (req, res) => {
   const subjectId = req.query.subjectId ? String(req.query.subjectId) : null;
   const taskNumber = req.query.taskNumber ? Number(req.query.taskNumber) : null;
+  const examType = req.query.examType || req.query.exam_type ? String(req.query.examType || req.query.exam_type).toUpperCase() : null;
 
   let query = `
     SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
@@ -148,6 +150,10 @@ router.get("/questions", optionalAuth, (req, res) => {
   if (taskNumber) {
     whereClause.push("q.task_number = ?");
     params.push(taskNumber);
+  }
+  if (examType) {
+    whereClause.push("q.exam_type = ?");
+    params.push(examType);
   }
 
   if (whereClause.length > 0) {
@@ -196,12 +202,11 @@ router.get("/questions", optionalAuth, (req, res) => {
       maxPoints: q.max_points || q.points || 1,
       points: q.points || 1,
       taskNumber: q.task_number || 0,
+      examType: q.exam_type || "EGE",
       ...(correctAnswer !== undefined ? { correctAnswer } : {}),
       ...(criteria !== undefined ? { criteria } : {}),
     };
   });
-
-  res.json({ questions });
 
   res.json({ questions });
 });

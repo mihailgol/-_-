@@ -188,9 +188,10 @@ test.describe("🤖 Autonomous UX Bot — Full Platform Audit with Zero-Error Gu
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    // 3.1 Вход под аккаунтом учителя
+    // 3.1 Вход / регистрация аккаунта учителя
     await page.locator("#loginBtn").click();
-    await page.locator("#manualEmail").fill("teacher@examhub.ru");
+    await page.locator("#authToggleLink").click();
+    await page.locator("#manualEmail").fill(`teacher_bot_${Date.now()}@examhub.ru`);
     await page.locator("#manualPass").fill("teacher123");
     await page.locator("#authSubmitManual").click();
     await expect(page.locator("#authModal")).not.toHaveClass(/active/);
@@ -249,6 +250,7 @@ test.describe("🤖 Autonomous UX Bot — Full Platform Audit with Zero-Error Gu
     await page.locator("#manualPass").fill("admin123");
     await page.locator("#authSubmitManual").click();
     await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+    await page.waitForTimeout(500);
 
     // 4.2 Переход в админ-панель
     await page.locator("#sidebarAdminBtn").click();

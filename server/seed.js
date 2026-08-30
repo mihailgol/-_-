@@ -55,8 +55,8 @@ export function seedContent() {
        description = excluded.description`
   );
   const insQuestion = db.prepare(
-    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order, points, correct_answer_json, task_number, solution_key, criteria_json, max_points)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, explanation, sort_order, points, correct_answer_json, task_number, solution_key, criteria_json, max_points, exam_type)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        topic_id = excluded.topic_id,
        type = excluded.type,
@@ -70,7 +70,8 @@ export function seedContent() {
        task_number = excluded.task_number,
        solution_key = excluded.solution_key,
        criteria_json = excluded.criteria_json,
-       max_points = excluded.max_points`
+       max_points = excluded.max_points,
+       exam_type = excluded.exam_type`
   );
   const insMockExam = db.prepare(
     `INSERT INTO mock_exams (id, subject_id, title, exam_type, duration_minutes, total_questions, is_premium, questions_json, conversion_table_json)
@@ -122,6 +123,7 @@ export function seedContent() {
           const solKey = q.solutionKey || q.solution_key || q.explanation || null;
           const critJson = q.criteria ? JSON.stringify(q.criteria) : (q.criteria_json || null);
           const maxPts = q.maxPoints ?? q.max_points ?? q.points ?? 1;
+          const examType = String(q.examType || q.exam_type || "EGE").toUpperCase();
 
           insQuestion.run(
             q.id,
@@ -137,7 +139,8 @@ export function seedContent() {
             taskNumber,
             solKey,
             critJson,
-            maxPts
+            maxPts,
+            examType
           );
         });
       });

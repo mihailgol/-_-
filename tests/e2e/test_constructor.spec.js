@@ -139,4 +139,58 @@ test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", (
     await page.locator("#saveQuestionBtn").click();
     await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
   });
+
+  test("переключатель ОГЭ/ЕГЭ в редакторе тестов и отображение созданного вопроса в разделе «Тесты»", async ({ page }) => {
+    // 1. Авторизация под админом
+    await page.locator("#loginBtn").click();
+    await page.locator("#manualEmail").fill("admin@examhub.ru");
+    await page.locator("#manualPass").fill("admin123");
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    // 2. Открытие Конструктора тестов
+    await page.evaluate(async () => {
+      const { switchView } = await import("/js/modules/navigation.js");
+      const { initTestEditor } = await import("/js/modules/test-editor.js");
+      switchView("test-editor");
+      initTestEditor();
+    });
+
+    await expect(page.locator("#view-test-editor")).toBeVisible();
+    const toggle = page.locator("#qExamTypeToggle");
+    await expect(toggle).toBeVisible();
+
+    // 3. Выбираем ОГЭ через переключатель в Конструкторе
+    const ogeBtn = toggle.locator(".q-exam-btn[data-exam='OGE']");
+    await ogeBtn.click();
+    await expect(ogeBtn).toHaveClass(/active/);
+
+    // 4. Заполняем задание №21 (Алгебра ОГЭ)
+    await page.locator("#qSubjectSelect").selectOption("math");
+    await page.locator("#qTaskNumberInput").fill("21");
+    const uniqueText = `Решите систему уравнений: x^2 + y = 5, x - y = 1 [Тест #${Date.now()}]`;
+    await page.locator("#qTextarea").fill(uniqueText);
+    await page.locator("#fillDefaultCriteriaBtn").click();
+
+    await page.locator("#saveQuestionBtn").click();
+    await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
+
+    // 5. Переход в раздел «Тесты» и проверка отображения задания
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+
+    // Переключаем экзамен на ОГЭ в разделе тестов
+    await page.locator('#tasksExamTypeToggle .tasks-exam-btn[data-exam="OGE"]').click();
+    await page.locator("#tasksSubjectFilter").selectOption("math");
+
+    // Карточка Задания №21 должна отображать созданный вопрос
+    const card21 = page.locator('.task-number-card[data-task-num="21"]');
+    await expect(card21).toBeVisible();
+    await expect(card21).toContainText("Математика • OGE");
+
+    // Клик по карточке должен запустить решение теста с текстом нашего задания
+    await card21.click();
+    await expect(page.locator("#view-quiz-player")).toBeVisible();
+    await expect(page.locator("#quizQuestionText")).toContainText("Решите систему уравнений");
+  });
 });

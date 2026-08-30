@@ -26,6 +26,7 @@ test.describe("Student Work Photo Upload & Teacher Review E2E", () => {
     await teacherPage.locator("#createGroupBtn").click();
     await teacherPage.locator("#newGroupNameInput").fill("11-Б Физика с фото");
     await teacherPage.locator("#confirmCreateGroup").click();
+    await expect(teacherPage.locator("#teacherModal")).not.toHaveClass(/active/);
 
     const inviteBadge = teacherPage.locator(".group-card .invite-badge").first();
     await expect(inviteBadge).toBeVisible();

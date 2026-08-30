@@ -20,9 +20,8 @@ export const ogeProvider = {
   ],
   filterSubject: (subject) => {
     if (!subject) return false;
-    const title = (subject.title || "").toLowerCase();
-    if (subject.examType) return subject.examType === "OGE";
-    return title.includes("огэ") || title.includes("9") || subject.id?.includes("oge");
+    if (subject.examType) return subject.examType === "OGE" || subject.examType === "ALL";
+    return true;
   },
   recommendations: [
     "🎯 Освойте базовые модули 'Алгебра' и 'Геометрия' для 9 класса",

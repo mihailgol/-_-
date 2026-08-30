@@ -279,5 +279,40 @@ describe("Test Editor FIPI Criteria Autofill & Templates", () => {
       expect(document.getElementById("extSolutionKeyInput").value).toContain("исторические факты");
       expect(document.getElementById("extCriteriaInput").value).toContain("K1: Указаны ключевые исторические факты");
     });
+
+    it("renders OGE / EGE exam switcher in Test Editor and updates criteria accordingly", () => {
+      initTestEditor();
+
+      const toggle = document.getElementById("qExamTypeToggle");
+      expect(toggle).not.toBeNull();
+
+      const egeBtn = toggle.querySelector(".q-exam-btn[data-exam='EGE']");
+      const ogeBtn = toggle.querySelector(".q-exam-btn[data-exam='OGE']");
+      expect(egeBtn).not.toBeNull();
+      expect(ogeBtn).not.toBeNull();
+
+      // Click OGE
+      ogeBtn.click();
+      expect(ogeBtn.classList.contains("active")).toBe(true);
+      expect(egeBtn.classList.contains("active")).toBe(false);
+
+      // Russian task 1 in OGE is a summary (сжатое изложение)
+      document.getElementById("qSubjectSelect").value = "russian";
+      document.getElementById("qTaskNumberInput").value = "1";
+      handleFillDefaultCriteria();
+
+      expect(document.getElementById("extSolutionKeyInput").value).toContain("микротем");
+      expect(document.getElementById("extCriteriaInput").value).toContain("K1: Содержание изложения");
+
+      // Switch to EGE
+      egeBtn.click();
+      expect(egeBtn.classList.contains("active")).toBe(true);
+      expect(ogeBtn.classList.contains("active")).toBe(false);
+
+      // Russian task 27 in EGE is an essay (сочинение)
+      document.getElementById("qTaskNumberInput").value = "27";
+      handleFillDefaultCriteria();
+      expect(document.getElementById("extCriteriaInput").value).toContain("K1: Формулировка проблемы");
+    });
   });
 });

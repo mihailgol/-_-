@@ -269,7 +269,7 @@ router.delete("/theory/:id", (req, res) => {
 });
 
 function getAdminQuestions(queryObj = {}) {
-  const { subjectId, subject, taskNumber, task_number, q, type } = queryObj;
+  const { subjectId, subject, taskNumber, task_number, q, type, examType, exam_type } = queryObj;
   let sql = `
     SELECT q.*, t.subject_id, t.title as topic_title, s.title as subject_title 
     FROM questions q 
@@ -294,6 +294,12 @@ function getAdminQuestions(queryObj = {}) {
   if (type && String(type).trim() !== "" && type !== "all") {
     sql += ` AND q.type = ?`;
     params.push(String(type).trim());
+  }
+
+  const targetExam = examType || exam_type;
+  if (targetExam && String(targetExam).trim() !== "" && targetExam !== "all") {
+    sql += ` AND q.exam_type = ?`;
+    params.push(String(targetExam).trim().toUpperCase());
   }
 
   sql += ` ORDER BY q.task_number ASC, q.sort_order ASC, q.id ASC`;
@@ -382,10 +388,13 @@ router.post("/tests/questions", (req, res) => {
     criteria_json,
     explanation,
     points,
+    examType,
+    exam_type,
   } = req.body || {};
 
   const targetSubjectId = subjectId || subject_id;
   let finalTopicId = topicId || topic_id;
+  const targetExamType = String(examType || exam_type || "EGE").toUpperCase();
 
   if (!question || (!finalTopicId && !targetSubjectId)) {
     return res.status(400).json({ error: "Укажите предмет/тему и текст вопроса" });
@@ -443,8 +452,8 @@ router.post("/tests/questions", (req, res) => {
   const finalCorrectIndex = typeof correctIndex === "number" ? correctIndex : (typeof correct_index === "number" ? correct_index : 0);
 
   db.prepare(
-    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number, solution_key, criteria_json, max_points)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO questions (id, topic_id, type, question, options_json, correct_index, correct_answer_json, explanation, points, task_number, solution_key, criteria_json, max_points, exam_type)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     qId,
     finalTopicId,
@@ -458,10 +467,11 @@ router.post("/tests/questions", (req, res) => {
     qTaskNum,
     solutionKey || "",
     JSON.stringify(finalCriteria),
-    finalPoints
+    finalPoints,
+    targetExamType
   );
 
-  logAdminActivity(req.user.id, "CREATE_QUESTION", { qId, topicId: finalTopicId, taskNumber: qTaskNum }, req.ip);
+  logAdminActivity(req.user.id, "CREATE_QUESTION", { qId, topicId: finalTopicId, taskNumber: qTaskNum, examType: targetExamType }, req.ip);
 
   res.status(201).json({ id: qId, ok: true });
 });
@@ -497,6 +507,8 @@ router.patch("/tests/questions/:id", (req, res) => {
     topic_id,
     subjectId,
     subject_id,
+    examType,
+    exam_type,
   } = body;
 
   const updatedQuestion = question !== undefined ? String(question) : existing.question;
@@ -507,6 +519,12 @@ router.patch("/tests/questions/:id", (req, res) => {
       : task_number !== undefined
         ? Number(task_number)
         : existing.task_number;
+  const updatedExamType =
+    examType !== undefined
+      ? String(examType).toUpperCase()
+      : exam_type !== undefined
+        ? String(exam_type).toUpperCase()
+        : existing.exam_type || "EGE";
 
   let updatedOptionsJson = existing.options_json;
   if (options !== undefined) {
@@ -601,7 +619,8 @@ router.patch("/tests/questions/:id", (req, res) => {
       task_number = ?,
       solution_key = ?,
       criteria_json = ?,
-      max_points = ?
+      max_points = ?,
+      exam_type = ?
     WHERE id = ?`
   ).run(
     updatedTopicId,
@@ -616,6 +635,7 @@ router.patch("/tests/questions/:id", (req, res) => {
     updatedSolutionKey,
     updatedCriteriaJson,
     updatedMaxPoints,
+    updatedExamType,
     qId
   );
 

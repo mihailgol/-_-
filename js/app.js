@@ -3,7 +3,7 @@ import { api } from "./modules/utils.js";
 import { showToast, initGlobalUIEvents, closeModal } from "./modules/ui.js";
 
 import { switchView, initRouter } from "./modules/navigation.js";
-import { renderSubjects, renderGeneralNotes, renderGeneralVideos, initTestTabs, syncTestsExamSelection } from "./modules/catalog.js";
+import { renderSubjects, renderGeneralNotes, renderGeneralVideos, renderGeneralQuizzes, initTestTabs, syncTestsExamSelection } from "./modules/catalog.js";
 import { updateUIFromState } from "./modules/render.js";
 import { initAuthEvents } from "./modules/auth.js";
 import { initPremiumEvents } from "./modules/premium.js";
@@ -62,7 +62,12 @@ async function loadAppData() {
       void err;
     }
   }
+
+  syncTestsExamSelection();
+  renderGeneralQuizzes();
 }
+
+window.loadAppData = loadAppData;
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();

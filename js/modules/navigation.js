@@ -37,6 +37,12 @@ export function switchView(viewName, { replace = false } = {}) {
       m.renderTeacherSubmissions();
     });
   }
+  if (viewName === "tests") {
+    import("./catalog.js").then((m) => {
+      m.syncTestsExamSelection();
+      m.renderGeneralQuizzes();
+    });
+  }
   if (["offer", "privacy", "terms"].includes(viewName)) {
     api("/api/site/settings").then((res) => {
       const s = res.settings || {};

@@ -519,7 +519,9 @@ export function renderGeneralQuizzes(selectedSubjectId = null) {
   if (!container) return;
 
   const globalType = getExamType();
-  const activeExam = globalType === "OGE" ? "ОГЭ" : (globalType === "EGE" ? "ЕГЭ" : "ЕГЭ/ОГЭ");
+  const isOge = globalType === "OGE";
+  const normActiveExam = isOge ? "OGE" : "EGE";
+  const activeExam = isOge ? "ОГЭ" : "ЕГЭ";
 
   const quizExamLabel = document.getElementById("generalQuizzesExamLabel");
   if (quizExamLabel) {
@@ -545,7 +547,12 @@ export function renderGeneralQuizzes(selectedSubjectId = null) {
 
   const subject = window.EXAM_DATA.subjects[subId];
   (subject.topics || []).forEach((topic) => {
-    if (!topic.questions || topic.questions.length === 0) return;
+    const topicQuestions = (topic.questions || []).filter((q) => {
+      const qExam = (q.examType || q.exam_type || "EGE").toUpperCase();
+      return qExam === normActiveExam;
+    });
+
+    if (topicQuestions.length === 0) return;
 
     const card = document.createElement("div");
     card.className = "quiz-list-item";
@@ -555,7 +562,7 @@ export function renderGeneralQuizzes(selectedSubjectId = null) {
         <div class="quiz-item-details">
           <span style="font-size: 11px; font-weight: 700; color: ${subject.color || "var(--color-purple)"};">${subject.title} • Формат ${activeExam}</span>
           <h4>${topic.title}</h4>
-          <p>${topic.questions.length} вопросов • Формат ${activeExam}</p>
+          <p>${topicQuestions.length} вопросов • Формат ${activeExam}</p>
         </div>
       </div>
       <div class="quiz-item-actions">
@@ -571,7 +578,7 @@ export function renderGeneralQuizzes(selectedSubjectId = null) {
         openModal("premiumModal");
         showToast("🔒 Доступ ограничен", "Сложные тематические тесты доступны только в Premium.");
       } else {
-        import("./quiz.js").then((m) => m.startQuiz(topic.questions, `Тест (${activeExam}): ${topic.title}`, "tests"));
+        import("./quiz.js").then((m) => m.startQuiz(topicQuestions, `Тест (${activeExam}): ${topic.title}`, "tests"));
       }
     });
     container.appendChild(card);
@@ -672,9 +679,12 @@ export function renderTaskNumbersGrid(subjectId = "", examType = null) {
   if (subject.topics) {
     subject.topics.forEach((t) => {
       (t.questions || []).forEach((q) => {
-        const tn = q.taskNumber || q.task_number || 1;
-        questionsByTask[tn] = questionsByTask[tn] || [];
-        questionsByTask[tn].push(q);
+        const qExam = (q.examType || q.exam_type || "EGE").toUpperCase();
+        if (qExam === activeExam) {
+          const tn = q.taskNumber || q.task_number || 1;
+          questionsByTask[tn] = questionsByTask[tn] || [];
+          questionsByTask[tn].push(q);
+        }
       });
     });
   }

@@ -20,9 +20,8 @@ export const egeProvider = {
   ],
   filterSubject: (subject) => {
     if (!subject) return false;
-    const title = (subject.title || "").toLowerCase();
-    if (subject.examType) return subject.examType === "EGE";
-    return !title.includes("огэ");
+    if (subject.examType) return subject.examType === "EGE" || subject.examType === "ALL";
+    return true;
   },
   recommendations: [
     "🚀 Рекомендуем начать с тренировки первой части ЕГЭ по Профильной математике",

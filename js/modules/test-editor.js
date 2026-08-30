@@ -196,7 +196,8 @@ export function getDefaultFIPITemplate(subjectId, taskNumber, examType) {
 export function handleFillDefaultCriteria() {
   const subId = document.getElementById("qSubjectSelect")?.value || "math";
   const taskNum = parseInt(document.getElementById("qTaskNumberInput")?.value || "1", 10);
-  const activeExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+  const activeExamBtn = document.querySelector("#qExamTypeToggle .q-exam-btn.active");
+  const activeExam = activeExamBtn?.getAttribute("data-exam") || (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
   const typeSelect = document.getElementById("qTypeSelect");
   const optionsArea = document.getElementById("dynamicOptionsArea");
   const previewArea = document.getElementById("qLivePreview");
@@ -225,13 +226,16 @@ export function handleFillDefaultCriteria() {
 
   showToast(
     "✨ Критерии заполнены",
-    "Критерии ФИПИ (K1: 2 б., K2: 1 б.) и эталонный ключ решения подставлены."
+    `Критерии ФИПИ для ${activeExam} и эталонный ключ решения подставлены.`
   );
 }
 
 export function initTestEditor() {
   const container = document.getElementById("testEditorContainer");
   if (!container) return;
+
+  const rawExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+  const currentExam = rawExam === "OGE" ? "OGE" : "EGE";
 
   const subjects = window.EXAM_DATA?.subjects || {};
   let subjectOptionsHtml = `<option value="math">Математика</option><option value="russian">Русский язык</option><option value="biology">Биология</option><option value="chemistry">Химия</option><option value="physics">Физика</option><option value="informatics">Информатика</option><option value="social">Обществознание</option><option value="history">История</option><option value="literature">Литература</option><option value="geography">География</option>`;
@@ -258,16 +262,23 @@ export function initTestEditor() {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <!-- Left Column: Form Controls -->
         <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: end;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Экзамен</label>
+              <div id="qExamTypeToggle" class="btn-group" style="display: flex; gap: 4px; background: var(--color-bg-secondary); padding: 3px; border-radius: 8px; border: 1px solid var(--color-border); height: 42px; box-sizing: border-box; align-items: center;">
+                <button type="button" class="btn btn-sm q-exam-btn ${currentExam === "EGE" ? "active" : ""}" data-exam="EGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ЕГЭ</button>
+                <button type="button" class="btn btn-sm q-exam-btn ${currentExam === "OGE" ? "active" : ""}" data-exam="OGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ОГЭ</button>
+              </div>
+            </div>
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 6px;">Предмет</label>
-              <select id="qSubjectSelect" class="search-input" style="width: 100%;">
+              <select id="qSubjectSelect" class="search-input" style="width: 100%; height: 42px; box-sizing: border-box;">
                 ${subjectOptionsHtml}
               </select>
             </div>
             <div>
-              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Номер задания (1–27)</label>
-              <input type="number" id="qTaskNumberInput" class="search-input" min="1" max="50" value="1" style="width: 100%; box-sizing: border-box;" />
+              <label style="display: block; font-weight: 600; margin-bottom: 6px;">Номер задания (1–35)</label>
+              <input type="number" id="qTaskNumberInput" class="search-input" min="1" max="50" value="1" style="width: 100%; height: 42px; box-sizing: border-box;" />
             </div>
           </div>
 
@@ -340,6 +351,11 @@ export function initTestEditor() {
   const optionsArea = document.getElementById("dynamicOptionsArea");
   const previewArea = document.getElementById("qLivePreview");
 
+  const getSelectedExam = () => {
+    const activeBtn = container.querySelector("#qExamTypeToggle .q-exam-btn.active");
+    return activeBtn?.getAttribute("data-exam") || (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+  };
+
   const triggerLiveUpdate = () => {
     updateTestPreview(typeSelect?.value || "single", previewArea);
   };
@@ -352,7 +368,7 @@ export function initTestEditor() {
   const autoSelectTypeByTaskNumber = () => {
     const subId = document.getElementById("qSubjectSelect")?.value || "math";
     const taskNum = document.getElementById("qTaskNumberInput")?.value || "1";
-    const activeExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+    const activeExam = getSelectedExam();
     const recommendedType = getRecommendedTaskType(subId, taskNum, activeExam);
     if (typeSelect) {
       typeSelect.value = recommendedType;
@@ -363,10 +379,26 @@ export function initTestEditor() {
 
   const initialTaskNum = document.getElementById("qTaskNumberInput")?.value || "1";
   const initialSubId = document.getElementById("qSubjectSelect")?.value || "math";
-  const initialActiveExam = (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+  const initialActiveExam = getSelectedExam();
   const initialType = getRecommendedTaskType(initialSubId, initialTaskNum, initialActiveExam);
   if (typeSelect) typeSelect.value = initialType;
   renderOptionsInputs(initialType, optionsArea);
+
+  const examToggleBtns = container.querySelectorAll(".q-exam-btn");
+  examToggleBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const exam = btn.getAttribute("data-exam") || "EGE";
+      examToggleBtns.forEach((b) => {
+        if (b.getAttribute("data-exam") === exam) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+      autoSelectTypeByTaskNumber();
+      triggerLiveUpdate();
+    });
+  });
 
   document.getElementById("qTaskNumberInput")?.addEventListener("input", autoSelectTypeByTaskNumber);
   document.getElementById("qTaskNumberInput")?.addEventListener("change", autoSelectTypeByTaskNumber);
@@ -441,6 +473,8 @@ export function initTestEditor() {
     const taskNumber = parseInt(document.getElementById("qTaskNumberInput")?.value || "1", 10);
     const type = document.getElementById("qTypeSelect")?.value || "single";
     const explanation = document.getElementById("qExplanationTextarea")?.value.trim() || "";
+    const topicTitle = document.getElementById("qTopicTitleInput")?.value.trim() || "";
+    const examType = getSelectedExam();
 
     const optionInputs = Array.from(document.querySelectorAll(".option-input")).map((inp) => inp.value.trim());
     const options = optionInputs.length > 0 ? optionInputs : ["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"];
@@ -455,6 +489,8 @@ export function initTestEditor() {
         options,
         correctIndex: Math.max(0, correctIndexVal),
         explanation,
+        topicTitle,
+        examType,
       };
 
       if (type === "extended") {
@@ -488,11 +524,16 @@ export function initTestEditor() {
         body: JSON.stringify(payload),
       });
 
-      showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} (${type === "extended" ? "Часть 2 ФИПИ" : type}) сохранен в базу данных SQLite.`);
+      showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} (${examType}, ${type === "extended" ? "Часть 2 ФИПИ" : type}) сохранен в базу данных и доступен в разделе «Тесты».`);
 
-      if (window.loadAppData) {
-        window.loadAppData();
+      if (typeof window.loadAppData === "function") {
+        await window.loadAppData();
       }
+      import("./catalog.js").then((m) => {
+        if (typeof m.syncTestsExamSelection === "function") {
+          m.syncTestsExamSelection();
+        }
+      });
     } catch (err) {
       showToast("⚠️ Ошибка сохранения", err.message || "Не удалось сохранить вопрос.");
     }
@@ -658,11 +699,14 @@ function updateTestPreview(type, container) {
     `;
   }
 
+  const activeExamBtn = document.querySelector("#qExamTypeToggle .q-exam-btn.active");
+  const activeExam = activeExamBtn?.getAttribute("data-exam") || (typeof localStorage !== "undefined" && localStorage.getItem("examhub_exam_type")) || "EGE";
+
   container.innerHTML = `
     <div style="background: var(--color-card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--color-border); box-shadow: var(--box-shadow-sm);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
         <span style="font-size: 11px; font-weight: 700; color: ${subjectObj.colorHex || "var(--color-purple)"}; text-transform: uppercase;">
-          ${subjectObj.title || "Предмет"} • Задание №${taskNumber}
+          ${subjectObj.title || "Предмет"} • Задание №${taskNumber} • ${activeExam}
         </span>
         <span style="font-size: 11px; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 2px 8px; border-radius: 8px; font-weight: 600;">
           Сложность ${difficulty}/5

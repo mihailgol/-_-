@@ -270,4 +270,52 @@ describe("Admin Question Registry & API (Milestone 1)", () => {
       expect(verifyRes.status).toBe(404);
     });
   });
+
+  describe("POST /api/admin/tests/questions — Exam Type & Catalog Visibility", () => {
+    it("creates an OGE question with exam_type and retrieves it via catalog API", async () => {
+      const uniqueText = `Проверочный вопрос ОГЭ #№${Date.now()}`;
+      const createRes = await globalThis.fetch(`${baseUrl}/api/admin/tests/questions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subjectId: "math",
+          taskNumber: 21,
+          type: "extended",
+          question: uniqueText,
+          examType: "OGE",
+          solutionKey: "Решение системы уравнений",
+          maxPoints: 2,
+          criteria: [{ code: "K1", title: "Верное решение", maxPoints: 2 }],
+        }),
+      });
+
+      expect(createRes.status).toBe(201);
+      const createData = await createRes.json();
+      expect(createData.ok).toBe(true);
+      expect(createData.id).toBeDefined();
+
+      // Check via /api/catalog/questions with examType=OGE
+      const catRes = await globalThis.fetch(`${baseUrl}/api/catalog/questions?subjectId=math&taskNumber=21&examType=OGE`);
+      expect(catRes.status).toBe(200);
+      const catData = await catRes.json();
+      const createdQ = catData.questions.find((q) => q.id === createData.id);
+      expect(createdQ).toBeDefined();
+      expect(createdQ.examType).toBe("OGE");
+      expect(createdQ.question).toBe(uniqueText);
+
+      // Check via /api/catalog/subjects
+      const subjectsRes = await globalThis.fetch(`${baseUrl}/api/catalog/subjects`);
+      expect(subjectsRes.status).toBe(200);
+      const subjectsData = await subjectsRes.json();
+      const mathSubject = subjectsData.subjects.find((s) => s.id === "math");
+      expect(mathSubject).toBeDefined();
+      const allMathQuestions = mathSubject.topics.flatMap((t) => t.questions || []);
+      const foundInCatalog = allMathQuestions.find((q) => q.id === createData.id);
+      expect(foundInCatalog).toBeDefined();
+      expect(foundInCatalog.examType).toBe("OGE");
+    });
+  });
 });
