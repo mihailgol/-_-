@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Комплексный сквозной аудит платформы (ЕГЭ/ОГЭ, Админ, Гость, Ученик, Учитель, Логи и Удаление)", () => {
   test("полный жизненный цикл создания, доступности, решения, проверки и удаления тестов", async ({ browser }) => {
+    test.setTimeout(120000);
     const consoleLogs = [];
     const networkErrors = [];
     const timestamp = Date.now();

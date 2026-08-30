@@ -3657,22 +3657,35 @@ select option {
   color: var(--color-text-primary, #f8fafc);
 }
 
-.tasks-exam-btn {
+.tasks-exam-btn,
+.q-exam-btn {
   background: transparent;
   color: var(--color-text-secondary, #94a3b8);
-  border: none;
+  border: 1px solid transparent;
   transition: all 0.2s ease;
   font-weight: 700;
+  cursor: pointer;
 }
 
-.tasks-exam-btn:hover {
+.tasks-exam-btn:hover,
+.q-exam-btn:hover {
   color: var(--color-text-primary, #f8fafc);
+  background: rgba(99, 102, 241, 0.08);
 }
 
-.tasks-exam-btn.active {
+.tasks-exam-btn.active,
+.q-exam-btn.active {
   background: var(--color-purple, #6366f1) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+  border-color: var(--color-purple, #6366f1) !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35) !important;
+}
+
+.q-exam-btn[data-exam="OGE"].active {
+  background: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] select,
@@ -3681,13 +3694,24 @@ select option {
   color: #f8fafc !important;
 }
 
-[data-theme="dark"] .tasks-exam-btn {
+[data-theme="dark"] .tasks-exam-btn,
+[data-theme="dark"] .q-exam-btn {
   color: #cbd5e1;
 }
 
-[data-theme="dark"] .tasks-exam-btn.active {
+[data-theme="dark"] .tasks-exam-btn.active,
+[data-theme="dark"] .q-exam-btn.active {
   background: #6366f1 !important;
   color: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5) !important;
+}
+
+[data-theme="dark"] .q-exam-btn[data-exam="OGE"].active {
+  background: #0ea5e9 !important;
+  color: #ffffff !important;
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5) !important;
 }
 
 /* High Contrast Dark Mode for Quiz & Mock Exam Player */

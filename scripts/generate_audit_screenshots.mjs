@@ -2,12 +2,33 @@ import { chromium } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
+import { spawn } from "child_process";
+
 const artifactDir = "C:\\Users\\мишка\\.gemini\\antigravity\\brain\\412fd7e6-4f07-49ed-97be-b6653b289b3a";
 if (!fs.existsSync(artifactDir)) {
   fs.mkdirSync(artifactDir, { recursive: true });
 }
 
 console.log("Запуск генерации скриншотов аудита в директорию:", artifactDir);
+
+let serverProcess = null;
+try {
+  const health = await fetch("http://localhost:8000/api/health").catch(() => null);
+  if (!health || health.status !== 200) {
+    console.log("Запуск локального сервера...");
+    serverProcess = spawn("node", ["server/index.js"], {
+      stdio: "inherit",
+      env: { ...process.env, PORT: "8000" },
+    });
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      const res = await fetch("http://localhost:8000/api/health").catch(() => null);
+      if (res && res.status === 200) break;
+    }
+  }
+} catch (e) {
+  console.log("Серверная проверка:", e.message);
+}
 
 const browser = await chromium.launch({
   headless: true,
@@ -219,4 +240,7 @@ try {
   console.error("Ошибка при генерации скриншотов:", err);
 } finally {
   await browser.close();
+  if (serverProcess) {
+    serverProcess.kill();
+  }
 }

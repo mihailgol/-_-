@@ -266,8 +266,8 @@ export function initTestEditor() {
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 6px;">Экзамен</label>
               <div id="qExamTypeToggle" class="btn-group" style="display: flex; gap: 4px; background: var(--color-bg-secondary); padding: 3px; border-radius: 8px; border: 1px solid var(--color-border); height: 42px; box-sizing: border-box; align-items: center;">
-                <button type="button" class="btn btn-sm q-exam-btn ${currentExam === "EGE" ? "active" : ""}" data-exam="EGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ЕГЭ</button>
-                <button type="button" class="btn btn-sm q-exam-btn ${currentExam === "OGE" ? "active" : ""}" data-exam="OGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ОГЭ</button>
+                <button type="button" class="q-exam-btn ${currentExam === "EGE" ? "active" : ""}" data-exam="EGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ЕГЭ</button>
+                <button type="button" class="q-exam-btn ${currentExam === "OGE" ? "active" : ""}" data-exam="OGE" style="flex: 1; height: 34px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer;">ОГЭ</button>
               </div>
             </div>
             <div>
