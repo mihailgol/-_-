@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>ExamHub — Твоя эффективная подготовка к ЕГЭ и ОГЭ</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
     <link rel="stylesheet" href="css/style.css" />
@@ -100,7 +100,7 @@
           <button class="premium-promo-btn" id="sidebarPremiumBtn">Подробнее</button>
         </div>
 
-        <div style="padding: 12px 16px; margin-top: 8px; font-size: 11px; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--color-border);">
+        <div class="sidebar-legal-links" style="padding: 12px 16px; margin-top: 8px; font-size: 11px; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--color-border);">
           <a href="#offer" data-view="offer" style="color: var(--color-text-secondary); text-decoration: none;">📜 Публичная оферта</a>
           <a href="#privacy" data-view="privacy" style="color: var(--color-text-secondary); text-decoration: none;">🔒 Политика конфиденциальности</a>
           <a href="#terms" data-view="terms" style="color: var(--color-text-secondary); text-decoration: none;">💳 Оплата и возврат средств</a>
@@ -457,7 +457,11 @@
           <section class="view-section" id="view-tests">
             <div class="section-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
               <span>Тесты и Задания</span>
+              <button class="btn btn-primary" id="openTestConstructorFromTestsBtn" style="padding: 8px 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">➕ Добавить тест / задание</button>
             </div>
+
+            <!-- Draft resume banner -->
+            <div id="testsDraftBannerContainer" style="display: none; margin-bottom: 20px;"></div>
 
             <!-- Sub-tabs nav inside Tests view -->
             <div class="tests-subnav" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
@@ -650,15 +654,8 @@
 
           <section class="view-section" id="view-support">
             <div class="section-title">Служба поддержки</div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 16px">
-              <div
-                style="
-                  background: var(--color-surface);
-                  border: 1px solid var(--color-border);
-                  border-radius: var(--border-radius-xl);
-                  padding: 32px;
-                "
-              >
+            <div class="support-grid">
+              <div class="support-card">
                 <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-bottom: 16px; color: var(--color-text-primary)">
                   Напишите нам
                 </h3>
@@ -716,17 +713,7 @@
                 <button class="btn-primary" id="supportSendBtn" style="width: 100%">Отправить обращение</button>
               </div>
 
-              <div
-                style="
-                  background: var(--color-surface);
-                  border: 1px solid var(--color-border);
-                  border-radius: var(--border-radius-xl);
-                  padding: 32px;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 20px;
-                "
-              >
+              <div class="support-card support-faq-card">
                 <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 16px">
                   Часто задаваемые вопросы (FAQ)
                 </h3>
@@ -1172,6 +1159,21 @@
                   <div class="stat-label">Рейтинг ученика</div>
                 </div>
               </div>
+
+              <div class="profile-teacher-card" style="margin-top: 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                  <div>
+                    <h3 style="margin: 0 0 4px 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">👩‍🏫 Мой класс и преподаватель</h3>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-secondary);">Подключитесь к учителю или репетитору для получения домашних заданий</p>
+                  </div>
+                </div>
+                <div id="profileStudentGroupArea" style="margin-top: 12px;">
+                  <div style="display: flex; gap: 10px; max-width: 480px;">
+                    <input type="text" id="profileJoinGroupCodeInput" class="auth-form-input" placeholder="Код группы (например, HUB-9YSG)" style="text-transform: uppercase; font-family: monospace; font-weight: 600;" />
+                    <button class="btn btn-primary" id="profileJoinGroupBtn" style="white-space: nowrap; padding: 0 20px;">Вступить</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="profile-tab-content" id="profileTabHistory" style="display: none;">
@@ -1565,8 +1567,40 @@
               </div>
 
               <div class="quiz-card" id="quizCard">
+                <div class="quiz-card-header" id="quizCardHeader">
+                  <div class="quiz-meta-group">
+                    <span class="quiz-meta-num" id="quizMetaNum">1</span>
+                    <span class="quiz-meta-line" id="quizMetaLine">1 линия</span>
+                    <span class="quiz-meta-id" id="quizMetaId">
+                      <svg class="quiz-meta-box-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                        <path d="m3.3 7 8.7 5 8.7-5"/>
+                        <path d="M12 22V12"/>
+                      </svg>
+                      <span id="quizMetaIdText">№74203</span>
+                    </span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="quiz-ref-btn" id="quizReferenceBtn" title="Официальные справочные материалы ФИПИ">
+                      📑 <span>Справочник ФИПИ</span>
+                    </button>
+                    <button type="button" class="quiz-report-btn" id="quizReportBtn" title="Сообщить о неточности в вопросе">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                      <span>Сообщить об ошибке</span>
+                    </button>
+                  </div>
+                </div>
+
                 <div class="quiz-question-text" id="quizQuestionText">
                   Какой органоид клетки отвечает за синтез АТФ в процессе клеточного дыхания?
+                </div>
+
+                <div class="quiz-answer-input-wrap" id="quizAnswerInputWrap">
+                  <input type="text" class="quiz-pill-input" id="quizPillInput" placeholder="Введи ответ" autocomplete="off" />
                 </div>
 
                 <div class="quiz-options-list" id="quizOptionsGrid">
@@ -1625,22 +1659,28 @@
               <p class="view-subtitle" style="margin-bottom: 20px; color: var(--color-text-secondary);">
                 Полноформатные варианты ОГЭ и ЕГЭ с таймером и автоматическим переводом баллов.
               </p>
+              <div id="mockDraftBannerContainer" style="display: none; margin-bottom: 20px;"></div>
               <div class="mock-exam-grid" id="mockExamList"></div>
             </div>
 
             <div id="mockPlayerScreen" style="display: none;">
-              <div class="mock-exam-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 16px 24px; background: var(--color-card-bg); border-radius: 16px; border: 1px solid var(--color-border);">
+              <div class="mock-exam-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 16px 24px; background: var(--color-card-bg); border-radius: 16px; border: 1px solid var(--color-border); flex-wrap: wrap; gap: 12px;">
                 <div>
                   <h3 id="mockExamTitle" style="margin: 0; font-size: 1.25rem;"></h3>
                   <span id="mockExamSubtitle" style="font-size: 0.875rem; color: var(--color-text-secondary);"></span>
                 </div>
-                <div class="mock-timer-box" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.25rem; padding: 8px 16px; background: var(--color-bg-secondary); border-radius: 12px; border: 1px solid var(--color-border);">
-                  <i data-lucide="clock" style="stroke: var(--color-purple)"></i>
-                  <span id="mockTimerDisplay">00:00:00</span>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <button type="button" class="quiz-ref-btn" id="mockReferenceBtn" title="Официальные справочные материалы ФИПИ">
+                    📑 <span>Справочник ФИПИ</span>
+                  </button>
+                  <div class="mock-timer-box" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.25rem; padding: 8px 16px; background: var(--color-bg-secondary); border-radius: 12px; border: 1px solid var(--color-border);">
+                    <i data-lucide="clock" style="stroke: var(--color-purple)"></i>
+                    <span id="mockTimerDisplay">00:00:00</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="mock-exam-layout" style="display: grid; grid-template-columns: 1fr 300px; gap: 24px;">
+              <div class="mock-exam-layout">
                 <div class="mock-question-card" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border);">
                   <div id="mockQuestionArea"></div>
                   <div class="mock-question-actions" style="display: flex; justify-content: space-between; margin-top: 24px;">
@@ -1651,7 +1691,7 @@
 
                 <div class="mock-sidebar-card" style="background: var(--color-card-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--color-border);">
                   <h4 style="margin-top: 0; margin-bottom: 16px;">Вопросы</h4>
-                  <div class="mock-nav-grid" id="mockNavGrid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;"></div>
+                  <div class="mock-nav-grid" id="mockNavGrid"></div>
                   <button class="btn-primary" id="mockSubmitBtn" style="margin-top: 24px; width: 100%;">Завершить экзамен</button>
                 </div>
               </div>
@@ -1662,7 +1702,7 @@
                 <h2 style="margin-top: 0; margin-bottom: 8px;">Результаты пробника</h2>
                 <p id="mockResultsExamTitle" style="color: var(--color-text-secondary); margin-bottom: 24px;"></p>
 
-                <div class="mock-scores-container" style="display: flex; justify-content: center; gap: 24px; margin-bottom: 32px;">
+                <div class="mock-scores-container">
                   <div class="score-card" style="flex: 1; padding: 20px; background: var(--color-bg-secondary); border-radius: 16px; border: 1px solid var(--color-border);">
                     <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 8px;">Первичный балл</div>
                     <div class="score-value" id="mockPrimaryScore" style="font-size: 2.25rem; font-weight: 800; color: var(--color-purple);">0</div>
@@ -1783,6 +1823,65 @@
       </div>
     </div>
 
+    <div class="modal-overlay" id="referenceMaterialsModal">
+      <div class="modal-card" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="modal-close-btn" data-close-modal="referenceMaterialsModal">&times;</button>
+        <div style="margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h3 style="margin: 0 0 4px 0; font-size: 1.25rem;">📑 Официальные справочные материалы ФИПИ</h3>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-secondary);">Разрешены к использованию на реальном экзамене ОГЭ и ЕГЭ</p>
+          </div>
+        </div>
+
+        <div class="ref-subject-tabs" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--color-border);">
+          <button class="btn btn-outline ref-tab-btn active" data-ref-subject="math" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">📐 Математика</button>
+          <button class="btn btn-outline ref-tab-btn" data-ref-subject="physics" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">⚡ Физика</button>
+          <button class="btn btn-outline ref-tab-btn" data-ref-subject="chemistry" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">🧪 Химия</button>
+          <button class="btn btn-outline ref-tab-btn" data-ref-subject="russian" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">📖 Русский язык</button>
+          <button class="btn btn-outline ref-tab-btn" data-ref-subject="biology" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">🧬 Биология</button>
+          <button class="btn btn-outline ref-tab-btn" data-ref-subject="informatics" style="font-size: 0.85rem; padding: 6px 14px; white-space: nowrap;">💻 Информатика</button>
+        </div>
+
+        <div id="refModalContent" style="overflow-y: auto; flex: 1; padding-right: 6px; line-height: 1.6; font-size: 0.95rem;">
+          <!-- Динамически заполняется через JS в зависимости от вкладки -->
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="howItWorksModal">
+      <div class="modal-card" style="max-width: 580px;">
+        <button class="modal-close-btn" data-close-modal="howItWorksModal">&times;</button>
+        <div style="padding: 24px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: center; font-size: 22px;">🚀</div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.25rem;">Как это работает?</h3>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-secondary);">Пошаговый план подготовки на максимальный балл</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.95rem; line-height: 1.55;">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 800; color: var(--color-purple); font-size: 1.1rem; min-width: 24px;">1.</span>
+              <div><strong>Выберите экзамен:</strong> Главный переключатель в шапке (ОГЭ или ЕГЭ) моментально настраивает всю платформу, каталог заданий и шкалу оценивания.</div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 800; color: var(--color-purple); font-size: 1.1rem; min-width: 24px;">2.</span>
+              <div><strong>Изучайте теорию:</strong> Интерактивные конспекты, формулы ФИПИ и видеоуроки с автопроверкой понимания по всем 10 предметам.</div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 800; color: var(--color-purple); font-size: 1.1rem; min-width: 24px;">3.</span>
+              <div><strong>Тренируйте задания:</strong> Банк заданий Части 1 с моментальной проверкой и Части 2 с критериями ФИПИ и самооценкой.</div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 800; color: var(--color-purple); font-size: 1.1rem; min-width: 24px;">4.</span>
+              <div><strong>Пишите пробники:</strong> Полные варианты в условиях реального экзамена с таймером и автоматическим переводом баллов.</div>
+            </div>
+          </div>
+          <button class="btn-primary" data-close-modal="howItWorksModal" style="margin-top: 20px; width: 100%; min-height: 44px;">Понятно, начать подготовку</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="authModal">
       <div class="modal-card">
         <button class="modal-close-btn" data-close-modal="authModal">&times;</button>
@@ -1794,10 +1893,12 @@
 
         <div class="auth-modal-body">
           <button class="auth-option-btn vk-btn" id="authVkBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;"><path d="M15.684 0H8.316C2.992 0 0 2.992 0 8.316v7.368C0 21.008 2.992 24 8.316 24h7.368C21.008 24 24 21.008 24 15.684V8.316C24 2.992 21.008 0 15.684 0zm3.602 17.102h-1.744c-.66 0-.862-.524-2.05-1.713-1.034-1.01-1.493-1.144-1.748-1.144-.356 0-.458.102-.458.593v1.657c0 .424-.136.607-1.254.607-1.847 0-3.9-1.118-5.34-3.203-2.17-3.085-2.763-5.407-2.763-5.881 0-.254.102-.491.593-.491h1.746c.44 0 .61.203.78.678.847 2.475 2.27 4.644 2.864 4.644.22 0 .322-.102.322-.661v-2.576c-.068-1.186-.695-1.288-.695-1.712 0-.203.17-.407.44-.407h2.746c.373 0 .508.186.508.627v3.475c0 .373.17.508.271.508.22 0 .407-.135.814-.542 1.271-1.424 2.186-3.61 2.186-3.61.119-.254.339-.458.78-.458h1.746c.525 0 .644.271.525.644-.22 1.017-2.356 4.05-2.458 4.203-.237.356-.322.525 0 .949.237.339 1.017 1.017 1.542 1.627 1.051 1.153 1.847 2.119 2.068 2.78.17.627-.136.881-.627.881z"/></svg>
             <span>Войти через ВКонтакте</span>
           </button>
           <button class="auth-option-btn yandex-btn" id="authYandexBtn">
-            <span>Войти через Яндекс Почту</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;"><path d="M2.04 12c0-5.5 4.46-9.96 9.96-9.96s9.96 4.46 9.96 9.96-4.46 9.96-9.96 9.96S2.04 17.5 2.04 12zm11.77 5.76V6.24h-1.85c-2.34 0-3.63 1.2-3.63 3.03 0 1.48.74 2.39 2.09 3.32l-2.44 5.17h2.24l2.12-4.57h.03v4.57h1.44zm-1.44-5.9h-.38c-1.3 0-1.95-.59-1.95-1.63 0-1.12.79-1.73 2.1-1.73h.23v3.36z"/></svg>
+            <span>Войти через Яндекс</span>
           </button>
 
           <div class="auth-divider">или введите логин вручную</div>

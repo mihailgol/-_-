@@ -69,6 +69,9 @@ export function switchView(viewName, { replace = false } = {}) {
   mobileNavItems.forEach((n) => {
     if (n.getAttribute("data-view") === viewName) {
       n.classList.add("active");
+      if (typeof n.scrollIntoView === "function") {
+        n.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
     } else {
       n.classList.remove("active");
     }
@@ -149,8 +152,9 @@ export function initRouter() {
     }
   });
 
-  document.getElementById("heroHowBtn").addEventListener("click", () => {
-    showToast("ℹ️ Как это работает", "Выберите предмет (Биология или Химия) для старта подготовки!");
+  document.getElementById("heroHowBtn")?.addEventListener("click", () => {
+    showToast("ℹ️ Как это работает", "Выберите любой предмет для старта подготовки — конспекты, тесты и пробники ОГЭ и ЕГЭ!");
+    openModal("howItWorksModal");
   });
 
   document.getElementById("viewAllSubjectsLink").addEventListener("click", (e) => {

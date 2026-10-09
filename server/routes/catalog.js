@@ -46,9 +46,7 @@ function formatTopic(t, user) {
           thumbnail: videoRow.thumbnail,
         }
       : undefined,
-    questions: locked
-      ? undefined
-      : questionRows.map((q) => {
+    questions: questionRows.map((q) => {
           let options;
           try {
             options = JSON.parse(q.options_json);

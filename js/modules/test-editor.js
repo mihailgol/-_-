@@ -493,6 +493,10 @@ export function initTestEditor() {
         examType,
       };
 
+      if (type === "text") {
+        payload.correctAnswer = document.getElementById("textCorrectAnswerInput")?.value.trim() || "";
+      }
+
       if (type === "extended") {
         const solutionKey = document.getElementById("extSolutionKeyInput")?.value.trim() || "";
         const maxPoints = parseInt(document.getElementById("extMaxPointsInput")?.value || "3", 10);
@@ -519,10 +523,23 @@ export function initTestEditor() {
         payload.criteria = criteria;
       }
 
-      await api("/api/admin/tests/questions", {
+      const savedRes = await api("/api/admin/tests/questions", {
         method: "POST",
         body: JSON.stringify(payload),
       });
+
+      try {
+        const customList = JSON.parse(localStorage.getItem("examhub_custom_questions") || "[]");
+        const storedQuestion = {
+          ...payload,
+          id: savedRes?.question?.id || `q_local_${Date.now()}`,
+          topicId: savedRes?.topicId || undefined,
+        };
+        customList.push(storedQuestion);
+        localStorage.setItem("examhub_custom_questions", JSON.stringify(customList));
+      } catch {
+        // ignore localStorage quota errors
+      }
 
       showToast("✅ Сохранено в БД!", `Вопрос для Задания №${taskNumber} (${examType}, ${type === "extended" ? "Часть 2 ФИПИ" : type}) сохранен в базу данных и доступен в разделе «Тесты».`);
 
@@ -532,6 +549,9 @@ export function initTestEditor() {
       import("./catalog.js").then((m) => {
         if (typeof m.syncTestsExamSelection === "function") {
           m.syncTestsExamSelection();
+        }
+        if (typeof m.renderGeneralQuizzes === "function") {
+          m.renderGeneralQuizzes();
         }
       });
     } catch (err) {
@@ -704,6 +724,15 @@ function updateTestPreview(type, container) {
 
   container.innerHTML = `
     <div style="background: var(--color-card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--color-border); box-shadow: var(--box-shadow-sm);">
+      <div class="quiz-card-header" style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div class="quiz-meta-group" style="display: flex; align-items: center; gap: 8px;">
+          <span class="quiz-meta-num" style="width: 26px; height: 26px; font-size: 12px;">1</span>
+          <span class="quiz-meta-line" style="font-size: 11px; padding: 3px 10px;">${taskNumber} линия</span>
+          <span class="quiz-meta-id" style="font-size: 11px; padding: 3px 10px;">📦 №74203</span>
+        </div>
+        <span style="font-size: 12px; color: var(--color-text-secondary); display: inline-flex; align-items: center; gap: 4px;">⚠️ Сообщить об ошибке</span>
+      </div>
+
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
         <span style="font-size: 11px; font-weight: 700; color: ${subjectObj.colorHex || "var(--color-purple)"}; text-transform: uppercase;">
           ${subjectObj.title || "Предмет"} • Задание №${taskNumber} • ${activeExam}
@@ -720,6 +749,8 @@ function updateTestPreview(type, container) {
       <div style="font-size: 14px; color: var(--color-text-primary); line-height: 1.5; margin-bottom: 12px;">
         ${qText.replace(/\n/g, "<br/>")}
       </div>
+
+      ${type !== "extended" ? `<div style="margin-bottom: 12px;"><input type="text" class="quiz-pill-input" placeholder="Введи ответ" disabled /></div>` : ""}
 
       ${optionsPreviewHtml}
       ${explanationHtml}

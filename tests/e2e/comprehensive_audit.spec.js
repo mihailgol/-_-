@@ -1,6 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Комплексный сквозной аудит платформы (ЕГЭ/ОГЭ, Админ, Гость, Ученик, Учитель, Логи и Удаление)", () => {
+  test.beforeAll(async () => {
+    const { db } = await import("../../server/db.js");
+    db.prepare("DELETE FROM questions WHERE question LIKE '%[АУДИТ-%' OR question LIKE '%[Тест #%'").run();
+    db.prepare("DELETE FROM topics WHERE title LIKE '%[АУДИТ-%' OR title LIKE '%[Тест #%'").run();
+  });
+
   test("полный жизненный цикл создания, доступности, решения, проверки и удаления тестов", async ({ browser }) => {
     test.setTimeout(120000);
     const consoleLogs = [];

@@ -193,4 +193,83 @@ test.describe("Test Constructor & Part 2 Extended Questions — E2E Workflow", (
     await expect(page.locator("#view-quiz-player")).toBeVisible();
     await expect(page.locator("#quizQuestionText")).toContainText("Решите систему уравнений");
   });
+
+  test("оформление теста (бейджи, линия, ID, Сообщить об ошибке, 'Введи ответ') и сохранение добавленных тестов после выхода из сайта", async ({ page }) => {
+    // 1. Проверяем оформление карточки теста в Quiz Player
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+
+    // Кнопка быстрого перехода в Конструктор тестов прямо из раздела Тесты
+    const openEditorBtn = page.locator("#openTestConstructorFromTestsBtn");
+    await expect(openEditorBtn).toBeVisible();
+
+    // Запускаем решение Задания №1
+    await page.locator("#tasksSubjectFilter").selectOption("chemistry");
+    const card1 = page.locator('.task-number-card[data-task-num="1"]');
+    await card1.click();
+
+    await expect(page.locator("#view-quiz-player")).toBeVisible();
+    // Проверяем все элементы оформления карточки из ТЗ/скриншота
+    await expect(page.locator("#quizCardHeader")).toBeVisible();
+    await expect(page.locator("#quizMetaNum")).toBeVisible();
+    await expect(page.locator("#quizMetaNum")).toHaveText("1");
+    await expect(page.locator("#quizMetaLine")).toContainText("1 линия");
+    await expect(page.locator("#quizMetaIdText")).toContainText("№");
+    await expect(page.locator("#quizReportBtn")).toContainText("Сообщить об ошибке");
+
+    // Поле ввода "Введи ответ" со стилем rounded pill
+    const pillInput = page.locator("#quizPillInput");
+    await expect(pillInput).toBeVisible();
+    await expect(pillInput).toHaveAttribute("placeholder", "Введи ответ");
+
+    // Вводим ответ в поле
+    await pillInput.fill("15");
+    await expect(page.locator("#quizNextBtn")).toBeEnabled();
+
+    // 2. Входим под админом и добавляем новый тест с темой
+    await page.locator("#quizQuitBtn").click();
+    page.on("dialog", (d) => d.accept());
+    await page.locator("#quizQuitBtn").click();
+
+    await page.locator("#loginBtn").click();
+    await page.locator("#manualEmail").fill("admin@examhub.ru");
+    await page.locator("#manualPass").fill("admin123");
+    await page.locator("#authSubmitManual").click();
+    await expect(page.locator("#authModal")).not.toHaveClass(/active/);
+
+    // Переход в Конструктор тестов
+    await page.locator("#openTestConstructorFromTestsBtn").click();
+    await expect(page.locator("#view-test-editor")).toBeVisible();
+
+    const uniqueTopic = `Авторский тест по физике [${Date.now()}]`;
+    const uniqueQ = `Найдите ускорение свободного падения на экваторе [${Date.now()}]`;
+
+    await page.locator("#qSubjectSelect").selectOption("physics");
+    await page.locator("#qTaskNumberInput").fill("1");
+    await page.locator("#qTopicTitleInput").fill(uniqueTopic);
+    await page.locator("#qTypeSelect").selectOption("text");
+    await page.locator("#qTextarea").fill(uniqueQ);
+    await page.locator("#textCorrectAnswerInput").fill("9.78");
+
+    await page.locator("#saveQuestionBtn").click();
+    await expect(page.locator(".toast-message")).toContainText("Сохранено в БД");
+
+    // 3. Выход из сайта (handleLogout)
+    const logoutBtn = page.locator("#logoutBtn");
+    await expect(logoutBtn).toBeVisible();
+    await logoutBtn.click();
+    await expect(page.locator("#loginBtn")).toBeVisible();
+
+    // 4. Проверяем, что после выхода из сайта добавленный тест НЕ пропал!
+    await page.locator('.sidebar-nav .nav-item[data-view="tests"]').click();
+    await expect(page.locator("#view-tests")).toBeVisible();
+
+    // Переходим во вкладку «По предметам и темам»
+    await page.locator("#btnTestTabSubjects").click();
+    await page.locator("#generalQuizzesSubjectFilter").selectOption("physics");
+
+    const quizzesGrid = page.locator("#allGeneralQuizzesGrid");
+    await expect(quizzesGrid).toBeVisible();
+    await expect(quizzesGrid).toContainText(uniqueTopic);
+  });
 });

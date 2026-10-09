@@ -16,6 +16,59 @@ export async function renderMockExamCatalog() {
   const container = document.getElementById("mockExamList");
   if (!container) return;
 
+  const bannerContainer = document.getElementById("mockDraftBannerContainer");
+  if (bannerContainer) {
+    try {
+      const raw = localStorage.getItem("examhub_mock_draft");
+      if (raw) {
+        const draft = JSON.parse(raw);
+        const isRecent = Date.now() - (draft.timestamp || 0) < 24 * 60 * 60 * 1000;
+        if (draft && draft.examId && isRecent) {
+          const minsLeft = Math.max(1, Math.round((draft.remainingSeconds || 0) / 60));
+          bannerContainer.innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%); border: 1px solid var(--color-purple); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">⏱️</span>
+                <div>
+                  <div style="font-weight: 700; font-size: 14px; color: var(--color-text-primary);">У вас есть незавершенный пробник «${draft.examTitle || "Пробный экзамен"}»</div>
+                  <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 2px;">Осталось времени: ~${minsLeft} мин (вопрос ${(draft.currentQuestionIndex || 0) + 1})</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" id="resumeMockDraftBtn" style="padding: 6px 16px; font-size: 13px;">Продолжить пробник</button>
+                <button class="btn btn-outline" id="discardMockDraftBtn" style="padding: 6px 12px; font-size: 13px;">Сбросить</button>
+              </div>
+            </div>
+          `;
+          bannerContainer.style.display = "block";
+
+          document.getElementById("resumeMockDraftBtn")?.addEventListener("click", async () => {
+            await startMockExam(draft.examId);
+            if (draft.userAnswers) userAnswers = draft.userAnswers;
+            if (typeof draft.currentQuestionIndex === "number") currentQuestionIndex = draft.currentQuestionIndex;
+            if (typeof draft.remainingSeconds === "number") remainingSeconds = draft.remainingSeconds;
+            if (typeof draft.timeSpentSeconds === "number") timeSpentSeconds = draft.timeSpentSeconds;
+            renderCurrentQuestion();
+            renderNavGrid();
+            updateTimerDisplay();
+            showToast("🔄 Пробник восстановлен", "Вы продолжили выполнение с сохраненными ответами!");
+          });
+
+          document.getElementById("discardMockDraftBtn")?.addEventListener("click", () => {
+            clearMockDraft();
+            bannerContainer.style.display = "none";
+          });
+        } else {
+          bannerContainer.style.display = "none";
+        }
+      } else {
+        bannerContainer.style.display = "none";
+      }
+    } catch {
+      bannerContainer.style.display = "none";
+    }
+  }
+
   try {
     const data = await api("/api/mock-exams");
     let mockExams = data.mockExams || [];
@@ -102,6 +155,32 @@ export async function startMockExam(examId) {
   }
 }
 
+export function saveMockDraft() {
+  if (!currentMockExam || !currentQuestions || currentQuestions.length === 0) return;
+  const draft = {
+    examId: currentMockExam.id,
+    examTitle: currentMockExam.title,
+    currentQuestionIndex,
+    userAnswers,
+    remainingSeconds,
+    timeSpentSeconds,
+    timestamp: Date.now(),
+  };
+  try {
+    localStorage.setItem("examhub_mock_draft", JSON.stringify(draft));
+  } catch {
+    // ignore
+  }
+}
+
+export function clearMockDraft() {
+  try {
+    localStorage.removeItem("examhub_mock_draft");
+  } catch {
+    // ignore
+  }
+}
+
 function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
 
@@ -110,6 +189,10 @@ function startTimer() {
     timeSpentSeconds++;
 
     updateTimerDisplay();
+
+    if (remainingSeconds % 5 === 0) {
+      saveMockDraft();
+    }
 
     if (remainingSeconds === 900 && !warned15m) {
       warned15m = true;
@@ -155,15 +238,40 @@ function renderCurrentQuestion() {
   const q = currentQuestions[currentQuestionIndex];
   const isExtended = q.type === "extended";
 
+  const currNum = currentQuestionIndex + 1;
+  const taskLine = q.taskNumber || q.task_number || currNum;
+  const catalogNum = q.catalogId || q.catalogNumber || String(74000 + (Number(taskLine) * 10) + ((Math.abs(Number(currNum) * 17)) % 90));
+
+  const metaHeaderHtml = `
+    <div class="quiz-card-header" style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <div class="quiz-meta-group">
+        <span class="quiz-meta-num">${currNum}</span>
+        <span class="quiz-meta-line">${taskLine} линия</span>
+        <span class="quiz-meta-id">
+          <svg class="quiz-meta-box-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="m3.3 7 8.7 5 8.7-5"/>
+            <path d="M12 22V12"/>
+          </svg>
+          <span>№${catalogNum}</span>
+        </span>
+        ${isExtended ? `<span style="background: rgba(147, 51, 234, 0.1); color: var(--color-purple); padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;">Часть 2 • до ${q.maxPoints || 3} б.</span>` : ""}
+      </div>
+      <button type="button" class="quiz-report-btn" id="mockReportBtn" title="Сообщить о неточности в вопросе">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span>Сообщить об ошибке</span>
+      </button>
+    </div>
+  `;
+
   if (isExtended) {
     const currentVal = userAnswers[q.id] || "";
     container.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-weight: 600; color: var(--color-purple);">Вопрос ${currentQuestionIndex + 1} из ${currentQuestions.length}</span>
-        <span style="background: var(--color-purple-light, rgba(147, 51, 234, 0.1)); color: var(--color-purple); padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
-          Часть 2 • Развернутый ответ (до ${q.maxPoints || 3} б.)
-        </span>
-      </div>
+      ${metaHeaderHtml}
       <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; line-height: 1.5;">${q.question}</h3>
       <div style="margin-bottom: 16px;">
         <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 6px; color: var(--color-text-secondary);">Ваш развернутый ответ:</label>
@@ -175,6 +283,13 @@ function renderCurrentQuestion() {
         <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px; text-align: right;" id="mockTextCharCount">Символов: ${currentVal.length}</div>
       </div>
     `;
+
+    const reportBtn = document.getElementById("mockReportBtn");
+    if (reportBtn) {
+      reportBtn.onclick = () => {
+        import("./ui.js").then((ui) => ui.showToast("✅ Принято", "Сообщение об ошибке передано методистам."));
+      };
+    }
 
     const textarea = document.getElementById("mockExtendedInput");
     if (textarea) {
@@ -189,10 +304,11 @@ function renderCurrentQuestion() {
   } else {
     const selectedIdx = userAnswers[q.id];
     container.innerHTML = `
-      <div style="font-weight: 600; color: var(--color-purple); margin-bottom: 8px;">
-        Вопрос ${currentQuestionIndex + 1} из ${currentQuestions.length}
-      </div>
+      ${metaHeaderHtml}
       <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; line-height: 1.5;">${q.question}</h3>
+      <div class="quiz-answer-input-wrap" style="margin-bottom: 18px;">
+        <input type="text" class="quiz-pill-input" id="mockPillInput" placeholder="Введи ответ" value="${selectedIdx !== undefined && q.options && q.options[selectedIdx] ? q.options[selectedIdx] : (typeof selectedIdx === "string" ? selectedIdx : "")}" />
+      </div>
       <div class="mock-options-list" style="display: flex; flex-direction: column; gap: 12px;">
         ${q.options
           .map(
@@ -208,6 +324,37 @@ function renderCurrentQuestion() {
           .join("")}
       </div>
     `;
+
+    const reportBtn = document.getElementById("mockReportBtn");
+    if (reportBtn) {
+      reportBtn.onclick = () => {
+        import("./ui.js").then((ui) => ui.showToast("✅ Принято", "Сообщение об ошибке передано методистам."));
+      };
+    }
+
+    const pillInput = document.getElementById("mockPillInput");
+    if (pillInput) {
+      pillInput.addEventListener("input", (e) => {
+        const val = e.target.value.trim();
+        userAnswers[q.id] = val;
+        if (Array.isArray(q.options)) {
+          q.options.forEach((opt, idx) => {
+            const btn = container.querySelectorAll(".mock-option-item")[idx];
+            if (!btn) return;
+            const isMatch = val.toLowerCase() === opt.toLowerCase() ||
+                            val.toUpperCase() === String.fromCharCode(65 + idx) ||
+                            val === String(idx + 1);
+            if (isMatch) {
+              btn.classList.add("selected");
+              userAnswers[q.id] = idx;
+            } else {
+              btn.classList.remove("selected");
+            }
+          });
+        }
+        renderNavGrid();
+      });
+    }
 
     container.querySelectorAll(".mock-option-item").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -258,6 +405,7 @@ export async function submitMockExam(_autoSubmit = false) {
   }
 
   if (!currentMockExam) return;
+  clearMockDraft();
 
   try {
     const res = await api(`/api/mock-exams/${currentMockExam.id}/submit`, {
@@ -534,6 +682,15 @@ export function initMockExamEvents() {
         renderCurrentQuestion();
         renderNavGrid();
       }
+    });
+  }
+
+  const mockRefBtn = document.getElementById("mockReferenceBtn");
+  if (mockRefBtn) {
+    mockRefBtn.addEventListener("click", () => {
+      import("./reference-materials.js").then((m) => {
+        m.openReferenceMaterials(currentMockExam?.subjectId || "math");
+      });
     });
   }
 

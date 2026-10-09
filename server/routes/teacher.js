@@ -153,6 +153,59 @@ router.post("/join", requireAuth, (req, res) => {
   });
 });
 
+router.get("/my-groups", requireAuth, (req, res) => {
+  const groups = db
+    .prepare(
+      `SELECT g.id, g.name, g.invite_code, u.name as teacher_name, gm.joined_at
+       FROM group_members gm
+       JOIN groups g ON g.id = gm.group_id
+       JOIN users u ON u.id = g.teacher_id
+       WHERE gm.student_id = ?
+       ORDER BY gm.joined_at DESC`
+    )
+    .all(req.user.id);
+  res.json({ groups });
+});
+
+router.get("/groups/:id/export", requireAuth, (req, res) => {
+  const group = db.prepare(`SELECT * FROM groups WHERE id = ?`).get(req.params.id);
+  if (!group) {
+    return res.status(404).json({ error: "Группа не найдена" });
+  }
+  if (group.teacher_id !== req.user.id && req.user.role !== "ADMIN") {
+    return res.status(403).json({ error: "Доступ разрешен только преподавателю группы" });
+  }
+
+  const members = db
+    .prepare(
+      `SELECT u.id, u.name, u.email, gm.joined_at,
+        (SELECT COUNT(*) FROM assignment_submissions sub
+         JOIN assignments a ON a.id = sub.assignment_id
+         WHERE a.group_id = ? AND sub.student_id = u.id) as completed_assignments,
+        (SELECT AVG(sub.percent) FROM assignment_submissions sub
+         JOIN assignments a ON a.id = sub.assignment_id
+         WHERE a.group_id = ? AND sub.student_id = u.id) as avg_score
+      FROM group_members gm
+      JOIN users u ON u.id = gm.student_id
+      WHERE gm.group_id = ?
+      ORDER BY u.name ASC`
+    )
+    .all(group.id, group.id, group.id);
+
+  const BOM = "\uFEFF";
+  let csv = BOM + "ФИО ученика;Email;Дата вступления;Сдано заданий;Средний балл (%)\n";
+  members.forEach((m) => {
+    const avg = m.avg_score != null ? Math.round(m.avg_score) : 0;
+    const date = m.joined_at ? new Date(m.joined_at).toLocaleDateString("ru-RU") : "—";
+    csv += `"${m.name || "Ученик"}";"${m.email || ""}";"${date}";"${m.completed_assignments || 0}";"${avg}%"\n`;
+  });
+
+  const safeFilename = encodeURIComponent(`Ведомость_${group.name.replace(/\s+/g, "_")}.csv`);
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${safeFilename}`);
+  res.send(csv);
+});
+
 router.post("/assignments", requireAuth, (req, res) => {
   const { groupId, title, subjectId, topicId = null, dueDate = null } = req.body || {};
 

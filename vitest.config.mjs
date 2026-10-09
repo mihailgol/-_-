@@ -8,6 +8,7 @@ export default defineConfig({
       singleFork: true,
     },
     include: ["tests/unit/**/*.test.{js,mjs}"],
+    setupFiles: ["tests/setup.js"],
     fileParallelism: false,
     maxConcurrency: 1,
     coverage: {

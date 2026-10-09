@@ -58,6 +58,14 @@ export function initAuthEvents() {
   const manualBtn = document.getElementById("authSubmitManual");
   const toggleLink = document.getElementById("authToggleLink");
 
+  const staticLoginBtn = document.getElementById("loginBtn");
+  if (staticLoginBtn) {
+    staticLoginBtn.addEventListener("click", () => {
+      setAuthMode("login");
+      openModal("authModal");
+    });
+  }
+
   if (vkBtn) vkBtn.addEventListener("click", () => handleSocialLogin("VK"));
   if (yandexBtn) yandexBtn.addEventListener("click", () => handleSocialLogin("Yandex"));
   if (manualBtn) manualBtn.addEventListener("click", handleManualLogin);
@@ -142,6 +150,18 @@ export async function handleManualLogin() {
       setExamType(selectedExamType);
     }
 
+    try {
+      const stats = await api("/api/progress/stats");
+      if (stats) {
+        appState.stats.testsSolved = stats.testsSolved || 0;
+        appState.stats.avgPercent = stats.avgPercent || 0;
+      }
+      const historyRes = await api("/api/progress/attempts");
+      appState.userHistory = historyRes?.attempts || [];
+    } catch {
+      // ignore
+    }
+
     saveStateToStorage();
     updateUIFromState();
     renderTeacherCabinet();
@@ -181,6 +201,7 @@ export async function handleLogout() {
   appState.user = { ...GUEST_USER };
   appState.stats.testsSolved = 0;
   appState.stats.avgPercent = 0;
+  appState.userHistory = [];
 
   saveStateToStorage();
   updateUIFromState();
@@ -193,6 +214,22 @@ export async function handleLogout() {
   if (appState.currentSubject) {
     loadSubjectDetail(appState.currentSubject.id);
   }
+
+  if (typeof window.loadAppData === "function") {
+    try {
+      await window.loadAppData();
+    } catch {
+      // ignore
+    }
+  }
+
+  import("./catalog.js").then((m) => {
+    if (typeof m.syncTestsExamSelection === "function") m.syncTestsExamSelection();
+    if (typeof m.renderGeneralQuizzes === "function") m.renderGeneralQuizzes();
+  });
+  import("./mock-exam.js").then((m) => {
+    if (typeof m.renderMockExamCatalog === "function") m.renderMockExamCatalog();
+  });
 
   showToast("🚪 Выход", "Вы вышли из учетной записи.");
 }

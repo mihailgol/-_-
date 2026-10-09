@@ -221,6 +221,14 @@ router.post("/:id/submit", optionalAuth, (req, res) => {
       timeSpent
     );
     attemptId = Number(info.lastInsertRowid);
+    try {
+      const percentVal = maxPrimaryScore > 0 ? Math.round((primaryScore / maxPrimaryScore) * 100) : 0;
+      db.prepare(
+        `INSERT INTO attempts (user_id, topic_id, title, score, total, percent) VALUES (?, NULL, ?, ?, ?, ?)`
+      ).run(req.user.id, `Пробник: ${exam.title || "Экзамен"}`, primaryScore, maxPrimaryScore, percentVal);
+    } catch (err) {
+      void err;
+    }
   }
 
   res.json({

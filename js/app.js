@@ -22,6 +22,7 @@ import { initAnalyticsTracker } from "./modules/analytics-engine.js";
 import { initProfileView } from "./modules/profile.js";
 import { initNotificationEvents, loadNotifications } from "./modules/notifications.js";
 import { initQuizEvents } from "./modules/quiz.js";
+import { initReferenceMaterialsEvents } from "./modules/reference-materials.js";
 
 async function loadAppData() {
   const catalog = await api("/api/catalog/subjects");
@@ -30,6 +31,50 @@ async function loadAppData() {
   catalog.subjects.forEach((s) => {
     subjectsMap[s.id] = s;
   });
+  try {
+    const customList = JSON.parse(localStorage.getItem("examhub_custom_questions") || "[]");
+    if (Array.isArray(customList) && customList.length > 0) {
+      customList.forEach((cq) => {
+        const sub = subjectsMap[cq.subjectId];
+        if (!sub) return;
+        if (!sub.topics) sub.topics = [];
+        let topic = sub.topics.find((t) => t.id === cq.topicId || (cq.topicTitle && t.title === cq.topicTitle));
+        if (!topic) {
+          topic = {
+            id: cq.topicId || `top_local_${cq.subjectId}_${Date.now()}`,
+            title: cq.topicTitle || `Задание №${cq.taskNumber || 1}`,
+            isPremium: false,
+            duration: "45 мин",
+            theory: "",
+            questions: [],
+          };
+          sub.topics.push(topic);
+        }
+        if (!topic.questions) topic.questions = [];
+        const exists = topic.questions.some((q) => q.id === cq.id || q.question === cq.question);
+        if (!exists) {
+          topic.questions.push({
+            id: cq.id || `q_${Date.now()}`,
+            type: cq.type || "single",
+            question: cq.question,
+            options: cq.options || [],
+            correctIndex: cq.correctIndex || 0,
+            correctAnswer: cq.correctAnswer,
+            explanation: cq.explanation || "",
+            solutionKey: cq.solutionKey || cq.explanation || "",
+            maxPoints: cq.maxPoints || cq.points || 1,
+            points: cq.points || 1,
+            taskNumber: cq.taskNumber || 1,
+            examType: (cq.examType || "EGE").toUpperCase(),
+            criteria: cq.criteria,
+          });
+        }
+      });
+    }
+  } catch {
+    // ignore
+  }
+
   window.EXAM_DATA = {
     subjects: subjectsMap,
     otherSubjects: catalog.otherSubjects,
@@ -56,8 +101,12 @@ async function loadAppData() {
   if (appState.user.isLoggedIn) {
     try {
       const stats = await api("/api/progress/stats");
-      appState.stats.testsSolved = stats.testsSolved;
-      appState.stats.avgPercent = stats.avgPercent;
+      if (stats) {
+        appState.stats.testsSolved = stats.testsSolved || 0;
+        appState.stats.avgPercent = stats.avgPercent || 0;
+      }
+      const historyRes = await api("/api/progress/attempts");
+      appState.userHistory = historyRes?.attempts || [];
     } catch (err) {
       void err;
     }
@@ -90,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initProfileView();
   initNotificationEvents();
   initQuizEvents();
+  initReferenceMaterialsEvents();
 
   document.getElementById("adminLoginSubmitBtn")?.addEventListener("click", async () => {
     const email = document.getElementById("adminLoginEmail")?.value.trim();
@@ -132,8 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTeacherCabinet();
       renderStudentAssignments();
       renderAdminDashboard();
-      initTheoryEditor();
-      initTestEditor();
       updateUIFromState();
       loadNotifications();
       syncTestsExamSelection();

@@ -70,7 +70,9 @@ if (config.isTest) {
 initDb();
 
 const isMain = Boolean(
-  process.argv[1] && (process.argv[1].endsWith("index.js") || process.argv[1].endsWith("index.mjs"))
+  (process.argv[1] && (process.argv[1].endsWith("index.js") || process.argv[1].endsWith("index.mjs"))) ||
+    process.env.pm_id !== undefined ||
+    process.env.PM2_HOME !== undefined
 );
 
 if (isMain) {

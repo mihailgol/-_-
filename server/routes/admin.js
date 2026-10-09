@@ -373,6 +373,8 @@ router.post("/tests/questions", (req, res) => {
     subject_id,
     topicId,
     topic_id,
+    topicTitle,
+    topic_title,
     taskNumber,
     task_number,
     type,
@@ -394,6 +396,7 @@ router.post("/tests/questions", (req, res) => {
 
   const targetSubjectId = subjectId || subject_id;
   let finalTopicId = topicId || topic_id;
+  const targetTopicTitle = (topicTitle || topic_title || "").trim();
   const targetExamType = String(examType || exam_type || "EGE").toUpperCase();
 
   if (!question || (!finalTopicId && !targetSubjectId)) {
@@ -407,6 +410,20 @@ router.post("/tests/questions", (req, res) => {
     }
   }
 
+  if (!finalTopicId && targetSubjectId && targetTopicTitle) {
+    const existingTopicByTitle = db
+      .prepare("SELECT id FROM topics WHERE subject_id = ? AND title = ?")
+      .get(targetSubjectId, targetTopicTitle);
+    if (existingTopicByTitle) {
+      finalTopicId = existingTopicByTitle.id;
+    } else {
+      finalTopicId = `top_${targetSubjectId}_${Date.now()}_${randomBytes(2).toString("hex")}`;
+      db.prepare(
+        "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory, sort_order) VALUES (?, ?, ?, 0, '45 мин', '', (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM topics WHERE subject_id = ?))"
+      ).run(finalTopicId, targetSubjectId, targetTopicTitle, targetSubjectId);
+    }
+  }
+
   if (!finalTopicId && targetSubjectId) {
     const firstTopic = db
       .prepare("SELECT id FROM topics WHERE subject_id = ? ORDER BY sort_order ASC")
@@ -417,7 +434,7 @@ router.post("/tests/questions", (req, res) => {
       finalTopicId = `top_${targetSubjectId}_gen_${Date.now()}`;
       db.prepare(
         "INSERT INTO topics (id, subject_id, title, is_premium, duration, theory) VALUES (?, ?, ?, 0, '45 мин', '')"
-      ).run(finalTopicId, targetSubjectId, "Общие задания");
+      ).run(finalTopicId, targetSubjectId, targetTopicTitle || "Общие задания");
     }
   }
 
@@ -473,7 +490,7 @@ router.post("/tests/questions", (req, res) => {
 
   logAdminActivity(req.user.id, "CREATE_QUESTION", { qId, topicId: finalTopicId, taskNumber: qTaskNum, examType: targetExamType }, req.ip);
 
-  res.status(201).json({ id: qId, ok: true });
+  res.status(201).json({ id: qId, ok: true, success: true, question: { id: qId } });
 });
 
 router.patch("/tests/questions/:id", (req, res) => {

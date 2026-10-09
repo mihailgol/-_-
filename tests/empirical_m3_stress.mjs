@@ -10,6 +10,7 @@ const projectRoot = path.resolve(__dirname, "..");
 const port = 8014;
 const baseUrl = `http://localhost:${port}`;
 const resultsFile = path.resolve(projectRoot, ".agents", "challenger_m3", "stress_results.json");
+fs.mkdirSync(path.dirname(resultsFile), { recursive: true });
 
 const stressReport = {
   timestamp: new Date().toISOString(),

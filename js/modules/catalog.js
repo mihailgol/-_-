@@ -528,6 +528,7 @@ export function renderGeneralQuizzes(selectedSubjectId = null) {
     quizExamLabel.textContent = activeExam;
   }
 
+  checkAndRenderQuizDraftBanner();
   populateGeneralQuizzesSubjectFilter();
 
   const filterSelect = document.getElementById("generalQuizzesSubjectFilter");
@@ -855,6 +856,61 @@ export function initTestTabs() {
     renderGeneralVideos();
   });
 
+  document.getElementById("openTestConstructorFromTestsBtn")?.addEventListener("click", () => {
+    import("./navigation.js").then((m) => m.switchView("test-editor"));
+    import("./test-editor.js").then((m) => m.initTestEditor());
+  });
+
   syncTestsExamSelection();
   populateGeneralQuizzesSubjectFilter();
+  checkAndRenderQuizDraftBanner();
+}
+
+export function checkAndRenderQuizDraftBanner() {
+  const container = document.getElementById("testsDraftBannerContainer");
+  if (!container) return;
+
+  try {
+    const raw = localStorage.getItem("examhub_quiz_draft");
+    if (!raw) {
+      container.style.display = "none";
+      return;
+    }
+    const draft = JSON.parse(raw);
+    const isRecent = Date.now() - (draft.timestamp || 0) < 24 * 60 * 60 * 1000;
+    if (!draft || !draft.questions || draft.questions.length === 0 || !isRecent) {
+      container.style.display = "none";
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%); border: 1px solid var(--color-purple); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">🔄</span>
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--color-text-primary);">У вас есть незавершенный тест «${draft.title || "Тренировочный тест"}»</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 2px;">Остановлен на вопросе ${(draft.index || 0) + 1} из ${draft.questions.length}</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="resumeDraftQuizBtn" style="padding: 6px 16px; font-size: 13px;">Продолжить</button>
+          <button class="btn btn-outline" id="discardDraftQuizBtn" style="padding: 6px 12px; font-size: 13px;">Сбросить</button>
+        </div>
+      </div>
+    `;
+    container.style.display = "block";
+
+    document.getElementById("resumeDraftQuizBtn")?.addEventListener("click", () => {
+      import("./quiz.js").then((m) => {
+        m.resumeQuizFromDraft();
+      });
+    });
+
+    document.getElementById("discardDraftQuizBtn")?.addEventListener("click", () => {
+      localStorage.removeItem("examhub_quiz_draft");
+      container.style.display = "none";
+    });
+  } catch {
+    container.style.display = "none";
+  }
 }

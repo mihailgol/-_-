@@ -33,6 +33,12 @@ router.post("/", requireAuth, (req, res) => {
       }
     }
 
+    const ALLOWED_EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+    extension = extension.toLowerCase();
+    if (!ALLOWED_EXTS.has(extension)) {
+      extension = "jpg";
+    }
+
     const buffer = Buffer.from(base64Data, "base64");
     if (buffer.length > 8 * 1024 * 1024) {
       return res.status(400).json({ error: "Размер файла не должен превышать 8 МБ" });

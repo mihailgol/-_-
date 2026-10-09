@@ -51,6 +51,7 @@ export async function renderTeacherCabinet() {
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-outline view-group-btn" data-id="${g.id}" style="flex: 1; font-size: 0.85rem; padding: 8px;">Управление</button>
+            <a href="/api/teacher/groups/${g.id}/export" class="btn btn-outline" title="Скачать ведомость успеваемости (Excel / CSV)" style="font-size: 0.85rem; padding: 8px 12px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📥 Ведомость</a>
           </div>
         </div>
       `
@@ -342,7 +343,10 @@ export async function loadGroupDetails(groupId) {
             <h2 style="margin: 0;">${group.name}</h2>
             <span style="font-size: 0.85rem; color: var(--color-text-secondary);">Код приглашения: <strong style="color: var(--color-green);">${group.inviteCode}</strong></span>
           </div>
-          <button class="btn btn-outline" id="closeGroupDetailModal">Закрыть</button>
+          <div style="display: flex; gap: 8px;">
+            <a href="/api/teacher/groups/${group.id}/export" class="btn btn-outline" style="text-decoration: none; font-size: 0.85rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">📥 Скачать ведомость</a>
+            <button class="btn btn-outline" id="closeGroupDetailModal">Закрыть</button>
+          </div>
         </div>
 
         <h4 style="margin-bottom: 12px;">👨‍🎓 Состав группы (${members.length} уч.)</h4>

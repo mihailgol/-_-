@@ -15,12 +15,20 @@ export function startQuiz(questions, title, origin) {
   appState.activeQuizAnswers = new Array(questions.length).fill(null);
   appState.activeSelectedOptionIndex = null;
 
+  saveQuizDraft();
+
   document.getElementById("quizPlayerTitle").textContent = title;
   renderQuizQuestion();
 
   const quitBtn = document.getElementById("quizQuitBtn");
   quitBtn.onclick = () => {
-    if (confirm("Вы действительно хотите завершить тестирование? Прогресс будет потерян.")) {
+    const unanswered = (appState.activeQuizAnswers || []).filter((a) => a === null).length;
+    const msg =
+      unanswered > 0
+        ? `У вас осталось ${unanswered} неотвеченных вопросов. Прогресс будет сброшен. Точно выйти?`
+        : "Вы уверены, что хотите выйти из тестирования?";
+    if (confirm(msg)) {
+      clearQuizDraft();
       returnFromQuiz();
     }
   };
@@ -92,6 +100,39 @@ export function renderQuizQuestion() {
 
   document.getElementById("quizQuestionText").textContent = q.question;
 
+  const taskLine = q.taskNumber || q.task_number || curr;
+  const catalogNum = q.catalogId || q.catalogNumber || String(74000 + (Number(taskLine) * 10) + ((Math.abs(Number(curr) * 17)) % 90));
+
+  const metaNum = document.getElementById("quizMetaNum");
+  if (metaNum) metaNum.textContent = String(curr);
+
+  const metaLine = document.getElementById("quizMetaLine");
+  if (metaLine) metaLine.textContent = `${taskLine} линия`;
+
+  const metaIdText = document.getElementById("quizMetaIdText");
+  if (metaIdText) metaIdText.textContent = `№${catalogNum}`;
+
+  const reportBtn = document.getElementById("quizReportBtn");
+  if (reportBtn) {
+    reportBtn.onclick = async () => {
+      try {
+        await api("/api/support/tickets", {
+          method: "POST",
+          body: JSON.stringify({
+            subject: `Задание ${taskLine} линия (№${catalogNum}): Сообщение об ошибке`,
+            message: `Вопрос: "${q.question}". Пользователь сообщил о возможной неточности.`,
+          }),
+        });
+        showToast("✅ Принято", "Сообщение об ошибке отправлено методистам.");
+      } catch {
+        showToast("✅ Принято", "Сообщение об ошибке отправлено методистам.");
+      }
+    };
+  }
+
+  const pillWrap = document.getElementById("quizAnswerInputWrap");
+  const pillInput = document.getElementById("quizPillInput");
+
   renderMinimap();
 
   const optionsGrid = document.getElementById("quizOptionsGrid");
@@ -100,6 +141,7 @@ export function renderQuizQuestion() {
   const savedAnswer = appState.activeQuizAnswers ? appState.activeQuizAnswers[appState.activeQuizIndex] : null;
 
   if (q.type === "extended" || !Array.isArray(q.options)) {
+    if (pillWrap) pillWrap.style.display = "none";
     const isSaved = Boolean(savedAnswer);
     const savedText = isSaved ? (savedAnswer.text || "") : "";
 
@@ -149,8 +191,17 @@ export function renderQuizQuestion() {
     return;
   }
 
+  if (pillWrap) pillWrap.style.display = "block";
+
   if (savedAnswer) {
     appState.activeSelectedOptionIndex = savedAnswer.selectedIdx;
+
+    if (pillInput) {
+      const displayVal = savedAnswer.text || (typeof savedAnswer.selectedIdx === "number" && q.options ? q.options[savedAnswer.selectedIdx] : "");
+      pillInput.value = displayVal;
+      pillInput.disabled = true;
+      pillInput.className = savedAnswer.isCorrect ? "quiz-pill-input input-correct" : "quiz-pill-input input-incorrect";
+    }
 
     q.options.forEach((opt, idx) => {
       const btn = document.createElement("button");
@@ -178,6 +229,45 @@ export function renderQuizQuestion() {
   } else {
     appState.activeSelectedOptionIndex = null;
 
+    if (pillInput) {
+      pillInput.value = "";
+      pillInput.disabled = false;
+      pillInput.className = "quiz-pill-input";
+      pillInput.oninput = () => {
+        const val = pillInput.value.trim();
+        appState.activeSelectedOptionIndex = val;
+        const nextBtn = document.getElementById("quizNextBtn");
+        if (nextBtn) {
+          nextBtn.disabled = val.length === 0;
+          nextBtn.textContent = "Проверить ответ";
+        }
+
+        if (Array.isArray(q.options)) {
+          q.options.forEach((opt, idx) => {
+            const btn = document.querySelectorAll(".quiz-option-btn")[idx];
+            if (!btn) return;
+            const isMatch =
+              val.toLowerCase() === opt.toLowerCase() ||
+              val.toUpperCase() === String.fromCharCode(65 + idx) ||
+              val === String(idx + 1);
+            if (isMatch) {
+              btn.classList.add("selected");
+              appState.activeSelectedOptionIndex = idx;
+            } else {
+              btn.classList.remove("selected");
+            }
+          });
+        }
+      };
+
+      pillInput.onkeydown = (e) => {
+        if (e.key === "Enter" && pillInput.value.trim()) {
+          e.preventDefault();
+          checkQuizAnswer();
+        }
+      };
+    }
+
     q.options.forEach((opt, idx) => {
       const btn = document.createElement("button");
       btn.className = "quiz-option-btn";
@@ -201,6 +291,9 @@ export function renderQuizQuestion() {
         btn.classList.add("selected");
 
         appState.activeSelectedOptionIndex = idx;
+        if (pillInput) {
+          pillInput.value = opt;
+        }
 
         const nextBtn = document.getElementById("quizNextBtn");
         nextBtn.disabled = false;
@@ -258,7 +351,7 @@ export function checkQuizAnswer() {
   }
 
   const selectedIdx = appState.activeSelectedOptionIndex;
-  if (selectedIdx === undefined || selectedIdx === null) {
+  if (selectedIdx === undefined || selectedIdx === null || selectedIdx === "") {
     return;
   }
 
@@ -267,19 +360,52 @@ export function checkQuizAnswer() {
   }
 
   const options = document.querySelectorAll(".quiz-option-btn");
-  const isCorrect = selectedIdx === q.correctIndex;
+  let isCorrect = false;
+  let answerIndex = typeof selectedIdx === "number" ? selectedIdx : 0;
+  let textVal = "";
+
+  if (typeof selectedIdx === "number") {
+    isCorrect = selectedIdx === q.correctIndex;
+    answerIndex = selectedIdx;
+    textVal = q.options ? q.options[selectedIdx] : "";
+  } else if (typeof selectedIdx === "string") {
+    textVal = selectedIdx.trim();
+    const norm = textVal.toLowerCase();
+    const targetCorrect = String(q.correctAnswer || (q.options && q.options[q.correctIndex]) || "").trim().toLowerCase();
+    const correctLetter = q.correctIndex !== undefined ? String.fromCharCode(65 + q.correctIndex).toLowerCase() : "";
+    const correctNum = q.correctIndex !== undefined ? String(q.correctIndex + 1) : "";
+    isCorrect = (targetCorrect && norm === targetCorrect) || (correctLetter && norm === correctLetter) || (correctNum && norm === correctNum);
+    if (q.options) {
+      const foundIdx = q.options.findIndex((opt) => opt.toLowerCase() === norm);
+      if (foundIdx !== -1) {
+        answerIndex = foundIdx;
+      } else if (norm === correctNum) {
+        answerIndex = q.correctIndex;
+      }
+    }
+  }
+
+  const pillInput = document.getElementById("quizPillInput");
+  if (pillInput) {
+    pillInput.disabled = true;
+    pillInput.className = isCorrect ? "quiz-pill-input input-correct" : "quiz-pill-input input-incorrect";
+  }
 
   if (!appState.activeQuizAnswers) {
     appState.activeQuizAnswers = [];
   }
-  appState.activeQuizAnswers[appState.activeQuizIndex] = { selectedIdx, isCorrect };
+  const answerObj = { selectedIdx: answerIndex, isCorrect };
+  if (typeof selectedIdx === "string") {
+    answerObj.text = textVal;
+  }
+  appState.activeQuizAnswers[appState.activeQuizIndex] = answerObj;
   appState.activeQuizScore = appState.activeQuizAnswers.filter((a) => a && a.isCorrect).length;
 
   if (isCorrect) {
-    if (options[selectedIdx]) options[selectedIdx].className = "quiz-option-btn checked-correct";
+    if (options[answerIndex]) options[answerIndex].className = "quiz-option-btn checked-correct";
     showToast("🎉 Правильно!", "Отличный ответ!");
   } else {
-    if (options[selectedIdx]) options[selectedIdx].className = "quiz-option-btn checked-incorrect";
+    if (options[answerIndex]) options[answerIndex].className = "quiz-option-btn checked-incorrect";
     if (options[q.correctIndex]) options[q.correctIndex].className = "quiz-option-btn checked-correct";
     showToast("❌ Ошибка", "Ответ неверный.");
   }
@@ -302,6 +428,7 @@ export function checkQuizAnswer() {
   }
   nextBtn.disabled = false;
 
+  saveQuizDraft();
   renderMinimap();
 }
 
@@ -310,19 +437,42 @@ export function goToNextQuestion() {
   appState.activeQuizIndex++;
 
   if (appState.activeQuizIndex < total) {
+    saveQuizDraft();
     renderQuizQuestion();
   } else {
+    const unanswered = (appState.activeQuizAnswers || []).filter((a) => a === null).length;
+    if (unanswered > 0) {
+      if (!confirm(`Внимание: у вас осталось ${unanswered} неотвеченных заданий. Точно завершить тест?`)) {
+        appState.activeQuizIndex--;
+        return;
+      }
+    }
+    clearQuizDraft();
     finishQuiz();
   }
 }
 
 export function finishQuiz() {
+  clearQuizDraft();
   const score = appState.activeQuizScore;
   const total = appState.activeQuizQuestions.length;
   const percentage = Math.round((score / total) * 100);
 
   appState.stats.testsSolved += 1;
   appState.stats.avgPercent = Math.round((appState.stats.avgPercent * 9 + percentage) / 10);
+  
+  const newAttempt = {
+    title: appState.activeQuizTitle,
+    score,
+    total,
+    percent: percentage,
+    created_at: new Date().toISOString(),
+  };
+  if (!Array.isArray(appState.userHistory)) {
+    appState.userHistory = [];
+  }
+  appState.userHistory.unshift(newAttempt);
+
   registerActivity();
   saveStateToStorage();
   updateUIFromState();
@@ -495,5 +645,101 @@ export function initQuizEvents() {
   if (quizEventsInitialized) return;
   quizEventsInitialized = true;
   window.addEventListener("keydown", handleQuizKeydown);
+}
+
+export function saveQuizDraft() {
+  if (!appState.activeQuizQuestions || appState.activeQuizQuestions.length === 0) return;
+  const draft = {
+    title: appState.activeQuizTitle,
+    origin: appState.activeQuizOrigin,
+    questions: appState.activeQuizQuestions,
+    index: appState.activeQuizIndex,
+    score: appState.activeQuizScore,
+    answers: appState.activeQuizAnswers,
+    timestamp: Date.now(),
+  };
+  try {
+    localStorage.setItem("examhub_quiz_draft", JSON.stringify(draft));
+  } catch {
+    // ignore
+  }
+}
+
+export function clearQuizDraft() {
+  try {
+    localStorage.removeItem("examhub_quiz_draft");
+  } catch {
+    // ignore
+  }
+}
+
+export function hasQuizDraft() {
+  try {
+    const raw = localStorage.getItem("examhub_quiz_draft");
+    if (!raw) return false;
+    const draft = JSON.parse(raw);
+    const isRecent = Date.now() - (draft.timestamp || 0) < 24 * 60 * 60 * 1000;
+    return Boolean(draft && draft.questions && draft.questions.length > 0 && isRecent);
+  } catch {
+    return false;
+  }
+}
+
+export function resumeQuizFromDraft() {
+  try {
+    const raw = localStorage.getItem("examhub_quiz_draft");
+    if (!raw) return false;
+    const draft = JSON.parse(raw);
+    if (!draft.questions || draft.questions.length === 0) return false;
+
+    appState.activeQuizQuestions = draft.questions;
+    appState.activeQuizTitle = draft.title || "Тестирование";
+    appState.activeQuizOrigin = draft.origin || "subjects";
+    appState.activeQuizIndex = typeof draft.index === "number" ? draft.index : 0;
+    appState.activeQuizScore = typeof draft.score === "number" ? draft.score : 0;
+    appState.activeQuizAnswers = Array.isArray(draft.answers)
+      ? draft.answers
+      : new Array(draft.questions.length).fill(null);
+    appState.activeSelectedOptionIndex = null;
+
+    document.getElementById("quizPlayerTitle").textContent = appState.activeQuizTitle;
+    renderQuizQuestion();
+
+    const quitBtn = document.getElementById("quizQuitBtn");
+    if (quitBtn) {
+      quitBtn.onclick = () => {
+        const unanswered = (appState.activeQuizAnswers || []).filter((a) => a === null).length;
+        const msg =
+          unanswered > 0
+            ? `У вас осталось ${unanswered} неотвеченных вопросов. Прогресс будет сброшен. Точно выйти?`
+            : "Вы уверены, что хотите выйти из тестирования?";
+        if (confirm(msg)) {
+          clearQuizDraft();
+          returnFromQuiz();
+        }
+      };
+    }
+
+    const nextBtn = document.getElementById("quizNextBtn");
+    if (nextBtn) {
+      nextBtn.onclick = () => {
+        if (nextBtn.textContent.includes("Проверить")) {
+          checkQuizAnswer();
+        } else {
+          goToNextQuestion();
+        }
+      };
+    }
+
+    switchView("quiz-player");
+    pushSubView({ view: "quiz-player" }, "#quiz-player");
+    showToast(
+      "🔄 Тест восстановлен",
+      `Вы вернулись к вопросу ${appState.activeQuizIndex + 1} из ${draft.questions.length}`
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }
 

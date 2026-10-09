@@ -4,9 +4,15 @@ import { randomBytes } from "node:crypto";
 import { db } from "../db.js";
 import { config } from "../config.js";
 import { serializeUser, optionalAuth, requireAuth } from "../middleware/auth.js";
+import { createRateLimiter } from "../middleware/rate-limit.js";
 
 const router = Router();
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: "Слишком много попыток входа/регистрации. Пожалуйста, попробуйте позже.",
+});
 
 function createSession(res, userId) {
   const token = randomBytes(32).toString("hex");
@@ -34,7 +40,7 @@ router.get("/me", optionalAuth, (req, res) => {
   res.json({ user: req.user || null });
 });
 
-router.post("/register", (req, res) => {
+router.post("/register", authLimiter, (req, res) => {
   const email = String(req.body?.email || "")
     .trim()
     .toLowerCase();
@@ -66,7 +72,7 @@ router.post("/register", (req, res) => {
   res.status(201).json({ user: serializeUser(user) });
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", authLimiter, (req, res) => {
   let email = String(req.body?.email || "")
     .trim()
     .toLowerCase();
@@ -95,7 +101,6 @@ router.post("/login", (req, res) => {
     return res.status(401).json({ error: "Неверный email или пароль" });
   }
 
-
   if (user.status === "disabled") {
     return res.status(403).json({ error: "Ваш аккаунт отключен администратором" });
   }
@@ -116,6 +121,19 @@ router.patch("/exam-type", requireAuth, (req, res) => {
   );
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user.id);
   res.json({ user: serializeUser(user) });
+});
+
+router.patch("/profile", requireAuth, (req, res) => {
+  const name = String(req.body?.name || "").trim();
+  const avatar = String(req.body?.avatar || "").trim();
+  if (!name) {
+    return res.status(400).json({ error: "Имя не может быть пустым" });
+  }
+  db.prepare(
+    "UPDATE users SET name = ?, avatar_url = ?, avatar = ?, updated_at = datetime('now') WHERE id = ?"
+  ).run(name.slice(0, 100), avatar.slice(0, 500), avatar.slice(0, 500), req.user.id);
+  const updated = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user.id);
+  res.json({ user: serializeUser(updated) });
 });
 
 router.post("/logout", (req, res) => {
