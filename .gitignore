@@ -12,5 +12,4 @@ data/
 server/*.sqlite*
 audit-report/
 uploads/
-
-
+*.zip
