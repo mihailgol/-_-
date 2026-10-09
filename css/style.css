@@ -767,7 +767,7 @@ select {
 }
 
 .hero-text {
-  max-width: 50%;
+  max-width: 680px;
 }
 
 .hero-title {
@@ -839,18 +839,7 @@ select {
 }
 
 .hero-graphic {
-  position: relative;
-  max-width: 45%;
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-svg-bg {
-  width: 260px;
-  height: auto;
-  animation: float 6s ease-in-out infinite;
+  display: none !important;
 }
 
 .section-title {
