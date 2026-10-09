@@ -18,6 +18,7 @@ import uploadRoutes from "./routes/upload.js";
 const app = express();
 
 app.disable("x-powered-by");
+app.set("trust proxy", true);
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 

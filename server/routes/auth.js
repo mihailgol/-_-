@@ -14,24 +14,29 @@ const authLimiter = createRateLimiter({
   message: "Слишком много попыток входа/регистрации. Пожалуйста, попробуйте позже.",
 });
 
-function createSession(res, userId) {
+function isSecureConnection(req) {
+  if (!req) return false;
+  return Boolean(req.secure || req.headers?.["x-forwarded-proto"] === "https");
+}
+
+function createSession(res, userId, req = null) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + config.sessionTtlDays * 864e5).toISOString();
   db.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run(token, userId, expiresAt);
   res.cookie(config.cookieName, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: config.isProd,
+    secure: isSecureConnection(req),
     maxAge: config.sessionTtlDays * 864e5,
     path: "/",
   });
 }
 
-function clearSession(res) {
+function clearSession(res, req = null) {
   res.clearCookie(config.cookieName, {
     httpOnly: true,
     sameSite: "lax",
-    secure: config.isProd,
+    secure: isSecureConnection(req),
     path: "/",
   });
 }
@@ -66,7 +71,7 @@ router.post("/register", authLimiter, (req, res) => {
     .prepare("INSERT INTO users (email, password_hash, name, exam_type) VALUES (?, ?, ?, ?)")
     .run(email, passwordHash, name, examType);
 
-  createSession(res, Number(info.lastInsertRowid));
+  createSession(res, Number(info.lastInsertRowid), req);
   db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(info.lastInsertRowid);
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(info.lastInsertRowid);
   res.status(201).json({ user: serializeUser(user) });
@@ -106,7 +111,7 @@ router.post("/login", authLimiter, (req, res) => {
   }
 
   db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
-  createSession(res, user.id);
+  createSession(res, user.id, req);
   const updatedUser = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
   res.json({ user: serializeUser(updatedUser) });
 });
@@ -139,7 +144,7 @@ router.patch("/profile", requireAuth, (req, res) => {
 router.post("/logout", (req, res) => {
   const token = req.cookies?.[config.cookieName];
   if (token) db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
-  clearSession(res);
+  clearSession(res, req);
   res.json({ ok: true });
 });
 
@@ -150,14 +155,14 @@ router.get("/premium", requireAuth, (req, res) => {
 
 const validOAuthStates = new Set();
 
-function setOAuthState(res) {
+function setOAuthState(res, req = null) {
   const state = randomBytes(16).toString("hex");
   validOAuthStates.add(state);
   setTimeout(() => validOAuthStates.delete(state), 10 * 60 * 1000);
   res.cookie("oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
-    secure: config.isProd,
+    secure: isSecureConnection(req),
     maxAge: 10 * 60 * 1000,
     path: "/",
   });
@@ -170,13 +175,16 @@ function validateOAuthState(req, res) {
   res.clearCookie("oauth_state", {
     httpOnly: true,
     sameSite: "lax",
-    secure: config.isProd,
+    secure: isSecureConnection(req),
     path: "/",
   });
-  if (!cookieState || !paramState || cookieState !== paramState) {
+  if (!paramState) {
     return false;
   }
   if (!validOAuthStates.has(paramState)) {
+    return false;
+  }
+  if (cookieState && cookieState !== paramState) {
     return false;
   }
   validOAuthStates.delete(paramState);
@@ -221,7 +229,7 @@ function handleAccountLinking({ provider, socialId, email, name, avatarUrl, curr
 }
 
 router.get("/vk", (req, res) => {
-  const state = setOAuthState(res);
+  const state = setOAuthState(res, req);
   const hasRealKeys = Boolean(process.env.VK_CLIENT_ID && process.env.VK_CLIENT_ID !== "mock_client");
   if (config.isTest || req.query.mock === "true" || !hasRealKeys) {
     let mockQuery = `?code=mock_code&state=${state}`;
@@ -286,12 +294,12 @@ router.get("/vk/callback", optionalAuth, async (req, res) => {
     currentUser: req.user,
   });
 
-  createSession(res, user.id);
+  createSession(res, user.id, req);
   res.redirect("/?auth=success");
 });
 
 router.get("/yandex", (req, res) => {
-  const state = setOAuthState(res);
+  const state = setOAuthState(res, req);
   const hasRealKeys = Boolean(process.env.YANDEX_CLIENT_ID && process.env.YANDEX_CLIENT_ID !== "mock_client");
   if (config.isTest || req.query.mock === "true" || !hasRealKeys) {
     let mockQuery = `?code=mock_code&state=${state}`;
@@ -365,7 +373,7 @@ router.get("/yandex/callback", optionalAuth, async (req, res) => {
     currentUser: req.user,
   });
 
-  createSession(res, user.id);
+  createSession(res, user.id, req);
   res.redirect("/?auth=success");
 });
 
